@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="48mm"
+   height="38mm"
+   viewBox="0 0 48 38"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   sodipodi:docname="logo-civico-vettoriale.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="2.8756734"
+     inkscape:cx="89.196499"
+     inkscape:cy="114.23411"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1">
+    <rect
+       x="73.275993"
+       y="379.65817"
+       width="257.20364"
+       height="221.30333"
+       id="rect2" />
+    <rect
+       x="153.00764"
+       y="194.737"
+       width="474.32367"
+       height="279.5867"
+       id="rect1" />
+    <rect
+       x="73.275993"
+       y="379.65817"
+       width="257.20364"
+       height="221.30333"
+       id="rect2-4" />
+  </defs>
+  <g
+     inkscape:label="Livello 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-41.117339,-58.232501)">
+    <text
+       xml:space="preserve"
+       transform="matrix(0.37698953,0,0,0.26458333,-17.673831,0)"
+       id="text1"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:192px;font-family:P052;-inkscape-font-specification:P052;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect1);display:inline;fill:#fecc16;fill-opacity:1"><tspan
+         x="153.00781"
+         y="358.12833"
+         id="tspan4">C</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(-0.53588331,0,0,0.56166335,120.19618,-148.71828)"
+       id="text2-8"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:37.3333px;font-family:P052;-inkscape-font-specification:P052;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect2-4);display:inline;fill:#fecc16;fill-opacity:1"><tspan
+         x="73.275391"
+         y="411.42884"
+         id="tspan6"><tspan
+           style="fill:#e0dede"
+           id="tspan5">DB</tspan></tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.53490485,0,0,0.55327622,19.916337,-139.29371)"
+       id="text2"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:37.3333px;font-family:P052;-inkscape-font-specification:P052;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect2);display:inline;fill:#fecc16;fill-opacity:1"><tspan
+         x="73.275391"
+         y="411.42884"
+         id="tspan8"><tspan
+           style="fill:#6e8fc9"
+           id="tspan7">DB</tspan></tspan></text>
+  </g>
+</svg>
