@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'esendex' => [
+        'username' => env('ESENDEX_USERNAME'),
+        'password' => env('ESENDEX_PASSWORD'),
+        'account_reference' => env('ESENDEX_ACCOUNT_REFERENCE'),
+        'base_url' => env('ESENDEX_BASE_URL', 'https://api.esendex.com/v1.0'),
+        'otp_template' => env('ESENDEX_OTP_TEMPLATE', 'Il codice OTP per :app e :otp'),
+    ],
+
 ];

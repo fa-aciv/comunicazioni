@@ -2,10 +2,12 @@
 
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\SetAuthGuard;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -15,6 +17,31 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
+        $middleware->alias([
+            'auth.guard' => SetAuthGuard::class,
+        ]);
+        $middleware->redirectGuestsTo(function (Request $request) {
+            if ($request->routeIs('employee.*')) {
+                return route('employee.login');
+            }
+
+            if ($request->routeIs('citizen.*')) {
+                return route('citizen.login');
+            }
+
+            return route('home');
+        });
+        $middleware->redirectUsersTo(function (Request $request) {
+            if ($request->routeIs('employee.*')) {
+                return route('employee.dashboard');
+            }
+
+            if ($request->routeIs('citizen.*')) {
+                return route('citizen.dashboard');
+            }
+
+            return route('home');
+        });
 
         $middleware->web(append: [
             HandleAppearance::class,

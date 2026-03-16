@@ -27,7 +27,6 @@ return [
     */
 
     'connections' => [
-
         'default' => [
             'hosts' => [env('LDAP_HOST', '127.0.0.1')],
             'username' => env('LDAP_USERNAME', 'cn=user,dc=local,dc=com'),
@@ -42,7 +41,6 @@ return [
                 // 'mech' => 'GSSAPI',
             ],
         ],
-
     ],
 
     /*

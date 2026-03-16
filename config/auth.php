@@ -14,8 +14,8 @@ return [
     */
 
     'defaults' => [
-        'guard' => env('AUTH_GUARD', 'web'),
-        'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
+        'guard' => env('AUTH_GUARD', 'citizen'),
+        'passwords' => env('AUTH_PASSWORD_BROKER', 'citizens'),
     ],
 
     /*
@@ -36,9 +36,9 @@ return [
     */
 
     'guards' => [
-            'web' => [
+        'citizen' => [
             'driver' => 'session',
-            'provider' => 'citizens', // citizens (default web)
+            'provider' => 'citizens',
         ],
         'employee' => [
             'driver' => 'session',
@@ -64,9 +64,9 @@ return [
     */
 
     'providers' => [
-            'citizens' => [
+        'citizens' => [
             'driver' => 'eloquent',
-            'model' => App\Models\Citizen::class, // or App\Models\User
+            'model' => App\Models\Citizen::class,
         ],
         'employees' => [
             'driver' => 'ldap',
@@ -118,8 +118,8 @@ return [
     */
 
     'passwords' => [
-        'users' => [
-            'provider' => 'users',
+        'citizens' => [
+            'provider' => 'citizens',
             'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
             'expire' => 60,
             'throttle' => 60,
@@ -138,5 +138,11 @@ return [
     */
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
+
+    'citizen' => [
+        'magic_link_expire' => (int) env('CITIZEN_MAGIC_LINK_EXPIRE', 30),
+        'otp_expire' => (int) env('CITIZEN_OTP_EXPIRE', 5),
+        'otp_resend_cooldown' => (int) env('CITIZEN_OTP_RESEND_COOLDOWN', 60),
+    ],
 
 ];

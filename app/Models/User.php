@@ -25,9 +25,18 @@ class User extends Authenticatable  implements LdapAuthenticatable
      */
     protected $fillable = [
         'name',
+        'sAMAccountName',
+        'employee_id',
+        'fiscalcode',
+        'department_id',
+        'department_name',
         'email',
         'password',
+        'guid',
+        'domain',
     ];
+
+    protected string $guard_name = 'employee';
 
     /**
      * The attributes that should be hidden for serialization.

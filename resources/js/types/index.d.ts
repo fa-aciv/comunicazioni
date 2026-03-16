@@ -2,7 +2,15 @@ import { InertiaLinkProps } from '@inertiajs/react';
 import { LucideIcon } from 'lucide-react';
 
 export interface Auth {
-    user: User;
+    user: User | null;
+    activeGuard: 'citizen' | 'employee' | null;
+    guards: {
+        citizen: boolean;
+        employee: boolean;
+    };
+    homeUrl: string | null;
+    logoutUrl: string | null;
+    portalLabel: string | null;
 }
 
 export interface BreadcrumbItem {
@@ -35,11 +43,12 @@ export interface User {
     name: string;
     email: string;
     avatar?: string;
-    email_verified_at: string | null;
-    two_factor_enabled?: boolean;
+    email_verified_at?: string | null;
     created_at: string;
     updated_at: string;
-    department_name?: string;   // ✅ ADD THIS
-    department_id?: string;     // (optional but recommended)
+    department_name?: string;
+    department_id?: string;
+    fiscal_code?: string;
+    phone_number?: string;
     [key: string]: string | number | boolean | null | undefined;
 }
