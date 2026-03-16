@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Citizen;
 use App\Models\CitizenLoginChallenge;
 use App\Notifications\SendCitizenMagicLink;
-use App\Services\Sms\EsendexSmsSender;
+use App\Services\EsendexSmsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -56,7 +56,7 @@ class CitizenAuthController extends Controller
     public function showChallenge(
         Request $request,
         CitizenLoginChallenge $challenge,
-        EsendexSmsSender $smsSender
+        EsendexSmsService $smsSender
     ): Response|RedirectResponse {
         $challenge->loadMissing('citizen');
 
@@ -81,7 +81,23 @@ class CitizenAuthController extends Controller
                 'otp_expires_at' => now()->addMinutes(config('auth.citizen.otp_expire')),
             ])->save();
 
-            $smsSender->sendCitizenOtp($challenge->citizen->phone_number, $otp);
+            $message = str_replace(
+                [':app', ':otp'],
+                [config('app.name'), $otp],
+                (string) config('services.esendex.otp_template')
+            );
+
+            $smsResult = $smsSender->sendSms($challenge->citizen->phone_number, $message);
+
+            if (! ($smsResult['ok'] ?? false)) {
+                report(new \RuntimeException('Citizen OTP SMS delivery failed.'));
+
+                return redirect()
+                    ->route('citizen.login')
+                    ->withErrors([
+                        'email' => 'Non e stato possibile inviare il codice OTP. Riprova tra qualche minuto.',
+                    ]);
+            }
         }
 
         $challenge->forceFill([

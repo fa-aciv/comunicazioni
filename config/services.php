@@ -36,11 +36,11 @@ return [
     ],
 
     'esendex' => [
-        'username' => env('ESENDEX_USERNAME'),
-        'password' => env('ESENDEX_PASSWORD'),
-        'account_reference' => env('ESENDEX_ACCOUNT_REFERENCE'),
-        'base_url' => env('ESENDEX_BASE_URL', 'https://api.esendex.com/v1.0'),
-        'otp_template' => env('ESENDEX_OTP_TEMPLATE', 'Il codice OTP per :app e :otp'),
+        'api_url' => env('VODAFONE_API_URL'),
+        'user_key' => env('VODAFONE_USER_KEY'),
+        'access_token' => env('VODAFONE_ACCESS_TOKEN'),
+        'sender' => env('VODAFONE_SENDER'),
+        'otp_template' => env('SMS_OTP_TEMPLATE', 'Il codice OTP per :app e :otp')
     ],
 
 ];
