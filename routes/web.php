@@ -69,18 +69,7 @@ Route::prefix('employee')->name('employee.')->group(function () {
 
     Route::middleware(['auth.guard:employee', 'auth:employee'])->group(function () {
         Route::get('dashboard', function () {
-            return Inertia::render('portal/dashboard', [
-                'portal' => [
-                    'name' => 'employee',
-                    'title' => 'Area dipendenti',
-                    'description' => 'Accedi ai contenuti interni autenticandoti tramite LDAP.',
-                    'highlights' => [
-                        ['title' => 'Autenticazione LDAP', 'description' => 'Usa le credenziali di dominio per entrare nei servizi interni.'],
-                        ['title' => 'Sessione separata', 'description' => 'La sessione del personale non interferisce con quella dei cittadini.'],
-                        ['title' => 'Sezioni riservate', 'description' => 'Questa area puo ospitare strumenti e flussi operativi interni.'],
-                    ],
-                ],
-            ]);
+            return Inertia::render('employee/dashboard', []);
         })->name('dashboard');
 
         Route::post('logout', [EmployeeSessionController::class, 'destroy'])->name('logout');

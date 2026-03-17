@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/auth-layout';
 import { Head, useForm } from '@inertiajs/react';
+import { Info } from 'lucide-react';
 
 interface CitizenLoginProps {
     status?: string;
@@ -52,8 +53,10 @@ export default function CitizenLogin({ status }: CitizenLoginProps) {
             </form>
 
             {status && (
-                <div className="mt-6 text-center text-sm font-medium text-green-600">
-                    {status}
+
+                <div className="border rounded-xl p-4 mt-6 flex flex-row gap-4">
+                    <Info size="64" />
+                    <div className="text-sm">{status}</div>
                 </div>
             )}
         </AuthLayout>

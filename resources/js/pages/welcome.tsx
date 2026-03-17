@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/card';
 import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
+import { IdCard, UserRound } from 'lucide-react';
 
 interface WelcomeProps extends SharedData {
     hasCitizenSession: boolean;
@@ -25,9 +26,14 @@ export default function Welcome() {
             <Head title="Benvenuto" />
 
             <div className="relative flex min-h-screen overflow-hidden">
-                <div className="absolute inset-0 bg-linear-to-br from-sky-700 via-sky-600 to-cyan-500" />
-                <div
-                    className="absolute inset-0 bg-cover bg-center opacity-25"
+                <div // TODO: Use auth simple layout
+                    className="
+                        absolute 
+                        inset-0 
+                        bg-fixed 
+                        bg-center 
+                        bg-cover
+                    "
                     style={{ backgroundImage: "url('/assets/hero-bg.jpg')" }}
                 />
 
@@ -35,80 +41,54 @@ export default function Welcome() {
                     <div className="hidden w-full max-w-xl p-8 sm:block">
                         <h1 className="text-6xl font-extrabold">Comunicazioni</h1>
                         <p className="mt-4 text-lg text-foreground/90">
-                            Due percorsi di autenticazione distinti per cittadini
-                            e dipendenti, con sessioni separate e aree dedicate.
+                            Comunica in sicurezza con l'ARNAS Civico di Cristina Benfratelli
                         </p>
                     </div>
 
-                    <Card className="w-full max-w-md border-none bg-background/85 py-10 backdrop-blur-xl">
+                    <Card className="w-full lg:max-w-md border-none bg-background/85 py-10 backdrop-blur-xl">
                         <CardHeader className="gap-3 text-center">
                             <CardTitle className="text-2xl font-bold">
-                                Scegli il tuo accesso
+                                Accedi
                             </CardTitle>
                             <CardDescription>
-                                Ogni area utilizza credenziali e sessione
-                                dedicate.
+                                Effettua l'accesso per accedere alle tue comunicazioni
                             </CardDescription>
                         </CardHeader>
 
                         <CardContent className="space-y-4 py-4">
-                            <div className="rounded-2xl border p-4 text-left">
-                                <div className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                                    Area cittadini
-                                </div>
-                                <p className="mt-2 text-sm text-muted-foreground">
-                                    Login tramite magic link via email, codice
-                                    fiscale e OTP SMS.
-                                </p>
-                                <Link
-                                    href={
-                                        hasCitizenSession
-                                            ? '/citizen/dashboard'
-                                            : '/citizen/login'
-                                    }
-                                >
-                                    <Button className="mt-4 w-full" size="lg">
-                                        {hasCitizenSession
-                                            ? 'Apri area cittadini'
-                                            : 'Accedi come cittadino'}
-                                    </Button>
-                                </Link>
-                            </div>
+                            <Link
+                                href={
+                                    hasCitizenSession
+                                        ? '/citizen/dashboard'
+                                        : '/citizen/login'
+                                }
+                            >
+                                <Button className="mt-4 w-full" size="lg">
+                                    <UserRound />
+                                    {hasCitizenSession
+                                        ? 'Apri area cittadini'
+                                        : 'Accedi come cittadino'}
+                                </Button>
+                            </Link>
 
-                            <div className="rounded-2xl border p-4 text-left">
-                                <div className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                                    Area dipendenti
-                                </div>
-                                <p className="mt-2 text-sm text-muted-foreground">
-                                    Accesso LDAP con credenziali di dominio
-                                    ARNAS.
-                                </p>
-                                <Link
-                                    href={
-                                        hasEmployeeSession
-                                            ? '/employee/dashboard'
-                                            : '/employee/login'
-                                    }
+                            <Link
+                                href={
+                                    hasEmployeeSession
+                                        ? '/employee/dashboard'
+                                        : '/employee/login'
+                                }
+                            >
+                                <Button
+                                    className="mt-4 w-full"
+                                    size="lg"
+                                    variant="outline"
                                 >
-                                    <Button
-                                        className="mt-4 w-full"
-                                        size="lg"
-                                        variant="secondary"
-                                    >
-                                        {hasEmployeeSession
-                                            ? 'Apri area dipendenti'
-                                            : 'Accedi come dipendente'}
-                                    </Button>
-                                </Link>
-                            </div>
-
-                            {auth.activeGuard && auth.homeUrl && (
-                                <Link href={auth.homeUrl}>
-                                    <Button className="w-full" variant="ghost">
-                                        Continua nella sessione attiva
-                                    </Button>
-                                </Link>
-                            )}
+                                    <IdCard />
+                                    {hasEmployeeSession
+                                        ? 'Apri area dipendenti'
+                                        : 'Area dipendenti'}
+                                </Button>
+                            </Link>
                         </CardContent>
                         <div className="mt-2 text-center text-sm text-muted-foreground">
                             &copy; {year} ARNAS Civico

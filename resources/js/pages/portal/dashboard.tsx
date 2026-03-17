@@ -36,7 +36,7 @@ export default function PortalDashboard({ portal }: PortalDashboardProps) {
                             {portal.description}
                         </h1>
                         <p className="mt-4 text-sm text-muted-foreground">
-                            Questa dashboard e un punto di partenza dedicato al
+                            Questa dashboard è un punto di partenza dedicato al
                             profilo autenticato correntemente.
                         </p>
                     </div>

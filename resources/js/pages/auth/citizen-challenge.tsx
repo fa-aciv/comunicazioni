@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/auth-layout';
 import { Head, useForm } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 
 interface CitizenChallengeProps {
     email: string;
@@ -41,18 +42,7 @@ export default function CitizenChallenge({
         >
             <Head title="Conferma accesso cittadino" />
 
-            <div className="mb-6 rounded-xl border bg-muted/30 p-4 text-sm text-muted-foreground">
-                <div>Email di accesso: {email}</div>
-                {expiresAt && (
-                    <div>
-                        OTP valido fino a:{' '}
-                        {new Date(expiresAt).toLocaleTimeString('it-IT', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                        })}
-                    </div>
-                )}
-            </div>
+            <OTPCountdown expiresAt={expiresAt ?? undefined} />
 
             <form onSubmit={submit} className="flex flex-col gap-6">
                 <div className="grid gap-2">
@@ -74,15 +64,15 @@ export default function CitizenChallenge({
                     <InputError message={form.errors.fiscal_code} />
                 </div>
 
-                <div className="grid gap-2">
-                    <Label htmlFor="otp">Codice OTP</Label>
+                <div className="flex flex-col items-center gap-2">
+                    <Label className="self-start" htmlFor="otp">Codice OTP</Label>
                     <InputOTP
                         id="otp"
                         value={form.data.otp}
                         onChange={(value) => form.setData('otp', value)}
                         maxLength={6}
                     >
-                        <InputOTPGroup className="w-full justify-between">
+                        <InputOTPGroup>
                             {Array.from({ length: 6 }).map((_, index) => (
                                 <InputOTPSlot key={index} index={index} />
                             ))}
@@ -104,4 +94,52 @@ export default function CitizenChallenge({
             )}
         </AuthLayout>
     );
+}
+
+function OTPCountdown({ expiresAt }: { expiresAt?: string }) {
+  const [timeLeft, setTimeLeft] = useState<number>(0);
+
+  useEffect(() => {
+    if (!expiresAt) return;
+
+    const targetTime = new Date(expiresAt).getTime();
+
+    const updateCountdown = () => {
+      const now = Date.now();
+      const diff = Math.max(targetTime - now, 0); // in milliseconds
+      setTimeLeft(diff);
+    };
+
+    updateCountdown(); // initialize immediately
+    const interval = setInterval(updateCountdown, 1000);
+
+    return () => clearInterval(interval);
+  }, [expiresAt]);
+
+  // format milliseconds to MM:SS
+  const formatTime = (ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  };
+
+  if (!expiresAt) return null;
+
+  const isExpired = timeLeft === 0;
+
+  return (
+    <div className="mb-6 rounded-xl border bg-muted/30 p-4 text-muted-foreground flex items-center gap-1 justify-center">
+      {isExpired ? (
+        <span className="">
+          Il codice OTP è scaduto.
+        </span>
+      ) : (
+        <>
+          Il codice OTP scadrà tra:{' '}
+          <strong>{formatTime(timeLeft)}</strong>
+        </>
+      )}
+    </div>
+  );
 }

@@ -35,7 +35,7 @@ class CitizenAuthController extends Controller
             ->where('email', $validated['email'])
             ->first();
 
-        $status = 'Se l\'indirizzo email e registrato, ti abbiamo inviato un link di accesso.';
+        $status = 'Ti abbiamo inviato un link di accesso via email. Controlla la tua casella di posta.';
 
         if (! $citizen) {
             return back()->with('status', $status);
@@ -63,13 +63,13 @@ class CitizenAuthController extends Controller
         if ($challenge->completed_at !== null || $challenge->isExpired()) {
             return redirect()
                 ->route('citizen.login')
-                ->withErrors(['email' => 'Il link di accesso non e piu valido.']);
+                ->withErrors(['email' => 'Il link di accesso non è piu valido.']);
         }
 
         if (! $challenge->citizen || blank($challenge->citizen->phone_number)) {
             return redirect()
                 ->route('citizen.login')
-                ->withErrors(['email' => 'Per questo profilo non e disponibile un numero di cellulare.']);
+                ->withErrors(['email' => 'Per questo profilo non è disponibile un numero di cellulare.']);
         }
 
         if ($this->shouldIssueOtp($challenge)) {
@@ -95,7 +95,7 @@ class CitizenAuthController extends Controller
                 return redirect()
                     ->route('citizen.login')
                     ->withErrors([
-                        'email' => 'Non e stato possibile inviare il codice OTP. Riprova tra qualche minuto.',
+                        'email' => 'Non è stato possibile inviare il codice OTP. Riprova tra qualche minuto.',
                     ]);
             }
         }
@@ -136,7 +136,7 @@ class CitizenAuthController extends Controller
 
         if ($challenge->otp_expires_at === null || $challenge->otp_expires_at->isPast()) {
             throw ValidationException::withMessages([
-                'otp' => 'Il codice OTP e scaduto. Apri di nuovo il link ricevuto via email.',
+                'otp' => 'Il codice OTP è scaduto. Apri di nuovo il link ricevuto via email.',
             ]);
         }
 
