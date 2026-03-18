@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\CitizenFactory;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -66,5 +67,25 @@ class Citizen extends Authenticatable
     public function getNormalizedFiscalCodeAttribute(): string
     {
         return strtoupper((string) $this->fiscal_code);
+    }
+
+    public function createdChats(): MorphMany
+    {
+        return $this->morphMany(ChatThread::class, 'creator');
+    }
+
+    public function chatParticipations(): MorphMany
+    {
+        return $this->morphMany(ChatParticipant::class, 'participant');
+    }
+
+    public function chatMessages(): MorphMany
+    {
+        return $this->morphMany(ChatMessage::class, 'author');
+    }
+
+    public function messageAttachments(): MorphMany
+    {
+        return $this->morphMany(MessageAttachment::class, 'author');
     }
 }

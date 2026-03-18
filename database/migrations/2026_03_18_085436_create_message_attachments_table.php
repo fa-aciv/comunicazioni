@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('message_id')->constrained('chat_messages')->cascadeOnDelete();
-            $table->foreignId('chat_id')->constrained('message_attachments')->cascadeOnDelete();
+            $table->foreignId('chat_id')->constrained('chat_threads')->cascadeOnDelete();
 
             // Polymorphic author (User or Citizen) who uploaded/attached the file
             $table->morphs('author');

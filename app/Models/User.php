@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -59,5 +60,25 @@ class User extends Authenticatable  implements LdapAuthenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function createdChats(): MorphMany
+    {
+        return $this->morphMany(ChatThread::class, 'creator');
+    }
+
+    public function chatParticipations(): MorphMany
+    {
+        return $this->morphMany(ChatParticipant::class, 'participant');
+    }
+
+    public function chatMessages(): MorphMany
+    {
+        return $this->morphMany(ChatMessage::class, 'author');
+    }
+
+    public function messageAttachments(): MorphMany
+    {
+        return $this->morphMany(MessageAttachment::class, 'author');
     }
 }

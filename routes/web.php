@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\CitizenAuthController;
 use App\Http\Controllers\Auth\EmployeeSessionController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\EmployeeCitizenController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -55,6 +56,7 @@ Route::prefix('citizen')->name('citizen.')->group(function () {
                 ],
             ]);
         })->name('dashboard');
+        Route::post('chats/{chat}/messages', [ChatController::class, 'storeMessage'])->name('chats.messages.store');
 
         Route::post('logout', [CitizenAuthController::class, 'destroy'])->name('logout');
     });
@@ -74,6 +76,8 @@ Route::prefix('employee')->name('employee.')->group(function () {
                 'status' => session('status'),
             ]);
         })->name('dashboard');
+        Route::post('chats', [ChatController::class, 'storeThread'])->name('chats.store');
+        Route::post('chats/{chat}/messages', [ChatController::class, 'storeMessage'])->name('chats.messages.store');
         Route::post('citizens', [EmployeeCitizenController::class, 'store'])->name('citizens.store');
 
         Route::post('logout', [EmployeeSessionController::class, 'destroy'])->name('logout');
