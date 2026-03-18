@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Chat\AddEmployeeParticipant;
 use App\Actions\Chat\CreateChatThread;
 use App\Actions\Chat\StoreChatMessage;
 use App\Models\Citizen;
@@ -44,7 +45,9 @@ class ChatController extends Controller
             ], 201);
         }
 
-        return back()->with('status', 'Chat creata correttamente.');
+        return redirect()
+            ->route('employee.dashboard', ['chat' => $thread->id])
+            ->with('status', 'Chat creata correttamente.');
     }
 
     public function storeMessage(
@@ -91,7 +94,41 @@ class ChatController extends Controller
             ], 201);
         }
 
+        if ($actor instanceof User) {
+            return redirect()
+                ->route('employee.dashboard', ['chat' => $chat])
+                ->with('status', 'Messaggio inviato correttamente.');
+        }
+
         return back()->with('status', 'Messaggio inviato correttamente.');
+    }
+
+    public function storeParticipant(
+        Request $request,
+        int|string $chat,
+        AddEmployeeParticipant $action
+    ): JsonResponse|RedirectResponse {
+        /** @var User|null $employee */
+        $employee = Auth::guard('employee')->user();
+
+        abort_unless($employee instanceof User, 403);
+
+        $validated = $request->validate([
+            'employee_id' => ['required', 'integer'],
+        ]);
+
+        $thread = $action->handle($chat, $employee, (int) $validated['employee_id']);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'thread' => $thread,
+                'status' => 'Partecipante aggiunto correttamente.',
+            ], 201);
+        }
+
+        return redirect()
+            ->route('employee.dashboard', ['chat' => $thread->id])
+            ->with('status', 'Partecipante aggiunto correttamente.');
     }
 
     /**

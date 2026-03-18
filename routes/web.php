@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\Auth\CitizenAuthController;
 use App\Http\Controllers\Auth\EmployeeSessionController;
+use App\Http\Controllers\ChatAttachmentController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\EmployeeCitizenController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -56,6 +58,7 @@ Route::prefix('citizen')->name('citizen.')->group(function () {
                 ],
             ]);
         })->name('dashboard');
+        Route::get('attachments/{attachment}', [ChatAttachmentController::class, 'show'])->name('attachments.show');
         Route::post('chats/{chat}/messages', [ChatController::class, 'storeMessage'])->name('chats.messages.store');
 
         Route::post('logout', [CitizenAuthController::class, 'destroy'])->name('logout');
@@ -71,13 +74,11 @@ Route::prefix('employee')->name('employee.')->group(function () {
     });
 
     Route::middleware(['auth.guard:employee', 'auth:employee'])->group(function () {
-        Route::get('dashboard', function () {
-            return Inertia::render('employee/dashboard', [
-                'status' => session('status'),
-            ]);
-        })->name('dashboard');
+        Route::get('dashboard', EmployeeDashboardController::class)->name('dashboard');
+        Route::get('attachments/{attachment}', [ChatAttachmentController::class, 'show'])->name('attachments.show');
         Route::post('chats', [ChatController::class, 'storeThread'])->name('chats.store');
         Route::post('chats/{chat}/messages', [ChatController::class, 'storeMessage'])->name('chats.messages.store');
+        Route::post('chats/{chat}/participants', [ChatController::class, 'storeParticipant'])->name('chats.participants.store');
         Route::post('citizens', [EmployeeCitizenController::class, 'store'])->name('citizens.store');
 
         Route::post('logout', [EmployeeSessionController::class, 'destroy'])->name('logout');
