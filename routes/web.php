@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\CitizenAuthController;
 use App\Http\Controllers\Auth\EmployeeSessionController;
+use App\Http\Controllers\EmployeeCitizenController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -69,8 +70,11 @@ Route::prefix('employee')->name('employee.')->group(function () {
 
     Route::middleware(['auth.guard:employee', 'auth:employee'])->group(function () {
         Route::get('dashboard', function () {
-            return Inertia::render('employee/dashboard', []);
+            return Inertia::render('employee/dashboard', [
+                'status' => session('status'),
+            ]);
         })->name('dashboard');
+        Route::post('citizens', [EmployeeCitizenController::class, 'store'])->name('citizens.store');
 
         Route::post('logout', [EmployeeSessionController::class, 'destroy'])->name('logout');
     });
