@@ -1,34 +1,18 @@
-import InputError from '@/components/input-error';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ButtonGroup } from '@/components/ui/button-group';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { Sidebar, SidebarProvider } from '@/components/ui/sidebar';
-import { Spinner } from '@/components/ui/spinner';
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupText, InputGroupTextarea } from '@/components/ui/input-group';
+import { Item, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from '@/components/ui/item';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import employee from '@/routes/employee';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router, useForm } from '@inertiajs/react';
-import {
-    FileDown,
-    FileImage,
-    FileText,
-    MessageSquareDot,
-    Paperclip,
-    Users,
-} from 'lucide-react';
-import { type Dispatch, type RefObject, type SetStateAction, useEffect, useState } from 'react';
+import { Head } from '@inertiajs/react';
+import { ArrowUp, Search, Send, SendHorizonal, SendHorizontal, Sidebar, SidebarClose, UserRound } from 'lucide-react';
+
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -126,78 +110,119 @@ export default function EmployeeChatsPage({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Chat dipendenti" />
 
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+            <div className="flex min-h-0 flex-1 flex-col gap-4 rounded-xl p-4">
                     {status && (
                         <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
                             {status}
                         </div>
                     )}
-                    <div className="flex w-full h-full">
-                        <aside className="flex-[1]">
-                            <CardDemo />
+                    <div className="flex gap-2 min-h-0 flex-1 w-full flex-row">
+                        <aside className="min-h-0 flex-1">
+                            <Card className="rounded-sm h-full">
+                                <CardHeader>
+                                    <CardTitle className="flex flex-row justify-between items-center">
+                                        Conversazioni 
+                                        <div className="rounded-full p-1 hover:bg-black/10">
+                                            <Sidebar size="20"/>
+                                        </div>
+                                    </CardTitle>
+                                    <CardContent className="flex flex-col px-0 h-full gap-2 mt-2">
+                                        <ButtonGroup>
+                                            <Input id="input-button-group" placeholder="Cerca..." />
+                                            <Button variant="outline"><Search /></Button>
+                                        </ButtonGroup>
+                                        <ItemGroup>
+                                            <Item 
+                                                size="xs"
+                                                variant="outline"
+                                            >
+                                                <ItemMedia>
+                                                    <Avatar className="size-9">
+                                                        <AvatarFallback>NC</AvatarFallback>
+                                                    </Avatar>
+                                                </ItemMedia>
+                                                <ItemContent>
+                                                    <ItemTitle>
+                                                        Titolo della chat
+                                                    </ItemTitle>
+                                                    <ItemDescription className="flex flex-row items-center gap-1">
+                                                        <UserRound size="12" />Nome Cognome
+                                                    </ItemDescription>
+                                                </ItemContent>
+                                            </Item>
+                                        </ItemGroup>
+                                    </CardContent>
+                                </CardHeader>
+                            </Card>
                         </aside>
 
-                        <main className="flex-[3]">
-                            Right
+                        <main className="flex-3">
+                            <Card 
+                                className="rounded-sm"
+                            >
+                                <CardHeader>
+                                    <CardTitle>
+                                        Chat
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="flex flex-col gap-2">
+                                    <ScrollArea className="border flex-3 bg-gray-100/50 rounded-sm">
+                                        <div className="flex flex-col gap-2 p-2 justify-end">
+                                            <Item className="bg-white border border-gray-200 shadow-xs w-2/3 self-start rounded-be-none">
+                                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam optio corrupti ad illo maiores atque, rem error omnis quibusdam, animi doloribus facere. Voluptas magnam ipsum consequuntur, non amet nulla sint?</p>
+                                            </Item>
+                                            <Item className="bg-white border border-gray-200 shadow-xs w-2/3 self-end rounded-br-none">
+                                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam optio corrupti ad illo maiores atque, rem error omnis quibusdam, animi doloribus facere. Voluptas magnam ipsum consequuntur, non amet nulla sint?</p>
+                                            </Item>
+                                            <Item className="bg-white border border-gray-200 shadow-xs w-2/3 self-start rounded-be-none">
+                                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam optio corrupti ad illo maiores atque, rem error omnis quibusdam, animi doloribus facere. Voluptas magnam ipsum consequuntur, non amet nulla sint?</p>
+                                            </Item>
+                                            <Item className="bg-white border border-gray-200 shadow-xs w-2/3 self-start rounded-be-none">
+                                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam optio corrupti ad illo maiores atque, rem error omnis quibusdam, animi doloribus facere. Voluptas magnam ipsum consequuntur, non amet nulla sint?</p>
+                                            </Item>
+                                            <Item className="bg-white border border-gray-200 shadow-xs w-2/3 self-start rounded-be-none">
+                                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam optio corrupti ad illo maiores atque, rem error omnis quibusdam, animi doloribus facere. Voluptas magnam ipsum consequuntur, non amet nulla sint?</p>
+                                            </Item>
+                                            <Item className="bg-white border border-gray-200 shadow-xs w-2/3 self-start rounded-be-none">
+                                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam optio corrupti ad illo maiores atque, rem error omnis quibusdam, animi doloribus facere. Voluptas magnam ipsum consequuntur, non amet nulla sint?</p>
+                                            </Item>
+                                            <Item className="bg-white border border-gray-200 shadow-xs w-2/3 self-start rounded-be-none">
+                                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam optio corrupti ad illo maiores atque, rem error omnis quibusdam, animi doloribus facere. Voluptas magnam ipsum consequuntur, non amet nulla sint?</p>
+                                            </Item>
+                                            <Item className="bg-white border border-gray-200 shadow-xs w-2/3 self-start rounded-be-none">
+                                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam optio corrupti ad illo maiores atque, rem error omnis quibusdam, animi doloribus facere. Voluptas magnam ipsum consequuntur, non amet nulla sint?</p>
+                                            </Item>
+                                            <Item className="bg-white border border-gray-200 shadow-xs w-2/3 self-start rounded-be-none">
+                                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam optio corrupti ad illo maiores atque, rem error omnis quibusdam, animi doloribus facere. Voluptas magnam ipsum consequuntur, non amet nulla sint?</p>
+                                            </Item>
+                                            <Item className="bg-white border border-gray-200 shadow-xs w-2/3 self-start rounded-be-none">
+                                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam optio corrupti ad illo maiores atque, rem error omnis quibusdam, animi doloribus facere. Voluptas magnam ipsum consequuntur, non amet nulla sint?</p>
+                                            </Item>
+                                            <Item className="bg-white border border-gray-200 shadow-xs w-2/3 self-start rounded-be-none">
+                                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam optio corrupti ad illo maiores atque, rem error omnis quibusdam, animi doloribus facere. Voluptas magnam ipsum consequuntur, non amet nulla sint?</p>
+                                            </Item>
+                                        </div>
+                                    </ScrollArea>
+                                    <div className="flex-1">
+                                        <InputGroup>
+                                            <InputGroupTextarea
+                                                id="block-end-textarea"
+                                                placeholder="Scrivi un messaggio..."
+                                            />
+                                            <InputGroupAddon align="block-end">
+                                                <InputGroupText>0/280</InputGroupText>
+                                                <InputGroupButton variant="default" size="sm" className="ml-auto">
+                                                    Invia
+                                                    <ArrowUp />
+                                                </InputGroupButton>
+                                            </InputGroupAddon>
+                                        </InputGroup>
+                                    </div>
+                                </CardContent>
+                            </Card>
                         </main>
                     </div>
             </div>
         </AppLayout>
     );
-}
-
-import {
-  CardAction,
-  CardFooter,
-} from "@/components/ui/card"
-
-export function CardDemo() {
-  return (
-    <Card className="w-full max-w-sm">
-      <CardHeader>
-        <CardTitle>Login to your account</CardTitle>
-        <CardDescription>
-          Enter your email below to login to your account
-        </CardDescription>
-        <CardAction>
-          <Button variant="link">Sign Up</Button>
-        </CardAction>
-      </CardHeader>
-      <CardContent>
-        <form>
-          <div className="flex flex-col gap-6">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
-                <a
-                  href="#"
-                  className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                >
-                  Forgot your password?
-                </a>
-              </div>
-              <Input id="password" type="password" required />
-            </div>
-          </div>
-        </form>
-      </CardContent>
-      <CardFooter className="flex-col gap-2">
-        <Button type="submit" className="w-full">
-          Login
-        </Button>
-        <Button variant="outline" className="w-full">
-          Login with Google
-        </Button>
-      </CardFooter>
-    </Card>
-  )
 }
