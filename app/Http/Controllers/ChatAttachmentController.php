@@ -6,13 +6,32 @@ use App\Models\Citizen;
 use App\Models\MessageAttachment;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ChatAttachmentController extends Controller
 {
-    public function show(MessageAttachment $attachment): StreamedResponse
+    public function show(Request $request, MessageAttachment $attachment): StreamedResponse
+    {
+        $this->authorizeAttachment($attachment);
+
+        $disk = $this->resolveDisk($attachment);
+
+        return Storage::disk($disk)->response($attachment->file_path, $attachment->file_name);
+    }
+
+    public function download(Request $request, MessageAttachment $attachment): StreamedResponse
+    {
+        $this->authorizeAttachment($attachment);
+
+        $disk = $this->resolveDisk($attachment);
+
+        return Storage::disk($disk)->download($attachment->file_path, $attachment->file_name);
+    }
+
+    private function authorizeAttachment(MessageAttachment $attachment): void
     {
         $actor = $this->resolveActor();
 
@@ -25,12 +44,15 @@ class ChatAttachmentController extends Controller
             ->exists();
 
         abort_unless($isParticipant, 403);
+    }
 
+    private function resolveDisk(MessageAttachment $attachment): string
+    {
         $disk = config('filesystems.default', 'local');
 
         abort_unless(Storage::disk($disk)->exists($attachment->file_path), 404);
 
-        return Storage::disk($disk)->download($attachment->file_path, $attachment->file_name);
+        return $disk;
     }
 
     private function resolveActor(): Model

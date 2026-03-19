@@ -46,7 +46,7 @@ class ChatController extends Controller
         }
 
         return redirect()
-            ->route('employee.dashboard', ['chat' => $thread->id])
+            ->route('employee.chats.index', ['chat' => $thread->id])
             ->with('status', 'Chat creata correttamente.');
     }
 
@@ -96,7 +96,7 @@ class ChatController extends Controller
 
         if ($actor instanceof User) {
             return redirect()
-                ->route('employee.dashboard', ['chat' => $chat])
+                ->route('employee.chats.index', ['chat' => $chat])
                 ->with('status', 'Messaggio inviato correttamente.');
         }
 
@@ -127,7 +127,7 @@ class ChatController extends Controller
         }
 
         return redirect()
-            ->route('employee.dashboard', ['chat' => $thread->id])
+            ->route('employee.chats.index', ['chat' => $thread->id])
             ->with('status', 'Partecipante aggiunto correttamente.');
     }
 

@@ -3,8 +3,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class ChatThread extends Model
 {
@@ -37,5 +38,10 @@ class ChatThread extends Model
     public function messages(): HasMany
     {
         return $this->hasMany(ChatMessage::class, 'chat_id');
+    }
+
+    public function latestMessage(): HasOne
+    {
+        return $this->hasOne(ChatMessage::class, 'chat_id')->latestOfMany('created_at');
     }
 }

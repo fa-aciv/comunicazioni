@@ -23,9 +23,10 @@ import {
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useInitials } from '@/hooks/use-initials';
 import { cn, isSameUrl } from '@/lib/utils';
+import employee from '@/routes/employee';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Menu } from 'lucide-react';
+import { LayoutGrid, Menu, MessageSquareDot } from 'lucide-react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 
@@ -41,15 +42,29 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const { auth } = page.props;
     const getInitials = useInitials();
 
-    const mainNavItems: NavItem[] = auth.homeUrl
-        ? [
-              {
-                  title: auth.portalLabel ?? 'Dashboard',
-                  href: auth.homeUrl,
-                  icon: LayoutGrid,
-              },
-          ]
-        : [];
+    const mainNavItems: NavItem[] =
+        auth.activeGuard === 'employee'
+            ? [
+                  {
+                      title: 'Dashboard',
+                      href: employee.dashboard().url,
+                      icon: LayoutGrid,
+                  },
+                  {
+                      title: 'Chat',
+                      href: employee.chats.index().url,
+                      icon: MessageSquareDot,
+                  },
+              ]
+            : auth.homeUrl
+              ? [
+                    {
+                        title: auth.portalLabel ?? 'Dashboard',
+                        href: auth.homeUrl,
+                        icon: LayoutGrid,
+                    },
+                ]
+              : [];
 
     if (!auth.user) {
         return null;

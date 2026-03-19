@@ -5,6 +5,7 @@ use App\Models\Citizen;
 use App\Models\MessageAttachment;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\TestResponse;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -47,7 +48,7 @@ test('employee chat participants can download attachments', function () {
     $response = $this->actingAs($employee, 'employee')
         ->app
         ->make(ChatAttachmentController::class)
-        ->show($attachment);
+        ->download(Request::create('/employee/attachments/1/download', 'GET'), $attachment);
 
     TestResponse::fromBaseResponse($response)
         ->assertOk()
@@ -71,7 +72,7 @@ test('citizen chat participants can download attachments', function () {
     $response = $this->actingAs($citizen, 'citizen')
         ->app
         ->make(ChatAttachmentController::class)
-        ->show($attachment);
+        ->download(Request::create('/citizen/attachments/1/download', 'GET'), $attachment);
 
     TestResponse::fromBaseResponse($response)
         ->assertOk()
@@ -93,7 +94,7 @@ test('non participants cannot download chat attachments', function () {
         $this->actingAs($employee, 'employee')
             ->app
             ->make(ChatAttachmentController::class)
-            ->show($attachment);
+            ->download(Request::create('/employee/attachments/1/download', 'GET'), $attachment);
 
         $this->fail('Expected a 403 response for non participants.');
     } catch (HttpException $exception) {
