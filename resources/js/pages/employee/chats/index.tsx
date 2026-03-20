@@ -1,17 +1,19 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupText, InputGroupTextarea } from '@/components/ui/input-group';
 import { Item, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from '@/components/ui/item';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
+import { cn } from '@/lib/utils';
 import employee from '@/routes/employee';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import { ArrowUp, Search, Send, SendHorizonal, SendHorizontal, Sidebar, SidebarClose, UserRound } from 'lucide-react';
+import { ArrowUp, Cross, File, Hospital, HospitalIcon, IdCard, Scroll, Search, Sidebar, SquareUserRound, UserRound } from 'lucide-react';
+import { ReactNode } from "react";
 
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -110,119 +112,170 @@ export default function EmployeeChatsPage({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Chat dipendenti" />
 
-            <div className="flex min-h-0 flex-1 flex-col gap-4 rounded-xl p-4">
+            <div className="flex h-[calc(100dvh-8rem)] min-h-0 flex-col gap-4 overflow-hidden rounded-xl p-4">
                     {status && (
                         <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
                             {status}
                         </div>
                     )}
-                    <div className="flex gap-2 min-h-0 flex-1 w-full flex-row">
-                        <aside className="min-h-0 flex-1">
-                            <Card className="rounded-sm h-full">
-                                <CardHeader>
-                                    <CardTitle className="flex flex-row justify-between items-center">
-                                        Conversazioni 
-                                        <div className="rounded-full p-1 hover:bg-black/10">
-                                            <Sidebar size="20"/>
-                                        </div>
-                                    </CardTitle>
-                                    <CardContent className="flex flex-col px-0 h-full gap-2 mt-2">
-                                        <ButtonGroup>
-                                            <Input id="input-button-group" placeholder="Cerca..." />
-                                            <Button variant="outline"><Search /></Button>
-                                        </ButtonGroup>
-                                        <ItemGroup>
-                                            <Item 
-                                                size="xs"
-                                                variant="outline"
-                                            >
-                                                <ItemMedia>
-                                                    <Avatar className="size-9">
-                                                        <AvatarFallback>NC</AvatarFallback>
-                                                    </Avatar>
-                                                </ItemMedia>
-                                                <ItemContent>
-                                                    <ItemTitle>
-                                                        Titolo della chat
-                                                    </ItemTitle>
-                                                    <ItemDescription className="flex flex-row items-center gap-1">
-                                                        <UserRound size="12" />Nome Cognome
-                                                    </ItemDescription>
-                                                </ItemContent>
-                                            </Item>
-                                        </ItemGroup>
-                                    </CardContent>
-                                </CardHeader>
-                            </Card>
-                        </aside>
+                    <ScrollArea>
+                        <div className="flex min-h-0 flex-1 w-full flex-row flex-wrap-reverse gap-2 overflow-hidden p-1">
+                            <aside className="min-h-0 min-w-xs flex-1">
+                                <Card className="rounded-sm h-full">
+                                    <CardHeader>
+                                        <CardTitle className="flex flex-row justify-between items-center">
+                                            Conversazioni 
+                                            <div className="rounded-full p-1 hover:bg-black/10">
+                                                <Sidebar size="20"/>
+                                            </div>
+                                        </CardTitle>
+                                        <CardContent className="flex flex-col px-0 h-full gap-2 mt-2">
+                                            <ButtonGroup>
+                                                <Input id="input-button-group" placeholder="Cerca..." />
+                                                <Button variant="outline"><Search /></Button>
+                                            </ButtonGroup>
+                                            <ItemGroup>
+                                                <Item 
+                                                    size="xs"
+                                                    variant="outline"
+                                                >
+                                                    <ItemMedia>
+                                                        <Avatar className="size-9">
+                                                            <AvatarFallback>NC</AvatarFallback>
+                                                        </Avatar>
+                                                    </ItemMedia>
+                                                    <ItemContent>
+                                                        <ItemTitle>
+                                                            Titolo della chat
+                                                        </ItemTitle>
+                                                        <ItemDescription className="flex flex-row items-center gap-1">
+                                                            <UserRound size="12" />Nome Cognome
+                                                        </ItemDescription>
+                                                    </ItemContent>
+                                                </Item>
+                                            </ItemGroup>
+                                        </CardContent>
+                                    </CardHeader>
+                                </Card>
+                            </aside>
 
-                        <main className="flex-3">
-                            <Card 
-                                className="rounded-sm"
-                            >
-                                <CardHeader>
-                                    <CardTitle>
-                                        Chat
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col gap-2">
-                                    <ScrollArea className="border flex-3 bg-gray-100/50 rounded-sm">
-                                        <div className="flex flex-col gap-2 p-2 justify-end">
-                                            <Item className="bg-white border border-gray-200 shadow-xs w-2/3 self-start rounded-be-none">
-                                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam optio corrupti ad illo maiores atque, rem error omnis quibusdam, animi doloribus facere. Voluptas magnam ipsum consequuntur, non amet nulla sint?</p>
-                                            </Item>
-                                            <Item className="bg-white border border-gray-200 shadow-xs w-2/3 self-end rounded-br-none">
-                                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam optio corrupti ad illo maiores atque, rem error omnis quibusdam, animi doloribus facere. Voluptas magnam ipsum consequuntur, non amet nulla sint?</p>
-                                            </Item>
-                                            <Item className="bg-white border border-gray-200 shadow-xs w-2/3 self-start rounded-be-none">
-                                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam optio corrupti ad illo maiores atque, rem error omnis quibusdam, animi doloribus facere. Voluptas magnam ipsum consequuntur, non amet nulla sint?</p>
-                                            </Item>
-                                            <Item className="bg-white border border-gray-200 shadow-xs w-2/3 self-start rounded-be-none">
-                                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam optio corrupti ad illo maiores atque, rem error omnis quibusdam, animi doloribus facere. Voluptas magnam ipsum consequuntur, non amet nulla sint?</p>
-                                            </Item>
-                                            <Item className="bg-white border border-gray-200 shadow-xs w-2/3 self-start rounded-be-none">
-                                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam optio corrupti ad illo maiores atque, rem error omnis quibusdam, animi doloribus facere. Voluptas magnam ipsum consequuntur, non amet nulla sint?</p>
-                                            </Item>
-                                            <Item className="bg-white border border-gray-200 shadow-xs w-2/3 self-start rounded-be-none">
-                                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam optio corrupti ad illo maiores atque, rem error omnis quibusdam, animi doloribus facere. Voluptas magnam ipsum consequuntur, non amet nulla sint?</p>
-                                            </Item>
-                                            <Item className="bg-white border border-gray-200 shadow-xs w-2/3 self-start rounded-be-none">
-                                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam optio corrupti ad illo maiores atque, rem error omnis quibusdam, animi doloribus facere. Voluptas magnam ipsum consequuntur, non amet nulla sint?</p>
-                                            </Item>
-                                            <Item className="bg-white border border-gray-200 shadow-xs w-2/3 self-start rounded-be-none">
-                                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam optio corrupti ad illo maiores atque, rem error omnis quibusdam, animi doloribus facere. Voluptas magnam ipsum consequuntur, non amet nulla sint?</p>
-                                            </Item>
-                                            <Item className="bg-white border border-gray-200 shadow-xs w-2/3 self-start rounded-be-none">
-                                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam optio corrupti ad illo maiores atque, rem error omnis quibusdam, animi doloribus facere. Voluptas magnam ipsum consequuntur, non amet nulla sint?</p>
-                                            </Item>
-                                            <Item className="bg-white border border-gray-200 shadow-xs w-2/3 self-start rounded-be-none">
-                                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam optio corrupti ad illo maiores atque, rem error omnis quibusdam, animi doloribus facere. Voluptas magnam ipsum consequuntur, non amet nulla sint?</p>
-                                            </Item>
-                                            <Item className="bg-white border border-gray-200 shadow-xs w-2/3 self-start rounded-be-none">
-                                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam optio corrupti ad illo maiores atque, rem error omnis quibusdam, animi doloribus facere. Voluptas magnam ipsum consequuntur, non amet nulla sint?</p>
-                                            </Item>
+                            <main className="flex min-h-0 min-w-sm flex-[3] flex-col">
+                                <Card 
+                                    className="flex h-full min-h-0 flex-col rounded-sm"
+                                >
+                                    <CardHeader className="flex flex-row flex-wrap items-center">
+                                        <CardTitle className="me-2">
+                                            Chat
+                                        </CardTitle>
+                                        <div className="flex gap-2">
+                                            <ParticipantBadge type="employee" name="Nome Cognome" />
+                                            <ParticipantBadge type="citizen" name="Nome Cognome" />
                                         </div>
-                                    </ScrollArea>
-                                    <div className="flex-1">
-                                        <InputGroup>
-                                            <InputGroupTextarea
-                                                id="block-end-textarea"
-                                                placeholder="Scrivi un messaggio..."
-                                            />
-                                            <InputGroupAddon align="block-end">
-                                                <InputGroupText>0/280</InputGroupText>
-                                                <InputGroupButton variant="default" size="sm" className="ml-auto">
-                                                    Invia
-                                                    <ArrowUp />
-                                                </InputGroupButton>
-                                            </InputGroupAddon>
-                                        </InputGroup>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </main>
-                    </div>
+                                    </CardHeader>
+                                    <CardContent className="flex min-h-0 flex-1 flex-col gap-2">
+                                        <ScrollArea className="min-h-0 flex-1 rounded-sm border bg-gray-100/50">
+                                            <div className="flex flex-col gap-2 p-2 justify-end">
+                                                <MessageBubble>
+                                                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur minima odit, harum aliquam quaerat non adipisci aliquid neque, minus quia ipsa sed, cum dignissimos. Modi veniam reprehenderit ipsum deleniti maxime.</p>
+                                                </MessageBubble>
+                                                <MessageBubble variant="author">
+                                                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur minima odit, harum aliquam quaerat non adipisci aliquid neque, minus quia ipsa sed, cum dignissimos. Modi veniam reprehenderit ipsum deleniti maxime.</p>
+                                                </MessageBubble>
+                                            </div>
+                                        </ScrollArea>
+                                        <div className="shrink-0">
+                                            <InputGroup>
+                                                <InputGroupTextarea
+                                                    id="block-end-textarea"
+                                                    placeholder="Scrivi un messaggio..."
+                                                />
+                                                <InputGroupAddon align="block-end">
+                                                    <InputGroupText>0/280</InputGroupText>
+                                                    <InputGroupButton variant="default" size="sm" className="ml-auto">
+                                                        Invia
+                                                        <ArrowUp />
+                                                    </InputGroupButton>
+                                                </InputGroupAddon>
+                                            </InputGroup>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </main>
+                        </div>
+                    </ScrollArea>
             </div>
         </AppLayout>
+    );
+}
+
+type MessageBubbleProps = {
+    children: ReactNode;
+    variant?: "author" | "other";
+};
+
+function MessageBubble({ children, variant = "other" }: MessageBubbleProps) {
+    const isAuthor = variant === "author";
+    return (
+        <Item
+            className={cn(
+                "bg-card border shadow-xs w-2/3",
+                isAuthor
+                    ? "self-end rounded-br-none bg-amber-50 border-amber-200"
+                    : "self-start rounded-bl-none border-gray-200"
+            )}
+        >
+            {children}
+            <div className="flex flex-row flex-wrap gap-2">
+                <MessageAttachment isAuthor={isAuthor} filename="Nome del file.pdf" />
+                <MessageAttachment isAuthor={isAuthor} filename="Nome del file.pdf" />
+                <MessageAttachment isAuthor={isAuthor} filename="Nome del file.pdf" />
+                <MessageAttachment isAuthor={isAuthor} filename="Nome del file.pdf" />
+            </div>
+        </Item>
+    );
+}
+
+type MessageAttachmentProps = {
+    filename: string;
+    isAuthor?: boolean;
+};
+
+function MessageAttachment({ filename, isAuthor = false }: MessageAttachmentProps) {
+    return (
+        <Item
+            variant="outline"
+            className={cn(
+                "w-auto bg-card gap-1.5 border shadow-xs border-border p-1 px-2",
+                isAuthor && "border-amber-700/20"
+            )}
+        >
+            <File size={14} />
+            <p>{filename}</p>
+        </Item>
+    );
+}
+
+type ParticipantType = "employee" | "citizen";
+
+type ParticipantBadgeProps = {
+    name: string;
+    type: ParticipantType;
+    className?: string;
+};
+
+function ParticipantBadge({ name, type, className }: ParticipantBadgeProps) {
+    const isEmployee = type === "employee";
+
+    return (
+        <Badge
+            variant="outline"
+            className={cn(
+                "flex items-center gap-1.5",
+                className
+            )}
+        >
+            {isEmployee ? <UserRound size={14} /> : <Cross size={14} />}
+            <span>{name}</span>
+        </Badge>
     );
 }
