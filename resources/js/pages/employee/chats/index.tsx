@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 import employee from '@/routes/employee';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import { ArrowUp, Cross, File, Hospital, HospitalIcon, IdCard, Scroll, Search, Sidebar, SquareUserRound, UserRound } from 'lucide-react';
+import { ArrowUp, Cross, File, Hospital, HospitalIcon, IdCard, MailOpen, Scroll, Search, Sidebar, SquareUserRound, UserRound } from 'lucide-react';
 import { ReactNode } from "react";
 
 
@@ -124,9 +124,7 @@ export default function EmployeeChatsPage({
                                     <CardHeader className="shrink-0">
                                         <CardTitle className="flex flex-row justify-between items-center">
                                             Conversazioni 
-                                            <div className="rounded-full p-1 hover:bg-black/10">
-                                                <Sidebar size="20"/>
-                                            </div>
+
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="flex flex-col gap-2 pt-0">
@@ -134,27 +132,18 @@ export default function EmployeeChatsPage({
                                             <Input id="input-button-group" placeholder="Cerca..." />
                                             <Button variant="outline"><Search /></Button>
                                         </ButtonGroup>
-                                        <div>
-                                            <ItemGroup>
-                                                <Item 
-                                                    size="xs"
-                                                    variant="outline"
-                                                >
-                                                    <ItemMedia>
-                                                        <Avatar className="size-9">
-                                                            <AvatarFallback>NC</AvatarFallback>
-                                                        </Avatar>
-                                                    </ItemMedia>
-                                                    <ItemContent>
-                                                        <ItemTitle>
-                                                            Titolo della chat
-                                                        </ItemTitle>
-                                                        <ItemDescription className="flex flex-row items-center gap-1">
-                                                            <UserRound size="12" />Nome Cognome
-                                                        </ItemDescription>
-                                                    </ItemContent>
-                                                </Item>
-                                            </ItemGroup>
+                                        <div className="flex flex-col gap-2">
+                                            <ChatThreadItem 
+                                                title="Titolo della chat"
+                                                fullName="Nome Cognome"
+                                                unreadMessagesAmount={0}
+                                                active
+                                            />
+                                            <ChatThreadItem 
+                                                title="Titolo della chat"
+                                                fullName="Nome Cognome"
+                                                unreadMessagesAmount={10} 
+                                            />     
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -164,7 +153,7 @@ export default function EmployeeChatsPage({
                                 <Card 
                                     className="flex flex-col rounded-sm"
                                 >
-                                    <CardHeader className="flex flex-row flex-wrap items-center">
+                                    <CardHeader className="flex flex-row flex-wrap justify-between items-center">
                                         <CardTitle className="me-2">
                                             Chat
                                         </CardTitle>
@@ -174,7 +163,7 @@ export default function EmployeeChatsPage({
                                         </div>
                                     </CardHeader>
                                     <CardContent className="flex flex-1 flex-col gap-2 overflow-hidden">
-                                        <div className="flex-1 overflow-auto rounded-sm border bg-gray-100/50">
+                                        <div className="flex-1 overflow-auto rounded-sm border bg-gray-100/50 dark:bg-card">
                                             <div className="flex flex-col gap-2 p-2 justify-end">
                                                 <MessageBubble>
                                                     <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur minima odit, harum aliquam quaerat non adipisci aliquid neque, minus quia ipsa sed, cum dignissimos. Modi veniam reprehenderit ipsum deleniti maxime.</p>
@@ -240,8 +229,8 @@ function MessageBubble({ children, variant = "other" }: MessageBubbleProps) {
             className={cn(
                 "bg-card border shadow-xs w-2/3",
                 isAuthor
-                    ? "self-end rounded-br-none bg-amber-50 border-amber-200"
-                    : "self-start rounded-bl-none border-gray-200"
+                    ? "self-end rounded-br-none bg-amber-50 dark:bg-amber-950/80 border-amber-200 dark:border-amber-950/50"
+                    : "self-start rounded-bl-none border-gray-200 dark:border-card dark:bg-gray-700/50"
             )}
         >
             {children}
@@ -297,5 +286,50 @@ function ParticipantBadge({ name, type, className }: ParticipantBadgeProps) {
             {isEmployee ? <UserRound size={14} /> : <Cross size={14} />}
             <span>{name}</span>
         </Badge>
+    );
+}
+
+type ChatThreadItemProps = {
+    fullName: string;
+    title: string;
+    unreadMessagesAmount: number;
+    active?: boolean;
+};
+
+function ChatThreadItem({ fullName, title, unreadMessagesAmount, active = false }: ChatThreadItemProps) {
+    function getInitials(name: string) {
+        return name
+            .split(" ")
+            .filter(Boolean)
+            .map(n => n[0].toUpperCase())
+            .slice(0, 2) // max 2 letters
+            .join("");
+    }
+
+    const initials = getInitials(fullName);
+
+    return (
+        <ItemGroup >
+            <Item className={cn(active && "ms-2 bg-gray-50 border-gray-300 shadow-xs")} size="xs" variant="outline">
+                <ItemMedia>
+                    <Avatar className="size-9">
+                        <AvatarFallback>{initials || "N/A"}</AvatarFallback>
+                    </Avatar>
+                </ItemMedia>
+                <ItemContent>
+                    <ItemTitle>{title}</ItemTitle>
+                    <ItemDescription className="flex flex-row items-center gap-1">
+                        <UserRound size={12} />
+                        {fullName}
+                    </ItemDescription>
+                </ItemContent>
+                
+                { unreadMessagesAmount > 0 && 
+                    <ItemContent>
+                        <Badge className="bg-green-800 dark:bg-green-500">{unreadMessagesAmount}</Badge>
+                    </ItemContent>
+                }
+            </Item>
+        </ItemGroup>
     );
 }

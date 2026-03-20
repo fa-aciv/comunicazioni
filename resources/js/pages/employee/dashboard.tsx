@@ -45,7 +45,7 @@ export default function Dashboard({ status, activeChatsCount }: DashboardProps) 
                             <div className="space-y-1">
                                 <CardTitle>Conversazioni</CardTitle>
                                 <CardDescription>
-                                    Le conversazioni ora vivono in una pagina dedicata, con polling, allegati e gestione partecipanti.
+                                    Le tue conversazioni con cittadini.
                                 </CardDescription>
                             </div>
                         </CardHeader>
