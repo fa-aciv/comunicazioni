@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupText, InputGroupTextarea } from '@/components/ui/input-group';
 import { Item, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from '@/components/ui/item';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import employee from '@/routes/employee';
@@ -112,28 +111,30 @@ export default function EmployeeChatsPage({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Chat dipendenti" />
 
-            <div className="flex h-[calc(100dvh-8rem)] min-h-0 flex-col gap-4 overflow-hidden rounded-xl p-4">
+            <div className="flex flex-col gap-4 overflow-hidden rounded-xl p-4">
                     {status && (
                         <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
                             {status}
                         </div>
                     )}
-                    <ScrollArea>
-                        <div className="flex min-h-0 flex-1 w-full flex-row flex-wrap-reverse gap-2 overflow-hidden p-1">
-                            <aside className="min-h-0 min-w-xs flex-1">
-                                <Card className="rounded-sm h-full">
-                                    <CardHeader>
+                    <div className="min-h-0 flex-1">
+                        <div className="flex h-full w-full flex-col-reverse sm:flex-row items-stretch gap-2 p-1">
+                            <aside className="flex min-h-0 flex-1 flex-col self-stretch">
+                                <Card className="flex h-full flex-col rounded-sm">
+                                    <CardHeader className="shrink-0">
                                         <CardTitle className="flex flex-row justify-between items-center">
                                             Conversazioni 
                                             <div className="rounded-full p-1 hover:bg-black/10">
                                                 <Sidebar size="20"/>
                                             </div>
                                         </CardTitle>
-                                        <CardContent className="flex flex-col px-0 h-full gap-2 mt-2">
-                                            <ButtonGroup>
-                                                <Input id="input-button-group" placeholder="Cerca..." />
-                                                <Button variant="outline"><Search /></Button>
-                                            </ButtonGroup>
+                                    </CardHeader>
+                                    <CardContent className="flex flex-col gap-2 pt-0">
+                                        <ButtonGroup>
+                                            <Input id="input-button-group" placeholder="Cerca..." />
+                                            <Button variant="outline"><Search /></Button>
+                                        </ButtonGroup>
+                                        <div>
                                             <ItemGroup>
                                                 <Item 
                                                     size="xs"
@@ -154,26 +155,26 @@ export default function EmployeeChatsPage({
                                                     </ItemContent>
                                                 </Item>
                                             </ItemGroup>
-                                        </CardContent>
-                                    </CardHeader>
+                                        </div>
+                                    </CardContent>
                                 </Card>
                             </aside>
 
-                            <main className="flex min-h-0 min-w-sm flex-[3] flex-col">
+                            <main className="flex h-[calc(100dvh-10rem)] sm:min-w-sm sm:flex-2 flex-col self-stretch">
                                 <Card 
-                                    className="flex h-full min-h-0 flex-col rounded-sm"
+                                    className="flex flex-col rounded-sm"
                                 >
                                     <CardHeader className="flex flex-row flex-wrap items-center">
                                         <CardTitle className="me-2">
                                             Chat
                                         </CardTitle>
-                                        <div className="flex gap-2">
+                                        <div className="flex flex-wrap gap-2">
                                             <ParticipantBadge type="employee" name="Nome Cognome" />
                                             <ParticipantBadge type="citizen" name="Nome Cognome" />
                                         </div>
                                     </CardHeader>
-                                    <CardContent className="flex min-h-0 flex-1 flex-col gap-2">
-                                        <ScrollArea className="min-h-0 flex-1 rounded-sm border bg-gray-100/50">
+                                    <CardContent className="flex flex-1 flex-col gap-2 overflow-hidden">
+                                        <div className="flex-1 overflow-auto rounded-sm border bg-gray-100/50">
                                             <div className="flex flex-col gap-2 p-2 justify-end">
                                                 <MessageBubble>
                                                     <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur minima odit, harum aliquam quaerat non adipisci aliquid neque, minus quia ipsa sed, cum dignissimos. Modi veniam reprehenderit ipsum deleniti maxime.</p>
@@ -181,11 +182,30 @@ export default function EmployeeChatsPage({
                                                 <MessageBubble variant="author">
                                                     <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur minima odit, harum aliquam quaerat non adipisci aliquid neque, minus quia ipsa sed, cum dignissimos. Modi veniam reprehenderit ipsum deleniti maxime.</p>
                                                 </MessageBubble>
+                                                <MessageBubble variant="author">
+                                                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur minima odit, harum aliquam quaerat non adipisci aliquid neque, minus quia ipsa sed, cum dignissimos. Modi veniam reprehenderit ipsum deleniti maxime.</p>
+                                                </MessageBubble>
+                                                <MessageBubble variant="author">
+                                                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur minima odit, harum aliquam quaerat non adipisci aliquid neque, minus quia ipsa sed, cum dignissimos. Modi veniam reprehenderit ipsum deleniti maxime.</p>
+                                                </MessageBubble>
+                                                <MessageBubble variant="author">
+                                                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur minima odit, harum aliquam quaerat non adipisci aliquid neque, minus quia ipsa sed, cum dignissimos. Modi veniam reprehenderit ipsum deleniti maxime.</p>
+                                                </MessageBubble>
+                                                <MessageBubble variant="author">
+                                                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur minima odit, harum aliquam quaerat non adipisci aliquid neque, minus quia ipsa sed, cum dignissimos. Modi veniam reprehenderit ipsum deleniti maxime.</p>
+                                                </MessageBubble>
+                                                <MessageBubble variant="author">
+                                                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur minima odit, harum aliquam quaerat non adipisci aliquid neque, minus quia ipsa sed, cum dignissimos. Modi veniam reprehenderit ipsum deleniti maxime.</p>
+                                                </MessageBubble>
+                                                <MessageBubble variant="author">
+                                                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur minima odit, harum aliquam quaerat non adipisci aliquid neque, minus quia ipsa sed, cum dignissimos. Modi veniam reprehenderit ipsum deleniti maxime.</p>
+                                                </MessageBubble>
                                             </div>
-                                        </ScrollArea>
-                                        <div className="shrink-0">
+                                        </div>
+                                        <div>
                                             <InputGroup>
                                                 <InputGroupTextarea
+                                                    className=""
                                                     id="block-end-textarea"
                                                     placeholder="Scrivi un messaggio..."
                                                 />
@@ -202,7 +222,7 @@ export default function EmployeeChatsPage({
                                 </Card>
                             </main>
                         </div>
-                    </ScrollArea>
+                    </div>
             </div>
         </AppLayout>
     );
