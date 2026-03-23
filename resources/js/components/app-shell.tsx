@@ -1,6 +1,7 @@
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
+import { TooltipProvider } from './ui/tooltip';
 
 interface AppShellProps {
     children: React.ReactNode;
@@ -12,9 +13,9 @@ export function AppShell({ children, variant = 'header' }: AppShellProps) {
 
     if (variant === 'header') {
         return (
-            <div className="flex min-h-screen w-full flex-col">{children}</div>
+            <TooltipProvider><div className="flex min-h-screen w-full flex-col">{children}</div></TooltipProvider>
         );
     }
 
-    return <SidebarProvider defaultOpen={isOpen}>{children}</SidebarProvider>;
+    return <TooltipProvider><SidebarProvider defaultOpen={isOpen}>{children}</SidebarProvider></TooltipProvider>;
 }

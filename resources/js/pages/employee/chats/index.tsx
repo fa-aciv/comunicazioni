@@ -3,15 +3,17 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChatMessageTextarea } from '@/components/ui/chat/ChatMessageTextarea';
 import { Input } from '@/components/ui/input';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupText, InputGroupTextarea } from '@/components/ui/input-group';
 import { Item, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from '@/components/ui/item';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import employee from '@/routes/employee';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import { ArrowUp, Cross, File, Hospital, HospitalIcon, IdCard, MailOpen, Scroll, Search, Sidebar, SquareUserRound, UserRound } from 'lucide-react';
+import { ArrowUp, Cross, File, Paperclip, Plus, Search, UserPlus, UserRound } from 'lucide-react';
 import { ReactNode } from "react";
 
 
@@ -157,10 +159,24 @@ export default function EmployeeChatsPage({
                                         <CardTitle className="me-2">
                                             Chat
                                         </CardTitle>
-                                        <div className="flex flex-wrap gap-2">
-                                            <ParticipantBadge type="employee" name="Nome Cognome" />
-                                            <ParticipantBadge type="citizen" name="Nome Cognome" />
+                                        <div className="flex flex-row gap-2 items-center">
+                                            <div className="flex flex-wrap gap-2">
+                                                <ParticipantBadge type="employee" name="Nome Cognome" />
+                                                <ParticipantBadge type="citizen" name="Nome Cognome" />
+                                            </div>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button variant="outline" size="lg">
+                                                        <UserPlus />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Aggiungi un partecipante</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                            
                                         </div>
+                                        
                                     </CardHeader>
                                     <CardContent className="flex flex-1 flex-col gap-2 overflow-hidden">
                                         <div className="flex-1 overflow-auto rounded-sm border bg-gray-100/50 dark:bg-card">
@@ -192,20 +208,7 @@ export default function EmployeeChatsPage({
                                             </div>
                                         </div>
                                         <div>
-                                            <InputGroup>
-                                                <InputGroupTextarea
-                                                    className=""
-                                                    id="block-end-textarea"
-                                                    placeholder="Scrivi un messaggio..."
-                                                />
-                                                <InputGroupAddon align="block-end">
-                                                    <InputGroupText>0/280</InputGroupText>
-                                                    <InputGroupButton variant="default" size="sm" className="ml-auto">
-                                                        Invia
-                                                        <ArrowUp />
-                                                    </InputGroupButton>
-                                                </InputGroupAddon>
-                                            </InputGroup>
+                                            <ChatMessageTextarea />
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -220,27 +223,44 @@ export default function EmployeeChatsPage({
 type MessageBubbleProps = {
     children: ReactNode;
     variant?: "author" | "other";
+    authorName: string;
+    timestamp: string;
 };
 
-function MessageBubble({ children, variant = "other" }: MessageBubbleProps) {
+function MessageBubble({ children, variant = "other", authorName, timestamp }: MessageBubbleProps) {
     const isAuthor = variant === "author";
     return (
-        <Item
-            className={cn(
-                "bg-card border shadow-xs w-2/3",
-                isAuthor
-                    ? "self-end rounded-br-none bg-amber-50 dark:bg-amber-950/80 border-amber-200 dark:border-amber-950/50"
-                    : "self-start rounded-bl-none border-gray-200 dark:border-card dark:bg-gray-700/50"
-            )}
-        >
-            {children}
-            <div className="flex flex-row flex-wrap gap-2">
-                <MessageAttachment isAuthor={isAuthor} filename="Nome del file.pdf" />
-                <MessageAttachment isAuthor={isAuthor} filename="Nome del file.pdf" />
-                <MessageAttachment isAuthor={isAuthor} filename="Nome del file.pdf" />
-                <MessageAttachment isAuthor={isAuthor} filename="Nome del file.pdf" />
-            </div>
-        </Item>
+        <div className={cn(
+            isAuthor
+            ? "self-end" : "self-start",
+            "w-2/3 flex flex-col"
+        )}>
+            <Item
+                className={cn(
+                    "bg-card border shadow-xs flex flex-col",
+                    isAuthor
+                        ? "rounded-br-none bg-amber-50 dark:bg-amber-950/80 border-amber-200 dark:border-amber-950/50"
+                        : "rounded-bl-none border-gray-200 dark:border-card dark:bg-gray-700/50"
+                )}
+            >
+                <div className={cn(
+                    isAuthor ? "self-start" : "self-start",
+                    "text-xs"
+                )}>
+                    <span className="font-semibold text">Nome Cognome</span> <span className="italic">12:30:00 16/02/2026</span>
+                </div>
+                {children}
+                <div className="flex flex-row flex-wrap gap-2">
+                    <MessageAttachment isAuthor={isAuthor} filename="Nome del file.pdf" />
+                    <MessageAttachment isAuthor={isAuthor} filename="Nome del file.pdf" />
+                    <MessageAttachment isAuthor={isAuthor} filename="Nome del file.pdf" />
+                    <MessageAttachment isAuthor={isAuthor} filename="Nome del file.pdf" />
+                </div>
+                
+            </Item>
+            
+        </div>
+
     );
 }
 
@@ -310,7 +330,7 @@ function ChatThreadItem({ fullName, title, unreadMessagesAmount, active = false 
 
     return (
         <ItemGroup >
-            <Item className={cn(active && "ms-2 bg-gray-50 border-gray-300 shadow-xs")} size="xs" variant="outline">
+            <Item className={cn(active && "ms-2 bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-700 shadow-xs")} size="xs" variant="outline">
                 <ItemMedia>
                     <Avatar className="size-9">
                         <AvatarFallback>{initials || "N/A"}</AvatarFallback>
@@ -326,7 +346,7 @@ function ChatThreadItem({ fullName, title, unreadMessagesAmount, active = false 
                 
                 { unreadMessagesAmount > 0 && 
                     <ItemContent>
-                        <Badge className="bg-green-800 dark:bg-green-500">{unreadMessagesAmount}</Badge>
+                        <Badge className="bg-amber-800 dark:bg-amber-500">{unreadMessagesAmount}</Badge>
                     </ItemContent>
                 }
             </Item>
