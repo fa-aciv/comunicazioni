@@ -1,4 +1,5 @@
 import { ArrowUp, File, Paperclip, X } from 'lucide-react';
+import { type ChangeEventHandler } from 'react';
 
 import { ButtonGroup } from '@/components/ui/button-group';
 import {
@@ -16,8 +17,11 @@ type Attachment = {
 
 type ChatMessageComposerProps = {
     id?: string;
+    name?: string;
     placeholder?: string;
     attachments?: Attachment[];
+    value?: string;
+    onChange?: ChangeEventHandler<HTMLTextAreaElement>;
     onAttachClick?: () => void;
     onSendClick?: () => void;
     onRemoveAttachment?: (id: Attachment['id']) => void;
@@ -27,8 +31,11 @@ type ChatMessageComposerProps = {
 
 export function ChatMessageTextarea({
     id = 'message-textarea',
+    name,
     placeholder = 'Scrivi un messaggio...',
     attachments = [],
+    value,
+    onChange,
     onAttachClick,
     onSendClick,
     onRemoveAttachment,
@@ -37,14 +44,15 @@ export function ChatMessageTextarea({
 }: ChatMessageComposerProps) {
     return (
         <InputGroup className={className}>
-            {/* TEXTAREA */}
             <InputGroupTextarea
                 id={id}
+                name={name}
                 placeholder={placeholder}
+                value={value}
+                onChange={onChange}
                 disabled={disabled}
             />
 
-            {/* ACTIONS */}
             <InputGroupAddon align="block-end">
                 <ButtonGroup className="ml-auto">
                     <InputGroupButton
@@ -71,7 +79,6 @@ export function ChatMessageTextarea({
                 </ButtonGroup>
             </InputGroupAddon>
 
-            {/* ATTACHMENTS */}
             {attachments.length > 0 && (
                 <InputGroupAddon align="block-end" className="flex flex-wrap gap-2">
                     {attachments.map((file) => (
@@ -80,7 +87,7 @@ export function ChatMessageTextarea({
                             className="flex items-center gap-2"
                         >
                             <File className="size-4" />
-                            <span className="truncate max-w-[160px]">
+                            <span className="truncate max-w-40">
                                 {file.name}
                             </span>
 
