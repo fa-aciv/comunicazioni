@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
-import { Item, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from "../item";
-import { Avatar, AvatarFallback } from "../avatar";
+import { Item, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from "../ui/item";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 import { UserRound } from "lucide-react";
-import { Badge } from "../badge";
+import { Badge } from "../ui/badge";
 
 type ChatThreadItemProps = {
     fullName: string;

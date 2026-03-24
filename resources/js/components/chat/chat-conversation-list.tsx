@@ -5,7 +5,7 @@ import type { ChatSummary } from '@/components/chat/chat-types';
 import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import ChatThreadItem from '@/components/ui/chat/ChatThreadItem';
+import ChatThreadItem from '@/components/chat/chat-thread-item';
 import { Input } from '@/components/ui/input';
 
 interface ChatConversationListProps {

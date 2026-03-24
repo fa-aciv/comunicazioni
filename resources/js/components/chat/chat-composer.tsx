@@ -3,7 +3,7 @@ import { type ChangeEvent, useRef } from 'react';
 
 import type { SelectedChatSummary } from '@/components/chat/chat-types';
 import InputError from '@/components/input-error';
-import { ChatMessageTextarea } from '@/components/ui/chat/ChatMessageTextarea';
+import { ChatMessageTextarea } from '@/components/chat/chat-message-textarea';
 import { Spinner } from '@/components/ui/spinner';
 
 interface ChatComposerProps {

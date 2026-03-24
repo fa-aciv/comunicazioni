@@ -2,7 +2,7 @@ import { File } from 'lucide-react';
 import { type ReactNode } from 'react';
 
 import { cn } from '@/lib/utils';
-import { Item } from '../item';
+import { Item } from '../ui/item';
 
 type MessageAttachmentSummary = {
     id: number | string;

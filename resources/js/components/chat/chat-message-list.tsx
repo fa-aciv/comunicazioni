@@ -5,7 +5,7 @@ import type {
     ChatMessageSummary,
     SelectedChatSummary,
 } from '@/components/chat/chat-types';
-import MessageBubble from '@/components/ui/chat/MessaggeBubble';
+import MessageBubble from '@/components/chat/message-bubble';
 
 interface ChatMessageListProps {
     selectedChat: SelectedChatSummary | null;

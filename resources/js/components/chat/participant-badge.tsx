@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Badge } from "../badge";
+import { Badge } from "../ui/badge";
 import { Cross, UserRound } from "lucide-react";
 
 type ParticipantType = "employee" | "citizen";

@@ -3,7 +3,7 @@ import { UserPlus } from 'lucide-react';
 import type { SelectedChatSummary } from '@/components/chat/chat-types';
 import { Button } from '@/components/ui/button';
 import { CardHeader, CardTitle } from '@/components/ui/card';
-import ParticipantBadge from '@/components/ui/chat/ParticipantBadge';
+import ParticipantBadge from '@/components/chat/participant-badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ChatThreadHeaderProps {
