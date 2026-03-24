@@ -16,3 +16,8 @@ test('guests are redirected to the citizen login page for the citizen portal', f
     $this->get(route('citizen.dashboard'))
         ->assertRedirect(route('citizen.login'));
 });
+
+test('guests are redirected to the citizen login page for citizen chats', function () {
+    $this->get(route('citizen.chats.index'))
+        ->assertRedirect(route('citizen.login'));
+});

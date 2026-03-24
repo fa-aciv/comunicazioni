@@ -5,9 +5,8 @@ namespace App\Http\Controllers;
 use App\Actions\Chat\AddEmployeeParticipant;
 use App\Actions\Chat\CreateChatThread;
 use App\Actions\Chat\StoreChatMessage;
-use App\Models\Citizen;
+use App\Http\Controllers\Concerns\ResolvesGuardActor;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,6 +16,8 @@ use Illuminate\Validation\ValidationException;
 
 class ChatController extends Controller
 {
+    use ResolvesGuardActor;
+
     public function storeThread(Request $request, CreateChatThread $action): JsonResponse|RedirectResponse
     {
         /** @var User|null $employee */
@@ -78,7 +79,7 @@ class ChatController extends Controller
 
         $this->ensureMessageHasContentOrAttachments($validated);
 
-        $actor = $this->resolveActor();
+        $actor = $this->resolveGuardActor($request);
 
         $message = $action->handle(
             $chat,
@@ -167,22 +168,5 @@ class ChatController extends Controller
         throw ValidationException::withMessages([
             'content' => 'Inserisci un messaggio o allega almeno un file.',
         ]);
-    }
-
-    private function resolveActor(): Model
-    {
-        $employee = Auth::guard('employee')->user();
-
-        if ($employee instanceof User) {
-            return $employee;
-        }
-
-        $citizen = Auth::guard('citizen')->user();
-
-        if ($citizen instanceof Citizen) {
-            return $citizen;
-        }
-
-        abort(403);
     }
 }

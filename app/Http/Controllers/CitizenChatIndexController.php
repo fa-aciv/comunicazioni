@@ -3,25 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\MapsChatThreadData;
-use App\Models\ChatThread;
-use App\Models\User;
+use App\Models\Citizen;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class EmployeeChatIndexController extends Controller
+class CitizenChatIndexController extends Controller
 {
     use MapsChatThreadData;
 
     public function __invoke(Request $request): Response
     {
-        /** @var User|null $employee */
-        $employee = Auth::guard('employee')->user();
+        /** @var Citizen|null $citizen */
+        $citizen = Auth::guard('citizen')->user();
 
-        abort_unless($employee instanceof User, 403);
+        abort_unless($citizen instanceof Citizen, 403);
 
-        $threads = $this->actorThreadsQuery($employee)
+        $threads = $this->actorThreadsQuery($citizen)
             ->with([
                 'participants.participant',
                 'latestMessage.author',
@@ -37,7 +36,7 @@ class EmployeeChatIndexController extends Controller
         $selectedChat = null;
 
         if ($selectedChatId !== null) {
-            $selectedChat = $this->actorThreadsQuery($employee)
+            $selectedChat = $this->actorThreadsQuery($citizen)
                 ->with([
                     'participants.participant',
                     'messages' => fn ($query) => $query
@@ -49,23 +48,17 @@ class EmployeeChatIndexController extends Controller
             abort_if($requestedChatId !== null && $selectedChat === null, 404);
         }
 
-        $employees = User::query()
-            ->orderBy('name')
-            ->get(['id', 'name', 'email', 'department_name']);
-
-        return Inertia::render('employee/chats/index', [
+        return Inertia::render('citizen/chats/index', [
             'status' => $request->session()->get('status'),
-            'currentEmployeeId' => $employee->id,
+            'currentCitizenId' => $citizen->id,
             'pollIntervalSeconds' => 10,
             'selectedChatId' => $selectedChat?->getKey(),
-            'employees' => $employees->map(fn (User $user) => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'department_name' => $user->department_name,
-            ])->values(),
-            'chatSummaries' => $threads->map(fn (ChatThread $thread) => $this->mapChatSummary($thread))->values(),
-            'selectedChat' => $selectedChat ? $this->mapSelectedChat($selectedChat, 'employee') : null,
+            'chatSummaries' => $threads
+                ->map(fn ($thread) => $this->mapChatSummary($thread))
+                ->values(),
+            'selectedChat' => $selectedChat
+                ? $this->mapSelectedChat($selectedChat, 'citizen')
+                : null,
         ]);
     }
 }

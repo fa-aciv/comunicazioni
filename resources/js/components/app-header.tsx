@@ -22,7 +22,8 @@ import {
 } from '@/components/ui/sheet';
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useInitials } from '@/hooks/use-initials';
-import { cn, isSameUrl } from '@/lib/utils';
+import { cn, resolveUrl } from '@/lib/utils';
+import citizen from '@/routes/citizen';
 import employee from '@/routes/employee';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
@@ -41,6 +42,11 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const page = usePage<SharedData>();
     const { auth } = page.props;
     const getInitials = useInitials();
+    const isCurrentNavItem = (href: NavItem['href']) => {
+        const resolvedHref = resolveUrl(href);
+
+        return page.url === resolvedHref || page.url.startsWith(`${resolvedHref}?`);
+    };
 
     const mainNavItems: NavItem[] =
         auth.activeGuard === 'employee'
@@ -56,15 +62,28 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                       icon: MessageSquareDot,
                   },
               ]
-            : auth.homeUrl
+            : auth.activeGuard === 'citizen'
               ? [
                     {
-                        title: auth.portalLabel ?? 'Dashboard',
-                        href: auth.homeUrl,
+                        title: 'Dashboard',
+                        href: citizen.dashboard().url,
                         icon: LayoutGrid,
                     },
+                    {
+                        title: 'Chat',
+                        href: citizen.chats.index().url,
+                        icon: MessageSquareDot,
+                    },
                 ]
-              : [];
+              : auth.homeUrl
+                ? [
+                      {
+                          title: auth.portalLabel ?? 'Dashboard',
+                          href: auth.homeUrl,
+                          icon: LayoutGrid,
+                      },
+                  ]
+                : [];
 
     if (!auth.user) {
         return null;
@@ -80,7 +99,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="mr-2 h-[34px] w-[34px]"
+                                    className="mr-2 h-8 w-8"
                                 >
                                     <Menu className="h-5 w-5" />
                                 </Button>
@@ -138,7 +157,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                             href={item.href}
                                             className={cn(
                                                 navigationMenuTriggerStyle(),
-                                                isSameUrl(page.url, item.href) &&
+                                                isCurrentNavItem(item.href) &&
                                                     activeItemStyles,
                                                 'h-9 cursor-pointer px-3',
                                             )}
@@ -151,7 +170,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                             )}
                                             {item.title}
                                         </Link>
-                                        {isSameUrl(page.url, item.href) && (
+                                        {isCurrentNavItem(item.href) && (
                                             <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"></div>
                                         )}
                                     </NavigationMenuItem>

@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\CitizenAuthController;
 use App\Http\Controllers\Auth\EmployeeSessionController;
 use App\Http\Controllers\ChatAttachmentController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\CitizenChatIndexController;
 use App\Http\Controllers\EmployeeChatIndexController;
 use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\EmployeeCitizenController;
@@ -59,6 +60,7 @@ Route::prefix('citizen')->name('citizen.')->group(function () {
                 ],
             ]);
         })->name('dashboard');
+        Route::get('chats', CitizenChatIndexController::class)->name('chats.index');
         Route::get('attachments/{attachment}', [ChatAttachmentController::class, 'show'])->name('attachments.show');
         Route::get('attachments/{attachment}/download', [ChatAttachmentController::class, 'download'])->name('attachments.download');
         Route::post('chats/{chat}/messages', [ChatController::class, 'storeMessage'])->name('chats.messages.store');

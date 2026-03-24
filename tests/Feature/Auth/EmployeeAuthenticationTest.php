@@ -59,3 +59,8 @@ test('guests are redirected to the employee login page for the employee portal',
     $this->get(route('employee.dashboard'))
         ->assertRedirect(route('employee.login'));
 });
+
+test('guests are redirected to the employee login page for employee chats', function () {
+    $this->get(route('employee.chats.index'))
+        ->assertRedirect(route('employee.login'));
+});

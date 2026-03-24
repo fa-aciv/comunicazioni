@@ -31,6 +31,46 @@ function mockAttachment(string $path, string $fileName, bool $isParticipant): Me
     return $attachment;
 }
 
+function mockAttachmentForActor(
+    string $path,
+    string $fileName,
+    string $expectedParticipantType,
+    int $expectedParticipantId,
+    bool $isParticipant = true
+): MessageAttachment {
+    $participantQuery = \Mockery::mock();
+    $participantQuery->shouldReceive('where')
+        ->once()
+        ->with('participant_type', $expectedParticipantType)
+        ->andReturnSelf();
+    $participantQuery->shouldReceive('where')
+        ->once()
+        ->with('participant_id', $expectedParticipantId)
+        ->andReturnSelf();
+
+    $chatRelation = \Mockery::mock(BelongsTo::class);
+    $chatRelation->shouldReceive('whereHas')
+        ->once()
+        ->with('participants', \Mockery::on(function (Closure $closure) use ($participantQuery): bool {
+            $closure($participantQuery);
+
+            return true;
+        }))
+        ->andReturnSelf();
+    $chatRelation->shouldReceive('exists')
+        ->once()
+        ->andReturn($isParticipant);
+
+    $attachment = \Mockery::mock(MessageAttachment::class)->makePartial();
+    $attachment->file_path = $path;
+    $attachment->file_name = $fileName;
+    $attachment->shouldReceive('chat')
+        ->once()
+        ->andReturn($chatRelation);
+
+    return $attachment;
+}
+
 test('employee chat participants can download attachments', function () {
     Storage::fake('local');
     Storage::disk('local')->put('attachments/1/1/documento.pdf', 'contenuto');
@@ -73,6 +113,48 @@ test('citizen chat participants can download attachments', function () {
         ->app
         ->make(ChatAttachmentController::class)
         ->download(Request::create('/citizen/attachments/1/download', 'GET'), $attachment);
+
+    TestResponse::fromBaseResponse($response)
+        ->assertOk()
+        ->assertDownload('documento.pdf');
+});
+
+test('citizen attachment requests prefer the citizen guard when both sessions are active', function () {
+    Storage::fake('local');
+    Storage::disk('local')->put('attachments/1/1/documento.pdf', 'contenuto');
+
+    $employee = new User([
+        'id' => 11,
+        'name' => 'Operatore',
+        'email' => 'operatore@example.com',
+        'password' => 'password',
+    ]);
+    $employee->id = 11;
+
+    $citizen = new Citizen([
+        'name' => 'Mario Rossi',
+        'email' => 'mario@example.com',
+        'phone_number' => '+390916661111',
+        'fiscal_code' => 'RSSMRA80A01H501U',
+    ]);
+    $citizen->id = 20;
+
+    $attachment = mockAttachmentForActor(
+        'attachments/1/1/documento.pdf',
+        'documento.pdf',
+        Citizen::class,
+        20,
+    );
+
+    $request = Request::create('/citizen/attachments/1/download', 'GET');
+    $request->attributes->set('auth_guard', 'citizen');
+
+    $response = $this
+        ->actingAs($employee, 'employee')
+        ->actingAs($citizen, 'citizen')
+        ->app
+        ->make(ChatAttachmentController::class)
+        ->download($request, $attachment);
 
     TestResponse::fromBaseResponse($response)
         ->assertOk()

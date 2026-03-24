@@ -198,6 +198,49 @@ test('citizens can send chat messages with attachments', function () {
         ->assertJsonPath('message.content', 'Ho allegato il documento richiesto.');
 });
 
+test('citizen chat submissions use the citizen guard when both sessions are active', function () {
+    $employee = new User([
+        'id' => 22,
+        'name' => 'Operatore',
+        'email' => 'operatore@example.com',
+        'password' => 'password',
+    ]);
+    $employee->id = 22;
+
+    $citizen = new Citizen([
+        'name' => 'Mario Rossi',
+        'email' => 'mario@example.com',
+        'phone_number' => '+390916661111',
+        'fiscal_code' => 'RSSMRA80A01H501U',
+    ]);
+    $citizen->id = 20;
+
+    $message = new ChatMessage([
+        'content' => 'Risposta dal cittadino.',
+    ]);
+    $message->id = 79;
+    $message->setRelation('attachments', new Collection());
+
+    $mock = Mockery::mock(StoreChatMessage::class, function (MockInterface $mock) use ($citizen, $message): void {
+        $mock->shouldReceive('handle')
+            ->once()
+            ->with(100, $citizen, 'Risposta dal cittadino.', [])
+            ->andReturn($message);
+    });
+
+    $this->app->instance(StoreChatMessage::class, $mock);
+
+    $this->actingAs($employee, 'employee');
+    $this->actingAs($citizen, 'citizen');
+
+    $this->from(route('citizen.chats.index', ['chat' => 100]))
+        ->post(route('citizen.chats.messages.store', ['chat' => 100]), [
+            'content' => 'Risposta dal cittadino.',
+        ])
+        ->assertRedirect(route('citizen.chats.index', ['chat' => 100]))
+        ->assertSessionHas('status', 'Messaggio inviato correttamente.');
+});
+
 test('chat messages cannot include more than five attachments', function () {
     $employee = new User([
         'id' => 12,

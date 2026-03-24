@@ -1,62 +1,59 @@
 import {
     ChatWorkspace,
     type ChatSummary,
-    type EmployeeSummary,
     type SelectedChatSummary,
 } from '@/components/chat/chat-workspace';
 import AppLayout from '@/layouts/app-layout';
-import employee from '@/routes/employee';
+import citizen from '@/routes/citizen';
 import { type BreadcrumbItem } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard',
-        href: employee.dashboard().url,
+        href: citizen.dashboard().url,
     },
     {
         title: 'Chat',
-        href: employee.chats.index().url,
+        href: citizen.chats.index().url,
     },
 ];
 
-interface EmployeeChatsProps {
+interface CitizenChatsPageProps {
     status?: string;
-    currentEmployeeId: number;
+    currentCitizenId: number;
     pollIntervalSeconds: number;
     selectedChatId?: number | null;
-    employees: EmployeeSummary[];
     chatSummaries: ChatSummary[];
     selectedChat: SelectedChatSummary | null;
 }
 
-export default function EmployeeChatsPage({
+export default function CitizenChatsPage({
     status,
-    currentEmployeeId,
+    currentCitizenId,
     pollIntervalSeconds,
     selectedChatId,
     chatSummaries,
     selectedChat,
-}: EmployeeChatsProps) {
+}: CitizenChatsPageProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <ChatWorkspace
-                headTitle="Chat dipendenti"
+                headTitle="Chat cittadini"
                 status={status}
-                currentActorId={currentEmployeeId}
-                currentActorType="User"
+                currentActorId={currentCitizenId}
+                currentActorType="Citizen"
                 pollIntervalSeconds={pollIntervalSeconds}
                 selectedChatId={selectedChatId}
                 chatSummaries={chatSummaries}
                 selectedChat={selectedChat}
                 buildChatHref={(chatId) =>
-                    employee.chats.index.url({
+                    citizen.chats.index.url({
                         query: { chat: chatId },
                     })
                 }
                 buildMessageStoreUrl={(chatId) =>
-                    employee.chats.messages.store.url({ chat: chatId })
+                    citizen.chats.messages.store.url({ chat: chatId })
                 }
-                canManageParticipants
             />
         </AppLayout>
     );
