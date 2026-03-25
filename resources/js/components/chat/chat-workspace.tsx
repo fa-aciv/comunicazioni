@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/react';
 import type {
     ChatActorType,
     ChatSummary,
+    EmployeeSummary,
     SelectedChatSummary,
 } from '@/components/chat/chat-types';
 import { ChatComposer } from '@/components/chat/chat-composer';
@@ -29,10 +30,13 @@ interface ChatWorkspaceProps {
     currentActorType: ChatActorType;
     pollIntervalSeconds: number;
     selectedChatId?: number | null;
+    employees?: EmployeeSummary[];
     chatSummaries: ChatSummary[];
     selectedChat: SelectedChatSummary | null;
     buildChatHref: (chatId: number) => string;
     buildMessageStoreUrl: (chatId: number) => string;
+    buildParticipantStoreUrl?: (chatId: number) => string;
+    buildParticipantDestroyUrl?: (chatId: number, employeeId: number) => string;
     canManageParticipants?: boolean;
 }
 
@@ -43,10 +47,13 @@ export function ChatWorkspace({
     currentActorType,
     pollIntervalSeconds,
     selectedChatId,
+    employees = [],
     chatSummaries,
     selectedChat,
     buildChatHref,
     buildMessageStoreUrl,
+    buildParticipantStoreUrl,
+    buildParticipantDestroyUrl,
     canManageParticipants = false,
 }: ChatWorkspaceProps) {
     const {
@@ -87,7 +94,11 @@ export function ChatWorkspace({
                             <Card className="flex h-full flex-col rounded-sm">
                                 <ChatThreadHeader
                                     selectedChat={selectedChat}
+                                    employees={employees}
+                                    currentActorId={currentActorId}
                                     canManageParticipants={canManageParticipants}
+                                    buildParticipantStoreUrl={buildParticipantStoreUrl}
+                                    buildParticipantDestroyUrl={buildParticipantDestroyUrl}
                                 />
 
                                 <CardContent className="flex flex-1 flex-col gap-2 overflow-hidden">

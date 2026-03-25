@@ -24,14 +24,14 @@ export default function ChatThreadItem({ fullName, title, unreadMessagesAmount, 
     const initials = getInitials(fullName);
 
     return (
-        <ItemGroup className={cn(active && "ms-1 rounded-s-xs border-s-6 border-amber-300 dark:border-amber-900")} >
+        <ItemGroup className={cn(active && "ps-1 ms-1")} >
             <Item 
-                className={cn(active && "rounded-s-none bg-amber-50/50 dark:bg-amber-950/20 border-amber-500/30 dark:border-amber-950 shadow-xs")} 
+                className={cn(active && "bg-amber-50/50 dark:bg-amber-950/20 border-amber-500/30 dark:border-amber-950 shadow-xs")} 
                 size="xs" variant="outline"
             >
                 <ItemMedia>
                     <Avatar className="size-9">
-                        <AvatarFallback>{initials || "N/A"}</AvatarFallback>
+                        <AvatarFallback className={cn(active && "bg-card")}>{initials || "N/A"}</AvatarFallback>
                     </Avatar>
                 </ItemMedia>
                 <ItemContent>

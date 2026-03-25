@@ -2,6 +2,7 @@
 
 use App\Actions\Chat\AddEmployeeParticipant;
 use App\Actions\Chat\CreateChatThread;
+use App\Actions\Chat\RemoveEmployeeParticipant;
 use App\Actions\Chat\StoreChatMessage;
 use App\Models\ChatMessage;
 use App\Models\ChatThread;
@@ -155,6 +156,39 @@ test('employees can add additional employee participants to a chat', function ()
         ])
         ->assertCreated()
         ->assertJsonPath('status', 'Partecipante aggiunto correttamente.')
+        ->assertJsonPath('thread.title', 'Chat con Mario Rossi');
+});
+
+test('employees can remove other employee participants from a chat', function () {
+    $employee = new User([
+        'id' => 16,
+        'name' => 'Operatore',
+        'email' => 'operatore@example.com',
+        'password' => 'password',
+    ]);
+    $employee->id = 16;
+
+    $thread = new ChatThread([
+        'title' => 'Chat con Mario Rossi',
+    ]);
+    $thread->id = 99;
+
+    $mock = Mockery::mock(RemoveEmployeeParticipant::class, function (MockInterface $mock) use ($employee, $thread): void {
+        $mock->shouldReceive('handle')
+            ->once()
+            ->with(99, $employee, 21)
+            ->andReturn($thread);
+    });
+
+    $this->app->instance(RemoveEmployeeParticipant::class, $mock);
+
+    $this->actingAs($employee, 'employee')
+        ->deleteJson(route('employee.chats.participants.destroy', [
+            'chat' => 99,
+            'employee' => 21,
+        ]))
+        ->assertOk()
+        ->assertJsonPath('status', 'Partecipante rimosso correttamente.')
         ->assertJsonPath('thread.title', 'Chat con Mario Rossi');
 });
 

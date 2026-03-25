@@ -34,6 +34,7 @@ export default function EmployeeChatsPage({
     currentEmployeeId,
     pollIntervalSeconds,
     selectedChatId,
+    employees,
     chatSummaries,
     selectedChat,
 }: EmployeeChatsProps) {
@@ -46,6 +47,7 @@ export default function EmployeeChatsPage({
                 currentActorType="User"
                 pollIntervalSeconds={pollIntervalSeconds}
                 selectedChatId={selectedChatId}
+                employees={employees}
                 chatSummaries={chatSummaries}
                 selectedChat={selectedChat}
                 buildChatHref={(chatId) =>
@@ -55,6 +57,15 @@ export default function EmployeeChatsPage({
                 }
                 buildMessageStoreUrl={(chatId) =>
                     employee.chats.messages.store.url({ chat: chatId })
+                }
+                buildParticipantStoreUrl={(chatId) =>
+                    employee.chats.participants.store.url({ chat: chatId })
+                }
+                buildParticipantDestroyUrl={(chatId, employeeId) =>
+                    employee.chats.participants.destroy.url({
+                        chat: chatId,
+                        employee: employeeId,
+                    })
                 }
                 canManageParticipants
             />

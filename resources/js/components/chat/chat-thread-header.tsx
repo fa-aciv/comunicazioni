@@ -1,19 +1,27 @@
-import { UserPlus } from 'lucide-react';
-
-import type { SelectedChatSummary } from '@/components/chat/chat-types';
-import { Button } from '@/components/ui/button';
+import { ChatAddParticipantDialog } from '@/components/chat/chat-add-participant-dialog';
+import type {
+    EmployeeSummary,
+    SelectedChatSummary,
+} from '@/components/chat/chat-types';
 import { CardHeader, CardTitle } from '@/components/ui/card';
 import ParticipantBadge from '@/components/chat/participant-badge';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ChatThreadHeaderProps {
     selectedChat: SelectedChatSummary | null;
+    employees: EmployeeSummary[];
+    currentActorId: number;
     canManageParticipants: boolean;
+    buildParticipantStoreUrl?: (chatId: number) => string;
+    buildParticipantDestroyUrl?: (chatId: number, employeeId: number) => string;
 }
 
 export function ChatThreadHeader({
     selectedChat,
+    employees,
+    currentActorId,
     canManageParticipants,
+    buildParticipantStoreUrl,
+    buildParticipantDestroyUrl,
 }: ChatThreadHeaderProps) {
     return (
         <CardHeader className="flex flex-row flex-wrap items-center justify-between">
@@ -28,31 +36,27 @@ export function ChatThreadHeader({
                             name={selectedChat.citizen.name}
                         />
                     ) : null}
-                    {selectedChat?.employees.map((employeeParticipant) => (
-                        <ParticipantBadge
-                            key={employeeParticipant.id}
-                            type="employee"
-                            name={employeeParticipant.name}
-                        />
-                    ))}
+                    {selectedChat?.employees.map(
+                        (employeeParticipant) => (
+                            <ParticipantBadge
+                                key={employeeParticipant.id}
+                                type="employee"
+                                name={employeeParticipant.name}
+                            />
+                        ))
+                    }
                 </div>
 
-                {canManageParticipants ? (
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="lg"
-                                disabled={!selectedChat}
-                            >
-                                <UserPlus />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Aggiungi un partecipante</p>
-                        </TooltipContent>
-                    </Tooltip>
+                {canManageParticipants &&
+                    buildParticipantStoreUrl &&
+                    buildParticipantDestroyUrl ? (
+                    <ChatAddParticipantDialog
+                        selectedChat={selectedChat}
+                        employees={employees}
+                        currentActorId={currentActorId}
+                        buildParticipantStoreUrl={buildParticipantStoreUrl}
+                        buildParticipantDestroyUrl={buildParticipantDestroyUrl}
+                    />
                 ) : null}
             </div>
         </CardHeader>

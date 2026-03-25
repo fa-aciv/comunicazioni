@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Chat\AddEmployeeParticipant;
 use App\Actions\Chat\CreateChatThread;
+use App\Actions\Chat\RemoveEmployeeParticipant;
 use App\Actions\Chat\StoreChatMessage;
 use App\Http\Controllers\Concerns\ResolvesGuardActor;
 use App\Models\User;
@@ -130,6 +131,31 @@ class ChatController extends Controller
         return redirect()
             ->route('employee.chats.index', ['chat' => $thread->id])
             ->with('status', 'Partecipante aggiunto correttamente.');
+    }
+
+    public function destroyParticipant(
+        Request $request,
+        int|string $chat,
+        int|string $employee,
+        RemoveEmployeeParticipant $action
+    ): JsonResponse|RedirectResponse {
+        /** @var User|null $actor */
+        $actor = Auth::guard('employee')->user();
+
+        abort_unless($actor instanceof User, 403);
+
+        $thread = $action->handle($chat, $actor, (int) $employee);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'thread' => $thread,
+                'status' => 'Partecipante rimosso correttamente.',
+            ]);
+        }
+
+        return redirect()
+            ->route('employee.chats.index', ['chat' => $thread->id])
+            ->with('status', 'Partecipante rimosso correttamente.');
     }
 
     /**

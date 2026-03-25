@@ -85,6 +85,7 @@ Route::prefix('employee')->name('employee.')->group(function () {
         Route::post('chats', [ChatController::class, 'storeThread'])->name('chats.store');
         Route::post('chats/{chat}/messages', [ChatController::class, 'storeMessage'])->name('chats.messages.store');
         Route::post('chats/{chat}/participants', [ChatController::class, 'storeParticipant'])->name('chats.participants.store');
+        Route::delete('chats/{chat}/participants/{employee}', [ChatController::class, 'destroyParticipant'])->name('chats.participants.destroy');
         Route::post('citizens', [EmployeeCitizenController::class, 'store'])->name('citizens.store');
 
         Route::post('logout', [EmployeeSessionController::class, 'destroy'])->name('logout');
