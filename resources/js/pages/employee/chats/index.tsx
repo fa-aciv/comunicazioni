@@ -39,7 +39,7 @@ export default function EmployeeChatsPage({
     selectedChat,
 }: EmployeeChatsProps) {
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <AppLayout>
             <ChatWorkspace
                 headTitle="Chat dipendenti"
                 status={status}
@@ -55,6 +55,7 @@ export default function EmployeeChatsPage({
                         query: { chat: chatId },
                     })
                 }
+                buildThreadStoreUrl={() => employee.chats.store.url()}
                 buildMessageStoreUrl={(chatId) =>
                     employee.chats.messages.store.url({ chat: chatId })
                 }

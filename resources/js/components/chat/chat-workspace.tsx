@@ -34,6 +34,7 @@ interface ChatWorkspaceProps {
     chatSummaries: ChatSummary[];
     selectedChat: SelectedChatSummary | null;
     buildChatHref: (chatId: number) => string;
+    buildThreadStoreUrl?: () => string;
     buildMessageStoreUrl: (chatId: number) => string;
     buildParticipantStoreUrl?: (chatId: number) => string;
     buildParticipantDestroyUrl?: (chatId: number, employeeId: number) => string;
@@ -51,6 +52,7 @@ export function ChatWorkspace({
     chatSummaries,
     selectedChat,
     buildChatHref,
+    buildThreadStoreUrl,
     buildMessageStoreUrl,
     buildParticipantStoreUrl,
     buildParticipantDestroyUrl,
@@ -88,9 +90,11 @@ export function ChatWorkspace({
                             chatSummaries={chatSummaries}
                             activeChatId={activeChatId}
                             buildChatHref={buildChatHref}
+                            canCreateChats={canManageParticipants}
+                            buildThreadStoreUrl={buildThreadStoreUrl}
                         />
 
-                        <main className="flex h-[calc(100dvh-10rem)] min-h-0 flex-col self-stretch sm:min-w-sm sm:flex-2">
+                        <main className="flex h-[calc(100dvh-6rem)] min-h-0 flex-col self-stretch sm:min-w-sm sm:flex-2 sm:shadow-sm">
                             <Card className="flex h-full flex-col rounded-sm">
                                 <ChatThreadHeader
                                     selectedChat={selectedChat}

@@ -24,7 +24,7 @@ export default function ChatThreadItem({ fullName, title, unreadMessagesAmount, 
     const initials = getInitials(fullName);
 
     return (
-        <ItemGroup className={cn(active && "ps-1 ms-1")} >
+        <ItemGroup className={cn(active && "sm:ps-1 sm:ms-1")} >
             <Item 
                 className={cn(active && "bg-amber-50/50 dark:bg-amber-950/20 border-amber-500/30 dark:border-amber-950 shadow-xs")} 
                 size="xs" variant="outline"
