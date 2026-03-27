@@ -1,11 +1,12 @@
-import { type ChatSummary } from '@/components/chat/chat-workspace';
+import { ChatSummaryList } from '@/components/chat/chat-summary-list';
+import type { ChatSummary } from '@/components/chat/chat-types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import citizen from '@/routes/citizen';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { ChevronRight, MessageSquareText, Settings } from 'lucide-react';
+import { MessageSquareText, Settings } from 'lucide-react';
 
 interface CitizenDashboardProps {
     status?: string;
@@ -13,17 +14,6 @@ interface CitizenDashboardProps {
         name: string;
     };
     recentChats: ChatSummary[];
-}
-
-function formatDate(date: string | null): string {
-    if (!date) {
-        return 'Nessuna attività recente';
-    }
-
-    return new Intl.DateTimeFormat('it-IT', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-    }).format(new Date(date));
 }
 
 export default function CitizenDashboard({
@@ -78,39 +68,16 @@ export default function CitizenDashboard({
                             </div>
                         </CardHeader>
                         <CardContent>
-                            {recentChats.length > 0 ? (
-                                <div className="divide-y overflow-hidden rounded-2xl border">
-                                    {recentChats.map((chat) => (
-                                        <Link
-                                            key={chat.id}
-                                            href={citizen.chats.index.url({
-                                                query: { chat: chat.id },
-                                            })}
-                                            className="flex items-center gap-4 px-4 py-4 transition-colors hover:bg-muted/40"
-                                        >
-                                            <div className="min-w-0 flex-1">
-                                                <div className="truncate font-medium">
-                                                    {chat.title}
-                                                </div>
-                                                <div className="mt-1 truncate text-sm text-muted-foreground">
-                                                    {chat.latest_message_preview}
-                                                </div>
-                                            </div>
-                                            <div className="hidden text-right text-xs text-muted-foreground md:block">
-                                                <div>{formatDate(chat.latest_message_date)}</div>
-                                                <div className="mt-1">
-                                                    {chat.message_count} messaggi
-                                                </div>
-                                            </div>
-                                            <ChevronRight className="size-4 text-muted-foreground" />
-                                        </Link>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="rounded-2xl border border-dashed px-4 py-10 text-center text-sm text-muted-foreground">
-                                    Non hai ancora conversazioni recenti.
-                                </div>
-                            )}
+                            <ChatSummaryList
+                                chats={recentChats}
+                                buildChatHref={(chatId) =>
+                                    citizen.chats.index.url({
+                                        query: { chat: chatId },
+                                    })
+                                }
+                                emptyTitle="Non hai ancora conversazioni recenti."
+                                emptyDescription="Le conversazioni aperte con l'amministrazione compariranno qui."
+                            />
                         </CardContent>
                     </Card>
 

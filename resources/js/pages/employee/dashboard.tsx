@@ -1,3 +1,5 @@
+import { ChatSummaryList } from '@/components/chat/chat-summary-list';
+import type { ChatSummary } from '@/components/chat/chat-types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
@@ -15,10 +17,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 interface DashboardProps {
     status?: string;
-    activeChatsCount: number;
+    activeChats: ChatSummary[];
 }
 
-export default function Dashboard({ status, activeChatsCount }: DashboardProps) {
+export default function Dashboard({ status, activeChats }: DashboardProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
@@ -44,14 +46,16 @@ export default function Dashboard({ status, activeChatsCount }: DashboardProps) 
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="rounded-2xl border border-sky-200 bg-white/80 px-4 py-5">
-                                <div className="text-sm text-muted-foreground">
-                                    Chat attive a cui partecipi
-                                </div>
-                                <div className="mt-2 text-4xl font-semibold tracking-tight text-sky-900">
-                                    {activeChatsCount}
-                                </div>
-                            </div>
+                            <ChatSummaryList
+                                chats={activeChats}
+                                buildChatHref={(chatId) =>
+                                    employee.chats.index.url({
+                                        query: { chat: chatId },
+                                    })
+                                }
+                                emptyTitle="Non hai ancora conversazioni attive."
+                                emptyDescription="Quando parteciperai a una chat la troverai qui."
+                            />
 
                             <Button asChild className="w-full">
                                 <Link href={employee.chats.index().url}>

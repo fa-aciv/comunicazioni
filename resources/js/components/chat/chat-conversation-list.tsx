@@ -69,7 +69,7 @@ export function ChatConversationList({
         <aside className="flex min-h-0 flex-1 flex-col self-stretch sm:max-w-sm sm:shadow-sm">
             <Card className="flex h-full flex-col rounded-sm">
                 <CardHeader className="shrink-0">
-                    <CardTitle className="flex flex-row items-center justify-between">
+                    <CardTitle className="flex flex-row items-center flex-wrap gap-2 justify-between">
                         <span>Conversazioni</span>
                         {canCreateChats && buildThreadStoreUrl ? (
                             <ChatCreateThreadDialog

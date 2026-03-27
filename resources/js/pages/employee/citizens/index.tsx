@@ -104,7 +104,7 @@ export default function EmployeeCitizensPage({
                                     Elenco minimale degli account. Clicca una riga per aprire la modifica dei contatti.
                                 </CardDescription>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 flex-wrap">
                                 <Button asChild variant="outline">
                                     <Link href={employee.dashboard().url}>
                                         Torna alla dashboard
@@ -146,7 +146,7 @@ export default function EmployeeCitizensPage({
                         <div className="rounded-2xl border border-dashed bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
                             {filters.search
                                 ? `Risultati per "${filters.search}". Mostro fino a ${resultsLimit} account.`
-                                : `Mostro fino a ${resultsLimit} account ordinati per nome.`}
+                                : `Mostro ${resultsLimit} account ordinati per nome.`}
                         </div>
 
                         {citizens.length > 0 ? (
