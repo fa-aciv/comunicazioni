@@ -12,13 +12,13 @@ test('guests cannot register citizens from the employee area', function () {
 });
 
 test('employee citizen registration validates required fields', function () {
-    $this->from(route('employee.dashboard'))
+    $this->from(route('employee.citizens.create'))
         ->actingAs(new User([
             'name' => 'Operatore',
             'email' => 'operatore@example.com',
             'password' => 'password',
         ]), 'employee')
         ->post(route('employee.citizens.store'), [])
-        ->assertRedirect(route('employee.dashboard'))
+        ->assertRedirect(route('employee.citizens.create'))
         ->assertSessionHasErrors(['name', 'email', 'phoneNumber', 'fiscalCode']);
 });

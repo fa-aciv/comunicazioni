@@ -4,7 +4,9 @@ use App\Http\Controllers\Auth\CitizenAuthController;
 use App\Http\Controllers\Auth\EmployeeSessionController;
 use App\Http\Controllers\ChatAttachmentController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\CitizenAccountController;
 use App\Http\Controllers\CitizenChatIndexController;
+use App\Http\Controllers\CitizenDashboardController;
 use App\Http\Controllers\EmployeeChatIndexController;
 use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\EmployeeCitizenController;
@@ -46,24 +48,14 @@ Route::prefix('citizen')->name('citizen.')->group(function () {
     });
 
     Route::middleware(['auth.guard:citizen', 'auth:citizen'])->group(function () {
-        Route::get('dashboard', function () {
-            return Inertia::render('portal/dashboard', [
-                'portal' => [
-                    'name' => 'citizen',
-                    'title' => 'Area cittadini',
-                    'description' => 'Consulta i servizi e le comunicazioni dedicate ai cittadini.',
-                    'highlights' => [
-                        ['title' => 'Accesso sicuro', 'description' => 'Login con magic link, codice fiscale e OTP via SMS.'],
-                        ['title' => 'Sessione dedicata', 'description' => 'La tua sessione rimane separata da quella del personale interno.'],
-                        ['title' => 'Servizi mirati', 'description' => 'Questa area puo ospitare solo funzionalita per i cittadini.'],
-                    ],
-                ],
-            ]);
-        })->name('dashboard');
+        Route::get('dashboard', CitizenDashboardController::class)->name('dashboard');
         Route::get('chats', CitizenChatIndexController::class)->name('chats.index');
         Route::get('attachments/{attachment}', [ChatAttachmentController::class, 'show'])->name('attachments.show');
         Route::get('attachments/{attachment}/download', [ChatAttachmentController::class, 'download'])->name('attachments.download');
         Route::post('chats/{chat}/messages', [ChatController::class, 'storeMessage'])->name('chats.messages.store');
+        Route::get('account', [CitizenAccountController::class, 'index'])->name('account.index');
+        Route::patch('account', [CitizenAccountController::class, 'update'])->name('account.update');
+        Route::delete('account', [CitizenAccountController::class, 'destroy'])->name('account.destroy');
 
         Route::post('logout', [CitizenAuthController::class, 'destroy'])->name('logout');
     });
@@ -86,7 +78,11 @@ Route::prefix('employee')->name('employee.')->group(function () {
         Route::post('chats/{chat}/messages', [ChatController::class, 'storeMessage'])->name('chats.messages.store');
         Route::post('chats/{chat}/participants', [ChatController::class, 'storeParticipant'])->name('chats.participants.store');
         Route::delete('chats/{chat}/participants/{employee}', [ChatController::class, 'destroyParticipant'])->name('chats.participants.destroy');
+        Route::get('citizens', [EmployeeCitizenController::class, 'index'])->name('citizens.index');
+        Route::get('citizens/create', [EmployeeCitizenController::class, 'create'])->name('citizens.create');
         Route::post('citizens', [EmployeeCitizenController::class, 'store'])->name('citizens.store');
+        Route::get('citizens/{citizen}/edit', [EmployeeCitizenController::class, 'edit'])->name('citizens.edit');
+        Route::patch('citizens/{citizen}', [EmployeeCitizenController::class, 'update'])->name('citizens.update');
 
         Route::post('logout', [EmployeeSessionController::class, 'destroy'])->name('logout');
     });

@@ -21,3 +21,20 @@ test('guests are redirected to the citizen login page for citizen chats', functi
     $this->get(route('citizen.chats.index'))
         ->assertRedirect(route('citizen.login'));
 });
+
+test('guests are redirected to the citizen login page for the citizen account page', function () {
+    $this->get(route('citizen.account.index'))
+        ->assertRedirect(route('citizen.login'));
+});
+
+test('guests are redirected to the citizen login page for citizen account deletion', function () {
+    $this->delete(route('citizen.account.destroy'))
+        ->assertRedirect(route('citizen.login'));
+});
+
+test('guests are redirected to the citizen login page for citizen account updates', function () {
+    $this->patch(route('citizen.account.update'), [
+        'email' => 'mario@example.com',
+        'phoneNumber' => '+390916661111',
+    ])->assertRedirect(route('citizen.login'));
+});

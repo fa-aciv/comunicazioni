@@ -64,3 +64,13 @@ test('guests are redirected to the employee login page for employee chats', func
     $this->get(route('employee.chats.index'))
         ->assertRedirect(route('employee.login'));
 });
+
+test('guests are redirected to the employee login page for employee citizen management', function () {
+    $this->get(route('employee.citizens.index'))
+        ->assertRedirect(route('employee.login'));
+});
+
+test('guests are redirected to the employee login page for employee citizen creation', function () {
+    $this->get(route('employee.citizens.create'))
+        ->assertRedirect(route('employee.login'));
+});
