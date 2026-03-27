@@ -30,10 +30,17 @@ interface ChatWorkspaceProps {
     currentActorType: ChatActorType;
     pollIntervalSeconds: number;
     selectedChatId?: number | null;
+    conversationSearch?: string;
+    conversationListLimit?: number;
+    hasMoreConversations?: boolean;
     employees?: EmployeeSummary[];
     chatSummaries: ChatSummary[];
     selectedChat: SelectedChatSummary | null;
     buildChatHref: (chatId: number) => string;
+    buildConversationSearchHref: (
+        search: string,
+        activeChatId: number | null,
+    ) => string;
     buildThreadStoreUrl?: () => string;
     buildMessageStoreUrl: (chatId: number) => string;
     buildParticipantStoreUrl?: (chatId: number) => string;
@@ -48,10 +55,14 @@ export function ChatWorkspace({
     currentActorType,
     pollIntervalSeconds,
     selectedChatId,
+    conversationSearch = '',
+    conversationListLimit = 100,
+    hasMoreConversations = false,
     employees = [],
     chatSummaries,
     selectedChat,
     buildChatHref,
+    buildConversationSearchHref,
     buildThreadStoreUrl,
     buildMessageStoreUrl,
     buildParticipantStoreUrl,
@@ -89,7 +100,11 @@ export function ChatWorkspace({
                         <ChatConversationList
                             chatSummaries={chatSummaries}
                             activeChatId={activeChatId}
+                            conversationSearch={conversationSearch}
+                            conversationListLimit={conversationListLimit}
+                            hasMoreConversations={hasMoreConversations}
                             buildChatHref={buildChatHref}
+                            buildConversationSearchHref={buildConversationSearchHref}
                             canCreateChats={canManageParticipants}
                             buildThreadStoreUrl={buildThreadStoreUrl}
                         />

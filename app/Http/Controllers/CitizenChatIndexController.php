@@ -20,7 +20,10 @@ class CitizenChatIndexController extends Controller
 
         abort_unless($citizen instanceof Citizen, 403);
 
-        $threads = $this->actorThreadsQuery($citizen)
+        $conversationSearch = trim((string) $request->string('search')->toString());
+        $conversationListLimit = 100;
+
+        $threads = $this->applyThreadSearch($this->actorThreadsQuery($citizen), $conversationSearch)
             ->with([
                 'participants.participant',
                 'latestMessage.author',
@@ -29,7 +32,10 @@ class CitizenChatIndexController extends Controller
             ->withCount('messages')
             ->orderByDesc('latest_message_date')
             ->orderByDesc('updated_at')
+            ->limit($conversationListLimit + 1)
             ->get();
+        $hasMoreConversations = $threads->count() > $conversationListLimit;
+        $threads = $threads->take($conversationListLimit)->values();
 
         $requestedChatId = $request->integer('chat') ?: null;
         $selectedChatId = $requestedChatId ?: $threads->first()?->getKey();
@@ -53,6 +59,9 @@ class CitizenChatIndexController extends Controller
             'currentCitizenId' => $citizen->id,
             'pollIntervalSeconds' => 10,
             'selectedChatId' => $selectedChat?->getKey(),
+            'conversationSearch' => $conversationSearch,
+            'conversationListLimit' => $conversationListLimit,
+            'hasMoreConversations' => $hasMoreConversations,
             'chatSummaries' => $threads
                 ->map(fn ($thread) => $this->mapChatSummary($thread))
                 ->values(),

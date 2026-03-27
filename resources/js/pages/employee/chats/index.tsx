@@ -24,6 +24,9 @@ interface EmployeeChatsProps {
     currentEmployeeId: number;
     pollIntervalSeconds: number;
     selectedChatId?: number | null;
+    conversationSearch?: string;
+    conversationListLimit: number;
+    hasMoreConversations: boolean;
     employees: EmployeeSummary[];
     chatSummaries: ChatSummary[];
     selectedChat: SelectedChatSummary | null;
@@ -34,6 +37,9 @@ export default function EmployeeChatsPage({
     currentEmployeeId,
     pollIntervalSeconds,
     selectedChatId,
+    conversationSearch,
+    conversationListLimit,
+    hasMoreConversations,
     employees,
     chatSummaries,
     selectedChat,
@@ -47,12 +53,26 @@ export default function EmployeeChatsPage({
                 currentActorType="User"
                 pollIntervalSeconds={pollIntervalSeconds}
                 selectedChatId={selectedChatId}
+                conversationSearch={conversationSearch}
+                conversationListLimit={conversationListLimit}
+                hasMoreConversations={hasMoreConversations}
                 employees={employees}
                 chatSummaries={chatSummaries}
                 selectedChat={selectedChat}
                 buildChatHref={(chatId) =>
                     employee.chats.index.url({
-                        query: { chat: chatId },
+                        query: {
+                            chat: chatId,
+                            ...(conversationSearch ? { search: conversationSearch } : {}),
+                        },
+                    })
+                }
+                buildConversationSearchHref={(search, chatId) =>
+                    employee.chats.index.url({
+                        query: {
+                            ...(chatId ? { chat: chatId } : {}),
+                            ...(search ? { search } : {}),
+                        },
                     })
                 }
                 buildThreadStoreUrl={() => employee.chats.store.url()}

@@ -23,6 +23,9 @@ interface CitizenChatsPageProps {
     currentCitizenId: number;
     pollIntervalSeconds: number;
     selectedChatId?: number | null;
+    conversationSearch?: string;
+    conversationListLimit: number;
+    hasMoreConversations: boolean;
     chatSummaries: ChatSummary[];
     selectedChat: SelectedChatSummary | null;
 }
@@ -32,6 +35,9 @@ export default function CitizenChatsPage({
     currentCitizenId,
     pollIntervalSeconds,
     selectedChatId,
+    conversationSearch,
+    conversationListLimit,
+    hasMoreConversations,
     chatSummaries,
     selectedChat,
 }: CitizenChatsPageProps) {
@@ -44,11 +50,25 @@ export default function CitizenChatsPage({
                 currentActorType="Citizen"
                 pollIntervalSeconds={pollIntervalSeconds}
                 selectedChatId={selectedChatId}
+                conversationSearch={conversationSearch}
+                conversationListLimit={conversationListLimit}
+                hasMoreConversations={hasMoreConversations}
                 chatSummaries={chatSummaries}
                 selectedChat={selectedChat}
                 buildChatHref={(chatId) =>
                     citizen.chats.index.url({
-                        query: { chat: chatId },
+                        query: {
+                            chat: chatId,
+                            ...(conversationSearch ? { search: conversationSearch } : {}),
+                        },
+                    })
+                }
+                buildConversationSearchHref={(search, chatId) =>
+                    citizen.chats.index.url({
+                        query: {
+                            ...(chatId ? { chat: chatId } : {}),
+                            ...(search ? { search } : {}),
+                        },
                     })
                 }
                 buildMessageStoreUrl={(chatId) =>

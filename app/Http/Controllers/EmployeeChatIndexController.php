@@ -21,7 +21,10 @@ class EmployeeChatIndexController extends Controller
 
         abort_unless($employee instanceof User, 403);
 
-        $threads = $this->actorThreadsQuery($employee)
+        $conversationSearch = trim((string) $request->string('search')->toString());
+        $conversationListLimit = 100;
+
+        $threads = $this->applyThreadSearch($this->actorThreadsQuery($employee), $conversationSearch)
             ->with([
                 'participants.participant',
                 'latestMessage.author',
@@ -30,7 +33,10 @@ class EmployeeChatIndexController extends Controller
             ->withCount('messages')
             ->orderByDesc('latest_message_date')
             ->orderByDesc('updated_at')
+            ->limit($conversationListLimit + 1)
             ->get();
+        $hasMoreConversations = $threads->count() > $conversationListLimit;
+        $threads = $threads->take($conversationListLimit)->values();
 
         $requestedChatId = $request->integer('chat') ?: null;
         $selectedChatId = $requestedChatId ?: $threads->first()?->getKey();
@@ -58,6 +64,9 @@ class EmployeeChatIndexController extends Controller
             'currentEmployeeId' => $employee->id,
             'pollIntervalSeconds' => 10,
             'selectedChatId' => $selectedChat?->getKey(),
+            'conversationSearch' => $conversationSearch,
+            'conversationListLimit' => $conversationListLimit,
+            'hasMoreConversations' => $hasMoreConversations,
             'employees' => $employees->map(fn (User $user) => [
                 'id' => $user->id,
                 'name' => $user->name,

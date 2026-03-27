@@ -23,6 +23,54 @@ trait MapsChatThreadData
             });
     }
 
+    protected function applyThreadSearch(Builder $query, string $search): Builder
+    {
+        $search = trim($search);
+
+        if ($search === '') {
+            return $query;
+        }
+
+        $likeSearch = '%'.$search.'%';
+        $upperLikeSearch = '%'.strtoupper($search).'%';
+
+        return $query->where(function (Builder $searchQuery) use ($likeSearch, $upperLikeSearch): void {
+            $searchQuery
+                ->where('title', 'like', $likeSearch)
+                ->orWhereHas('latestMessage', function (Builder $messageQuery) use ($likeSearch): void {
+                    $messageQuery->where('content', 'like', $likeSearch);
+                })
+                ->orWhereHas('participants', function (Builder $participantQuery) use ($likeSearch, $upperLikeSearch): void {
+                    $participantQuery
+                        ->whereHasMorph(
+                            'participant',
+                            [Citizen::class],
+                            function (Builder $citizenQuery) use ($likeSearch, $upperLikeSearch): void {
+                                $citizenQuery->where(function (Builder $query) use ($likeSearch, $upperLikeSearch): void {
+                                    $query
+                                        ->where('name', 'like', $likeSearch)
+                                        ->orWhere('email', 'like', $likeSearch)
+                                        ->orWhere('phone_number', 'like', $likeSearch)
+                                        ->orWhere('fiscal_code', 'like', $upperLikeSearch);
+                                });
+                            }
+                        )
+                        ->orWhereHasMorph(
+                            'participant',
+                            [User::class],
+                            function (Builder $employeeQuery) use ($likeSearch): void {
+                                $employeeQuery->where(function (Builder $query) use ($likeSearch): void {
+                                    $query
+                                        ->where('name', 'like', $likeSearch)
+                                        ->orWhere('email', 'like', $likeSearch)
+                                        ->orWhere('department_name', 'like', $likeSearch);
+                                });
+                            }
+                        );
+                });
+        });
+    }
+
     /**
      * @return array<string, mixed>
      */
