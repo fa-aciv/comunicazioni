@@ -21,7 +21,10 @@ class EmployeeDashboardController extends Controller
 
         abort_unless($employee instanceof User, 403);
 
-        $activeChats = $this->actorThreadsQuery($employee)
+        $conversationSearch = trim((string) $request->string('search')->toString());
+        $conversationListLimit = $conversationSearch === '' ? 5 : 10;
+
+        $activeChats = $this->applyThreadSearch($this->actorThreadsQuery($employee), $conversationSearch)
             ->with([
                 'participants.participant',
                 'latestMessage.author',
@@ -30,13 +33,18 @@ class EmployeeDashboardController extends Controller
             ->withCount('messages')
             ->orderByDesc('latest_message_date')
             ->orderByDesc('updated_at')
-            ->limit(5)
-            ->get()
+            ->limit($conversationListLimit + 1)
+            ->get();
+        $hasMoreConversationResults = $activeChats->count() > $conversationListLimit;
+        $activeChats = $activeChats
+            ->take($conversationListLimit)
             ->map(fn (ChatThread $thread) => $this->mapChatSummary($thread))
             ->values();
 
         return Inertia::render('employee/dashboard', [
             'status' => $request->session()->get('status'),
+            'conversationSearch' => $conversationSearch,
+            'hasMoreConversationResults' => $hasMoreConversationResults,
             'activeChats' => $activeChats,
         ]);
     }

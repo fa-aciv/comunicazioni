@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { ChevronRight, MessageSquareText } from 'lucide-react';
+import { ChevronRight, MessageSquareText, UserRound } from 'lucide-react';
 
 import type { ChatSummary } from '@/components/chat/chat-types';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +26,7 @@ interface ChatSummaryListProps {
     buildChatHref: (chatId: number) => string;
     emptyTitle: string;
     emptyDescription: string;
+    showCitizenBadge?: boolean;
 }
 
 function formatDate(date: string | null | undefined): string {
@@ -44,6 +45,7 @@ export function ChatSummaryList({
     buildChatHref,
     emptyTitle,
     emptyDescription,
+    showCitizenBadge = false,
 }: ChatSummaryListProps) {
     if (chats.length === 0) {
         return (
@@ -70,11 +72,20 @@ export function ChatSummaryList({
                 >
                     <Link href={buildChatHref(chat.id)}>
                         <ItemContent className="min-w-0 pr-2">
-                            <ItemHeader className="items-start gap-3">
-                                <ItemTitle className="min-w-0 flex-1">
+                            <ItemHeader className="items-start justify-start flex-wrap-reverse gap-2">
+                                <ItemTitle className="">
                                     {chat.title}
                                 </ItemTitle>
-                                <Badge variant="secondary" className="shrink-0">
+                                {showCitizenBadge && chat.citizen?.name ? (
+                                    <Badge
+                                        variant="outline"
+                                        className="max-w-40 truncate"
+                                    >
+                                        <UserRound />
+                                        {chat.citizen.name}
+                                    </Badge>
+                                ) : null}
+                                <Badge variant="secondary" className="hidden sm:inline-flex">
                                     {chat.message_count} messaggi
                                 </Badge>
                             </ItemHeader>
