@@ -57,7 +57,7 @@ export default function Dashboard({ status, activeChats }: DashboardProps) {
                                 emptyDescription="Quando parteciperai a una chat la troverai qui."
                             />
 
-                            <Button asChild className="w-full">
+                            <Button asChild size="lg" className="w-full">
                                 <Link href={employee.chats.index().url}>
                                     Apri la pagina chat
                                 </Link>
@@ -65,7 +65,7 @@ export default function Dashboard({ status, activeChats }: DashboardProps) {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-amber-200">
+                    <Card className="border-amber-200 justify-between">
                         <CardHeader className="space-y-3">
                             <div className="flex size-11 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
                                 <UserCog className="size-5" />
@@ -78,7 +78,7 @@ export default function Dashboard({ status, activeChats }: DashboardProps) {
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <Button asChild variant="outline" className="w-full">
+                            <Button asChild variant="outline" size="lg" className="w-full">
                                 <Link href={employee.citizens.index().url}>
                                     Gestisci account cittadini
                                 </Link>

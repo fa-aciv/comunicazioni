@@ -1,5 +1,4 @@
 import { File } from 'lucide-react';
-import { type ReactNode } from 'react';
 
 import { cn } from '@/lib/utils';
 import { Item } from '../ui/item';
@@ -11,54 +10,98 @@ type MessageAttachmentSummary = {
 };
 
 type MessageBubbleProps = {
-    children?: ReactNode;
     variant?: 'author' | 'other';
     authorName: string;
     timestamp: string;
-    attachments?: MessageAttachmentSummary[];
+    messages: {
+        id: number | string;
+        content: string;
+        detailedTimestamp: string;
+        attachments?: MessageAttachmentSummary[];
+    }[];
 };
 
 export default function MessageBubble({
-    children,
     variant = 'other',
     authorName,
     timestamp,
-    attachments = [],
+    messages,
 }: MessageBubbleProps) {
     const isAuthor = variant === 'author';
+    const showDetailedTimestampOnHover = messages.length > 1;
 
     return (
-        <div className={cn(isAuthor ? 'self-end' : 'self-start', 'w-2/3 flex flex-col')}>
+        <div
+            className={cn(
+                isAuthor ? 'self-end' : 'self-start',
+                'flex w-2/3 flex-col',
+            )}
+        >
             <Item
                 className={cn(
-                    'bg-card border shadow-xs flex flex-col gap-1',
+                    'bg-card border shadow-xs flex flex-col gap-2',
                     isAuthor
                         ? 'rounded-br-none border-amber-200 bg-amber-50 dark:border-amber-950/50 dark:bg-amber-950/80'
                         : 'rounded-bl-none border-gray-200 dark:border-card dark:bg-gray-700/50',
                 )}
             >
-                <div className="self-start text-sm flex flex-row w-full items-center justify-between">
-                    <span className="font-semibold capitalize">{authorName.toLowerCase()}</span>{' '}
-                    <span className="text-xs font-light text-muted-foreground">{timestamp}</span>
+                <div className="flex w-full flex-row items-center justify-between self-start text-sm">
+                    <span className="font-semibold capitalize">
+                        {authorName.toLowerCase()}
+                    </span>
+                    <span className="text-xs font-light text-muted-foreground">
+                        {timestamp}
+                    </span>
                 </div>
 
-                {children ? (
-                    <div className="text-sm self-start">
-                        {children}
-                    </div>
-                ) : null}
+                <div className="flex w-full flex-col gap-2">
+                    {messages.map((message, index) => {
+                        const showInlineTimestamp =
+                            showDetailedTimestampOnHover &&
+                            index > 0 &&
+                            message.detailedTimestamp;
 
-                {attachments.length > 0 ? (
-                    <div className="flex flex-row flex-wrap w-full justify-end gap-1 py-2">
-                        {attachments.map((attachment) => (
-                            <MessageAttachment
-                                key={attachment.id}
-                                attachment={attachment}
-                                isAuthor={isAuthor}
-                            />
-                        ))}
-                    </div>
-                ) : null}
+                        return (
+                            <div
+                                key={message.id}
+                                className={cn(
+                                    'group/message flex w-full flex-col gap-2',
+                                )}
+                            >
+                            {message.content ? (
+                                <div className="min-w-0 self-start text-sm whitespace-pre-wrap wrap-break-words after:block after:clear-both after:content-['']">
+                                    {showInlineTimestamp ? (
+                                        <span className="float-right ml-2 hidden whitespace-nowrap text-xs font-light text-muted-foreground group-hover/message:block">
+                                            {message.detailedTimestamp}
+                                        </span>
+                                    ) : null}
+                                    {message.content}
+                                </div>
+                            ) : null}
+
+                            {!message.content && showInlineTimestamp ? (
+                                <div className="hidden w-full justify-end group-hover/message:flex">
+                                    <span className="shrink-0 text-xs font-light text-muted-foreground">
+                                        {message.detailedTimestamp}
+                                    </span>
+                                </div>
+                            ) : null}
+
+                            {message.attachments && message.attachments.length > 0 ? (
+                                <div className="flex w-full flex-row flex-wrap justify-end gap-1 py-1">
+                                    {message.attachments.map((attachment) => (
+                                        <MessageAttachment
+                                            key={attachment.id}
+                                            attachment={attachment}
+                                            isAuthor={isAuthor}
+                                        />
+                                    ))}
+                                </div>
+                            ) : null}
+                            </div>
+                        );
+                    })}
+                </div>
             </Item>
         </div>
     );
