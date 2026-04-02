@@ -73,10 +73,7 @@ export default function CitizenAccountPage({
         accountForm.patch(citizen.account.update.url(), {
             preserveScroll: true,
             onSuccess: () => {
-                accountForm.setDefaults({
-                    email: accountForm.data.email,
-                    phoneNumber: accountForm.data.phoneNumber,
-                });
+                accountForm.reset();
             },
         });
     };
@@ -101,7 +98,7 @@ export default function CitizenAccountPage({
                                 </div>
                                 <CardTitle>Impostazioni account</CardTitle>
                                 <CardDescription>
-                                    Gestisci i tuoi contatti e le opzioni del profilo.
+                                    Gestisci i tuoi contatti e le opzioni del profilo. Email e telefono vengono aggiornati solo dopo una conferma via email e OTP SMS.
                                 </CardDescription>
                             </div>
                             <Button asChild variant="outline">
@@ -163,7 +160,7 @@ export default function CitizenAccountPage({
                                     type="submit"
                                     disabled={accountForm.processing || !accountForm.isDirty}
                                 >
-                                    Salva contatti
+                                    Richiedi conferma modifiche
                                     {accountForm.processing && <Spinner />}
                                 </Button>
                             </div>
@@ -174,7 +171,7 @@ export default function CitizenAccountPage({
                                 Elimina account
                             </div>
                             <p className="mt-1 text-sm text-red-700">
-                                Questa azione elimina definitivamente il tuo profilo e le chat collegate.
+                                Questa azione elimina definitivamente il tuo profilo e le chat collegate. Per sicurezza richiede anche conferma via email e OTP SMS.
                             </p>
                             <div className="mt-4">
                                 <Button
@@ -184,7 +181,7 @@ export default function CitizenAccountPage({
                                     disabled={deleteAccountForm.processing}
                                 >
                                     <Trash2 className="size-4" />
-                                    Elimina account
+                                    Richiedi eliminazione account
                                 </Button>
                             </div>
                         </div>

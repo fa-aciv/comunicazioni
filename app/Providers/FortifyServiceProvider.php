@@ -48,5 +48,13 @@ class FortifyServiceProvider extends ServiceProvider
         RateLimiter::for('citizen-registration-verify', fn (Request $request) => [
             Limit::perMinute(5)->by($request->session()->get('citizen_registration.invitation_id', 'guest').'|'.$request->ip()),
         ]);
+
+        RateLimiter::for('citizen-contact-change-verify', fn (Request $request) => [
+            Limit::perMinute(5)->by($request->session()->get('citizen_contact_change.request_id', 'guest').'|'.$request->ip()),
+        ]);
+
+        RateLimiter::for('citizen-account-deletion-verify', fn (Request $request) => [
+            Limit::perMinute(5)->by($request->session()->get('citizen_account_deletion.request_id', 'guest').'|'.$request->ip()),
+        ]);
     }
 }

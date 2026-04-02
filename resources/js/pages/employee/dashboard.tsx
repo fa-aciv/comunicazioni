@@ -2,6 +2,7 @@ import { ChatSummaryList } from '@/components/chat/chat-summary-list';
 import type { ChatSummary } from '@/components/chat/chat-types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 import {
     InputGroup,
     InputGroupAddon,
@@ -104,7 +105,17 @@ export default function Dashboard({
                 <div className="grid gap-4 md:grid-cols-2">
                     <Card className="border-sky-200">
                         <CardHeader className="space-y-3">
-                            <div className="flex size-11 items-center justify-center rounded-2xl bg-sky-100 text-sky-700">
+                            <div className={cn(
+                                    "flex",
+                                    "size-11",
+                                    "items-center",
+                                    "justify-center",
+                                    "rounded-2xl",
+                                    "bg-sky-100",
+                                    "dark:bg-sky-900",
+                                    "text-sky-700",
+                                    "dark:text-sky-300"
+                            )}>
                                 <MessageSquareMore className="size-5" />
                             </div>
                             <div className="space-y-1">
@@ -201,7 +212,17 @@ export default function Dashboard({
 
                     <Card className="border-amber-200 justify-between">
                         <CardHeader className="space-y-3">
-                            <div className="flex size-11 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+                            <div className={cn(
+                                    "flex",
+                                    "size-11",
+                                    "items-center",
+                                    "justify-center",
+                                    "rounded-2xl",
+                                    "bg-amber-100",
+                                    "dark:bg-amber-950",
+                                    "dark:text-amber-300",
+                                    "text-amber-700"
+                            )}>
                                 <UserCog className="size-5" />
                             </div>
                             <div className="space-y-1">

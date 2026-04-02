@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Auth\CitizenAuthController;
+use App\Http\Controllers\Auth\CitizenAccountDeletionController;
+use App\Http\Controllers\Auth\CitizenContactChangeController;
 use App\Http\Controllers\Auth\CitizenRegistrationController;
 use App\Http\Controllers\Auth\EmployeeSessionController;
 use App\Http\Controllers\ChatAttachmentController;
@@ -35,6 +37,19 @@ Route::get('/dashboard', function () {
 })->name('dashboard');
 
 Route::prefix('citizen')->name('citizen.')->group(function () {
+    Route::get('account/delete/{deletionRequest}', [CitizenAccountDeletionController::class, 'show'])
+        ->middleware('signed')
+        ->name('account.deletion.challenge');
+    Route::post('account/delete/verify', [CitizenAccountDeletionController::class, 'verify'])
+        ->middleware('throttle:citizen-account-deletion-verify')
+        ->name('account.deletion.verify');
+    Route::get('account/change/{changeRequest}', [CitizenContactChangeController::class, 'show'])
+        ->middleware('signed')
+        ->name('account.change.challenge');
+    Route::post('account/change/verify', [CitizenContactChangeController::class, 'verify'])
+        ->middleware('throttle:citizen-contact-change-verify')
+        ->name('account.change.verify');
+
     Route::middleware(['guest:citizen'])->group(function () {
         Route::get('login', [CitizenAuthController::class, 'create'])->name('login');
         Route::post('login/link', [CitizenAuthController::class, 'requestMagicLink'])
