@@ -19,7 +19,7 @@ class AddEmployeeParticipant
             ->where('participant_id', $actor->getKey())
             ->exists();
 
-        if (! $actorIsParticipant) {
+        if (!$actorIsParticipant) {
             throw ValidationException::withMessages([
                 'employee_id' => 'Non puoi modificare i partecipanti di questa chat.',
             ]);
@@ -40,7 +40,7 @@ class AddEmployeeParticipant
 
         if ($alreadyParticipant) {
             throw ValidationException::withMessages([
-                'employee_id' => 'Il dipendente e gia partecipante alla chat.',
+                'employee_id' => 'Il dipendente è già partecipante alla chat.',
             ]);
         }
 

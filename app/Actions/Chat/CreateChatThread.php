@@ -34,7 +34,7 @@ class CreateChatThread
 
         if ($employees->count() !== $employeeIds->count()) {
             throw ValidationException::withMessages([
-                'employee_ids' => 'Uno o piu partecipanti dipendenti non esistono.',
+                'employee_ids' => 'Uno o più partecipanti dipendenti non esistono.',
             ]);
         }
 
