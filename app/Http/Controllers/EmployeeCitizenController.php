@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CitizenRegistrationInvitation;
 use App\Models\Citizen;
+use App\Notifications\SendCitizenRegistrationInvitation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -72,7 +75,7 @@ class EmployeeCitizenController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email:rfc', 'max:255', Rule::unique(Citizen::class, 'email')],
             'phoneNumber' => ['required', 'string', 'max:30', 'regex:/^\+?[0-9]+$/'],
@@ -82,16 +85,42 @@ class EmployeeCitizenController extends Controller
             'fiscalCode.regex' => 'Il codice fiscale deve contenere 16 caratteri alfanumerici in maiuscolo.',
         ]);
 
-        Citizen::query()->create([
+        $validator->after(function ($validator) use ($request): void {
+            $email = mb_strtolower(trim((string) $request->input('email')));
+            $fiscalCode = strtoupper(trim((string) $request->input('fiscalCode')));
+
+            if ($email !== '' && CitizenRegistrationInvitation::query()
+                ->whereNull('completed_at')
+                ->where('magic_link_expires_at', '>', now())
+                ->where('email', $email)
+                ->exists()) {
+                $validator->errors()->add('email', 'Esiste gia una registrazione cittadino in attesa di conferma per questa email.');
+            }
+
+            if ($fiscalCode !== '' && CitizenRegistrationInvitation::query()
+                ->whereNull('completed_at')
+                ->where('magic_link_expires_at', '>', now())
+                ->where('fiscal_code', $fiscalCode)
+                ->exists()) {
+                $validator->errors()->add('fiscalCode', 'Esiste gia una registrazione cittadino in attesa di conferma per questo codice fiscale.');
+            }
+        });
+
+        $validated = $validator->validate();
+
+        $invitation = CitizenRegistrationInvitation::query()->create([
             'name' => trim($validated['name']),
             'email' => mb_strtolower(trim($validated['email'])),
             'phone_number' => $validated['phoneNumber'],
             'fiscal_code' => strtoupper($validated['fiscalCode']),
+            'magic_link_expires_at' => now()->addMinutes(config('auth.citizen.magic_link_expire')),
         ]);
+
+        $invitation->notify(new SendCitizenRegistrationInvitation($invitation));
 
         return redirect()
             ->route('employee.citizens.index')
-            ->with('status', 'Cittadino registrato correttamente.');
+            ->with('status', 'Invito inviato al cittadino. L\'account verra creato dopo la conferma dei dati via email e OTP SMS.');
     }
 
     public function edit(Request $request, Citizen $citizen): Response

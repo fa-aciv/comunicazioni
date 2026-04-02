@@ -21,7 +21,7 @@ export default function ParticipantBadge({ name, type, className }: ParticipantB
                 className
             )}
         >
-            {isEmployee ? <UserRound size={14} /> : <Cross size={14} />}
+            {isEmployee ? <Cross size={14} /> : <UserRound size={14} />}
             <span className="capitalize">{name.toLowerCase()}</span>
         </Badge>
     );

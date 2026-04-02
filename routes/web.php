@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\CitizenAuthController;
+use App\Http\Controllers\Auth\CitizenRegistrationController;
 use App\Http\Controllers\Auth\EmployeeSessionController;
 use App\Http\Controllers\ChatAttachmentController;
 use App\Http\Controllers\ChatController;
@@ -39,6 +40,12 @@ Route::prefix('citizen')->name('citizen.')->group(function () {
         Route::post('login/link', [CitizenAuthController::class, 'requestMagicLink'])
             ->middleware('throttle:citizen-link')
             ->name('login.link');
+        Route::get('register/challenge/{invitation}', [CitizenRegistrationController::class, 'show'])
+            ->middleware('signed')
+            ->name('registration.challenge');
+        Route::post('register/verify', [CitizenRegistrationController::class, 'verify'])
+            ->middleware('throttle:citizen-registration-verify')
+            ->name('registration.verify');
         Route::get('login/challenge/{challenge}', [CitizenAuthController::class, 'showChallenge'])
             ->middleware('signed')
             ->name('login.challenge');

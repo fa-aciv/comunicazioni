@@ -65,7 +65,7 @@ export default function EmployeeCitizenCreatePage({ status }: EmployeeCitizenCre
                                 </div>
                                 <CardTitle>Registra un cittadino</CardTitle>
                                 <CardDescription>
-                                    Inserisci i dati essenziali per permettere l&apos;accesso tramite magic link e OTP.
+                                    Inserisci i dati essenziali. Il cittadino riceverà una email di conferma e dovrà verificare i dati con OTP SMS prima che l&apos;account venga creato.
                                 </CardDescription>
                             </div>
                             <Button asChild variant="outline">
@@ -147,7 +147,7 @@ export default function EmployeeCitizenCreatePage({ status }: EmployeeCitizenCre
 
                             <div className="flex justify-end md:col-span-2">
                                 <Button type="submit" disabled={form.processing}>
-                                    Registra cittadino
+                                    Invia richiesta di conferma
                                     {form.processing && <Spinner />}
                                 </Button>
                             </div>
