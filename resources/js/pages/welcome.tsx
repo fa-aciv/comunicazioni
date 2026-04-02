@@ -80,7 +80,7 @@ export default function Welcome() {
                             >
                                 <Button
                                     className="mt-4 w-full"
-                                    size="lg"
+                                    size="sm"
                                     variant="outline"
                                 >
                                     <IdCard />

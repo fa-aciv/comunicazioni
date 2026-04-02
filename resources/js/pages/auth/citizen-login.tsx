@@ -46,7 +46,7 @@ export default function CitizenLogin({ status }: CitizenLoginProps) {
                     <InputError message={form.errors.email} />
                 </div>
 
-                <Button type="submit" disabled={form.processing} className="w-full">
+                <Button type="submit" size="lg" disabled={form.processing} className="w-full">
                     {form.processing && <Spinner />}
                     Invia link di accesso
                 </Button>

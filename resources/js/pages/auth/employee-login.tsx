@@ -77,7 +77,7 @@ export default function EmployeeLogin({ status }: EmployeeLoginProps) {
                     <Label htmlFor="remember">Ricordami</Label>
                 </div>
 
-                <Button type="submit" disabled={form.processing} className="w-full">
+                <Button type="submit" size="lg" disabled={form.processing} className="w-full">
                     {form.processing && <Spinner />}
                     Accedi
                 </Button>

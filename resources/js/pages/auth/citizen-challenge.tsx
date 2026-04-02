@@ -81,7 +81,7 @@ export default function CitizenChallenge({
                     <InputError message={form.errors.otp} />
                 </div>
 
-                <Button type="submit" disabled={form.processing} className="w-full">
+                <Button type="submit" size="lg" disabled={form.processing} className="w-full">
                     {form.processing && <Spinner />}
                     Accedi
                 </Button>
