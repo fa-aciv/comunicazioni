@@ -89,20 +89,39 @@ class ChatController extends Controller
             $validated['attachments'] ?? []
         );
 
-        if ($request->expectsJson()) {
+        if ($request->expectsJson()) { // Is this necessary?
             return response()->json([
                 'message' => $message,
                 'status' => 'Messaggio inviato correttamente.',
             ], 201);
         }
 
-        if ($actor instanceof User) {
+        if ($actor instanceof User) { // Is this necessary?
             return redirect()
                 ->route('employee.chats.index', ['chat' => $chat])
                 ->with('status', 'Messaggio inviato correttamente.');
         }
 
         return back()->with('status', 'Messaggio inviato correttamente.');
+    }
+
+    public function deleteMessage(
+        Request $request,
+        int|string $chat,
+        int|string $message,
+        DeleteChatMessage $action
+    ): JsonResponse|RedirectResponse {
+        $actor = $this->resolveGuardActor($request);
+
+        $action->handle($chat, $message, $actor);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status' => 'Messaggio cancellato correttamente.',
+            ]);
+        }
+
+        return back()->with('status', 'Messaggio cancellato correttamente.');
     }
 
     public function storeParticipant(

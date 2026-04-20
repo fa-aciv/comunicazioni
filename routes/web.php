@@ -75,6 +75,8 @@ Route::prefix('citizen')->name('citizen.')->group(function () {
         Route::get('attachments/{attachment}', [ChatAttachmentController::class, 'show'])->name('attachments.show');
         Route::get('attachments/{attachment}/download', [ChatAttachmentController::class, 'download'])->name('attachments.download');
         Route::post('chats/{chat}/messages', [ChatController::class, 'storeMessage'])->name('chats.messages.store');
+        Route::delete('chats/{chat}/messages/{message}', [ChatController::class, 'deleteMessage'])->name('chats.messages.destroy');
+        Route::delete('chats/{chat}', [ChatController::class, 'destroyThread'])->name('chats.destroy');
         Route::get('account', [CitizenAccountController::class, 'index'])->name('account.index');
         Route::patch('account', [CitizenAccountController::class, 'update'])->name('account.update');
         Route::delete('account', [CitizenAccountController::class, 'destroy'])->name('account.destroy');
@@ -97,7 +99,9 @@ Route::prefix('employee')->name('employee.')->group(function () {
         Route::get('attachments/{attachment}', [ChatAttachmentController::class, 'show'])->name('attachments.show');
         Route::get('attachments/{attachment}/download', [ChatAttachmentController::class, 'download'])->name('attachments.download');
         Route::post('chats', [ChatController::class, 'storeThread'])->name('chats.store');
+        Route::delete('chats/{chat}', [ChatController::class, 'destroyThread'])->name('chats.destroy');
         Route::post('chats/{chat}/messages', [ChatController::class, 'storeMessage'])->name('chats.messages.store');
+        Route::delete('chats/{chat}/messages/{message}', [ChatController::class, 'deleteMessage'])->name('chats.messages.destroy');
         Route::post('chats/{chat}/participants', [ChatController::class, 'storeParticipant'])->name('chats.participants.store');
         Route::delete('chats/{chat}/participants/{employee}', [ChatController::class, 'destroyParticipant'])->name('chats.participants.destroy');
         Route::get('citizens', [EmployeeCitizenController::class, 'index'])->name('citizens.index');

@@ -23,7 +23,7 @@ class CitizenAccountDeletionController extends Controller
     ): Response|RedirectResponse {
         $deletionRequest->loadMissing('citizen');
 
-        if ($deletionRequest->completed_at !== null || $deletionRequest->isExpired() || ! $deletionRequest->citizen) {
+        if ($deletionRequest->completed_at !== null || $deletionRequest->isExpired() || !$deletionRequest->citizen) {
             return redirect()
                 ->route('citizen.login')
                 ->withErrors(['email' => 'Il link di conferma non è piu valido.']);
