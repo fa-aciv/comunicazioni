@@ -27,7 +27,7 @@ import {
 import { router } from '@inertiajs/react';
 import ParticipantBadge from '@/components/chat/participant-badge';
 import { MoreHorizontal, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 interface ChatThreadHeaderProps {
     selectedChat: SelectedChatSummary | null;
@@ -50,10 +50,6 @@ export function ChatThreadHeader({
 }: ChatThreadHeaderProps) {
     const [isDeletingThread, setIsDeletingThread] = useState(false);
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-
-    useEffect(() => {
-        setConfirmDeleteOpen(false);
-    }, [selectedChat?.id]);
 
     const handleThreadDeletion = () => {
         if (!selectedChat || !buildThreadDestroyUrl || isDeletingThread) {
@@ -126,15 +122,15 @@ export function ChatThreadHeader({
                                 <p>{selectedChat ? 'Azioni chat' : 'Seleziona una chat'}</p>
                             </TooltipContent>
                         </Tooltip>
-                            <DropdownMenuContent align="end" className="w-48 min-w-0">
-                                <DropdownMenuItem
-                                    variant="destructive"
-                                    onSelect={() => setConfirmDeleteOpen(true)}
-                                    disabled={!selectedChat || isDeletingThread}
-                                >
-                                    <Trash2 className="size-4" />
-                                    Elimina chat
-                                </DropdownMenuItem>
+                        <DropdownMenuContent align="end" className="w-48 min-w-0">
+                            <DropdownMenuItem
+                                variant="destructive"
+                                onSelect={() => setConfirmDeleteOpen(true)}
+                                disabled={!selectedChat || isDeletingThread}
+                            >
+                                <Trash2 className="size-4" />
+                                Elimina chat
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 ) : null}

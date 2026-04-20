@@ -45,7 +45,7 @@ export default function EmployeeChatsPage({
     selectedChat,
 }: EmployeeChatsProps) {
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <ChatWorkspace
                 headTitle="Chat dipendenti"
                 status={status}

@@ -116,6 +116,7 @@ export function ChatWorkspace({
                         <main className="flex h-[calc(100dvh-6rem)] min-h-0 flex-col self-stretch sm:min-w-sm sm:flex-2 sm:shadow-sm">
                             <Card className="flex h-full flex-col rounded-sm">
                                 <ChatThreadHeader
+                                    key={selectedChat?.id ?? 'no-chat'}
                                     selectedChat={selectedChat}
                                     employees={employees}
                                     currentActorId={currentActorId}

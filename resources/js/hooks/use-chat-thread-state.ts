@@ -1,5 +1,5 @@
 import { usePoll } from '@inertiajs/react';
-import { useEffect, useRef, useState, type UIEvent } from 'react';
+import { useEffect, useReducer, useRef, type UIEvent } from 'react';
 
 import type {
     ChatActorType,
@@ -23,6 +23,10 @@ interface UseChatThreadStateOptions {
     pollIntervalSeconds: number;
 }
 
+type UnreadCountAction =
+    | { type: 'increment'; amount: number }
+    | { type: 'reset' };
+
 // The hook keeps all the "thread behavior" together: polling, unread tracking
 // and the decision of when the viewport should auto-scroll to the latest message.
 export function useChatThreadState({
@@ -36,12 +40,12 @@ export function useChatThreadState({
     const selectedMessages = selectedChat?.messages ?? EMPTY_MESSAGES;
     const messagesViewportRef = useRef<HTMLDivElement>(null);
     const previousSnapshotRef = useRef<ChatSnapshot>(
-        buildChatSnapshot(selectedChat),
+        buildChatSnapshot(selectedChatId, selectedMessages),
     );
     const isTabFocusedRef = useRef(getIsTabFocused());
     const shouldAutoScrollRef = useRef(selectedChatId !== null);
     const isAtBottomRef = useRef(true);
-    const [unreadCount, setUnreadCount] = useState(0);
+    const [unreadCount, dispatchUnreadCount] = useReducer(unreadCountReducer, 0);
 
     usePoll(Math.max(pollIntervalSeconds, 1) * 1000, {}, {
         autoStart: pollIntervalSeconds > 0,
@@ -62,7 +66,7 @@ export function useChatThreadState({
             isTabFocusedRef.current = isFocused;
 
             if (isFocused && !wasFocused && isAtBottomRef.current) {
-                setUnreadCount(0);
+                dispatchUnreadCount({ type: 'reset' });
             }
         };
 
@@ -78,7 +82,7 @@ export function useChatThreadState({
     }, []);
 
     useEffect(() => {
-        const currentSnapshot = buildChatSnapshot(selectedChat);
+        const currentSnapshot = buildChatSnapshot(selectedChatId, selectedMessages);
         const previousSnapshot = previousSnapshotRef.current;
 
         // Switching chat resets the local unread counter and requests one scroll
@@ -87,14 +91,14 @@ export function useChatThreadState({
             previousSnapshotRef.current = currentSnapshot;
             shouldAutoScrollRef.current = currentSnapshot.chatId !== null;
             isAtBottomRef.current = true;
-            setUnreadCount(0);
+            dispatchUnreadCount({ type: 'reset' });
 
             return;
         }
 
         if (currentSnapshot.chatId === null) {
             previousSnapshotRef.current = currentSnapshot;
-            setUnreadCount(0);
+            dispatchUnreadCount({ type: 'reset' });
 
             return;
         }
@@ -122,12 +126,18 @@ export function useChatThreadState({
                 shouldAutoScrollRef.current = true;
             }
 
-            setUnreadCount((currentCount) => currentCount + newIncomingMessages.length);
+            dispatchUnreadCount({
+                type: 'increment',
+                amount: newIncomingMessages.length,
+            });
         } else if (isAtBottomRef.current) {
             shouldAutoScrollRef.current = true;
-            setUnreadCount(0);
+            dispatchUnreadCount({ type: 'reset' });
         } else if (newIncomingMessages.length > 0) {
-            setUnreadCount((currentCount) => currentCount + newIncomingMessages.length);
+            dispatchUnreadCount({
+                type: 'increment',
+                amount: newIncomingMessages.length,
+            });
         }
 
         previousSnapshotRef.current = currentSnapshot;
@@ -152,7 +162,7 @@ export function useChatThreadState({
             isAtBottomRef.current = true;
 
             if (isTabFocusedRef.current) {
-                setUnreadCount(0);
+                dispatchUnreadCount({ type: 'reset' });
             }
         });
 
@@ -166,7 +176,7 @@ export function useChatThreadState({
         isAtBottomRef.current = isAtBottom;
 
         if (isAtBottom && unreadCount > 0 && isTabFocusedRef.current) {
-            setUnreadCount(0);
+            dispatchUnreadCount({ type: 'reset' });
         }
     };
 
@@ -179,10 +189,25 @@ export function useChatThreadState({
     };
 }
 
-function buildChatSnapshot(chat: SelectedChatSummary | null): ChatSnapshot {
+function unreadCountReducer(
+    currentUnreadCount: number,
+    action: UnreadCountAction,
+) {
+    switch (action.type) {
+        case 'increment':
+            return currentUnreadCount + action.amount;
+        case 'reset':
+            return 0;
+    }
+}
+
+function buildChatSnapshot(
+    chatId: number | null,
+    messages: ChatMessageSummary[],
+): ChatSnapshot {
     return {
-        chatId: chat?.id ?? null,
-        messageIds: chat?.messages.map((message) => message.id) ?? [],
+        chatId,
+        messageIds: messages.map((message) => message.id),
     };
 }
 

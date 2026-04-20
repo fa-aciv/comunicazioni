@@ -20,7 +20,6 @@ interface CitizenChallengeProps {
 }
 
 export default function CitizenChallenge({
-    email,
     maskedPhoneNumber,
     expiresAt,
     status,

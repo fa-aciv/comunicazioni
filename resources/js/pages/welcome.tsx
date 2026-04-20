@@ -17,8 +17,7 @@ interface WelcomeProps extends SharedData {
 }
 
 export default function Welcome() {
-    const { auth, hasCitizenSession, hasEmployeeSession } =
-        usePage<WelcomeProps>().props;
+    const { hasCitizenSession, hasEmployeeSession } = usePage<WelcomeProps>().props;
     const year = new Date().getFullYear();
 
     return (

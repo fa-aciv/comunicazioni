@@ -1,6 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import { UserCog } from 'lucide-react';
-import { useDeferredValue, useEffect, useState } from 'react';
+import { useDeferredValue, useState } from 'react';
 
 import {
     AddParticipantSection,
@@ -80,15 +80,6 @@ export function ChatAddParticipantDialog({
         addForm.clearErrors();
         removeForm.clearErrors();
     };
-
-    useEffect(() => {
-        setOpen(false);
-        setQuery('');
-        setRemovingId(null);
-        addForm.reset();
-        addForm.clearErrors();
-        removeForm.clearErrors();
-    }, [selectedChat?.id]);
 
     const onOpenChange = (nextOpen: boolean) => {
         setOpen(nextOpen);
