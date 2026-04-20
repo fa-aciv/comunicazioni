@@ -95,6 +95,7 @@ trait MapsChatThreadData
             'id' => $thread->id,
             'title' => $thread->title ?: 'Chat senza titolo',
             'latest_message_date' => optional($thread->latest_message_date)->toIso8601String(),
+            'last_activity_at' => optional($thread->last_activity_at)->toIso8601String(),
             'message_count' => $thread->messages_count,
             'latest_message_preview' => $latestPreview,
             'latest_message_author' => $latestMessage ? [
@@ -132,6 +133,7 @@ trait MapsChatThreadData
             'id' => $thread->id,
             'title' => $thread->title ?: 'Chat senza titolo',
             'latest_message_date' => optional($thread->latest_message_date)->toIso8601String(),
+            'last_activity_at' => optional($thread->last_activity_at)->toIso8601String(),
             'citizen' => $citizenParticipant?->participant ? [
                 'id' => $citizenParticipant->participant->id,
                 'name' => $citizenParticipant->participant->name,

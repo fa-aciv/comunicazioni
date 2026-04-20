@@ -19,6 +19,7 @@ class ChatThreadFactory extends Factory
             'creator_type' => \App\Models\User::class,
             'title' => fake()->sentence(3),
             'latest_message_date' => fake()->optional()->dateTimeBetween('-1 week'),
+            'last_activity_at' => fake()->dateTimeBetween('-1 week'),
         ];
     }
 }

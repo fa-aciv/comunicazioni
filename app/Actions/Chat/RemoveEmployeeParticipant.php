@@ -49,8 +49,12 @@ class RemoveEmployeeParticipant
             ]);
         }
 
-        DB::transaction(function () use ($chatParticipant): void {
+        DB::transaction(function () use ($chatParticipant, $chat): void {
             $chatParticipant->delete();
+
+            $chat->forceFill([
+                'last_activity_at' => now(),
+            ])->save();
         });
 
         return $chat->fresh('participants.participant');

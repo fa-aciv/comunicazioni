@@ -56,6 +56,7 @@ class StoreChatMessage
 
             $chat->forceFill([
                 'latest_message_date' => $message->created_at,
+                'last_activity_at' => $message->created_at,
             ])->save();
 
             return $message->load('attachments');

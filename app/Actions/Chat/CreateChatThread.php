@@ -44,6 +44,7 @@ class CreateChatThread
                 'creator_type' => $employee::class,
                 'title' => trim((string) ($validated['title'] ?? '')) ?: 'Chat con '.$citizen->name,
                 'latest_message_date' => null,
+                'last_activity_at' => now(),
             ]);
 
             $thread->participants()->create([

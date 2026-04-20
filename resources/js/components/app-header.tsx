@@ -27,7 +27,7 @@ import citizen from '@/routes/citizen';
 import employee from '@/routes/employee';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Menu, MessageSquareDot } from 'lucide-react';
+import { LayoutGrid, Menu, MessageSquareDot, Settings } from 'lucide-react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 
@@ -60,6 +60,11 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                       title: 'Chat',
                       href: employee.chats.index().url,
                       icon: MessageSquareDot,
+                  },
+                  {
+                      title: 'Impostazioni',
+                      href: employee.settings.index().url,
+                      icon: Settings,
                   },
               ]
             : auth.activeGuard === 'citizen'

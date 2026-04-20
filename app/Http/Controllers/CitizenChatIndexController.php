@@ -30,6 +30,7 @@ class CitizenChatIndexController extends Controller
                 'latestMessage.attachments',
             ])
             ->withCount('messages')
+            ->orderByDesc('last_activity_at')
             ->orderByDesc('latest_message_date')
             ->orderByDesc('updated_at')
             ->limit($conversationListLimit + 1)

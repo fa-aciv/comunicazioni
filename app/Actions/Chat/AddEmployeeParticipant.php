@@ -49,6 +49,10 @@ class AddEmployeeParticipant
                 'participant_id' => $participant->getKey(),
                 'participant_type' => User::class,
             ]);
+
+            $chat->forceFill([
+                'last_activity_at' => now(),
+            ])->save();
         });
 
         return $chat->fresh('participants.participant');

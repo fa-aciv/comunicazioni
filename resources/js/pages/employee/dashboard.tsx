@@ -14,7 +14,7 @@ import employee from '@/routes/employee';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
-import { MessageSquareMore, Search, UserCog, X } from 'lucide-react';
+import { MessageSquareMore, Search, Settings, UserCog, X } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -102,7 +102,7 @@ export default function Dashboard({
                     </div>
                 )}
 
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 lg:grid-cols-3">
                     <Card className="border-sky-200">
                         <CardHeader className="space-y-3">
                             <div className={cn(
@@ -236,6 +236,37 @@ export default function Dashboard({
                             <Button asChild variant="outline" size="lg" className="w-full">
                                 <Link href={employee.citizens.index().url}>
                                     Gestisci account cittadini
+                                </Link>
+                            </Button>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-sky-200 justify-between">
+                        <CardHeader className="space-y-3">
+                            <div className={cn(
+                                    "flex",
+                                    "size-11",
+                                    "items-center",
+                                    "justify-center",
+                                    "rounded-2xl",
+                                    "bg-sky-100",
+                                    "dark:bg-sky-950",
+                                    "dark:text-sky-300",
+                                    "text-sky-700"
+                            )}>
+                                <Settings className="size-5" />
+                            </div>
+                            <div className="space-y-1">
+                                <CardTitle>Impostazioni</CardTitle>
+                                <CardDescription>
+                                    Configura la retention automatica di messaggi e conversazioni.
+                                </CardDescription>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <Button asChild variant="outline" size="lg" className="w-full">
+                                <Link href={employee.settings.index().url}>
+                                    Apri impostazioni
                                 </Link>
                             </Button>
                         </CardContent>

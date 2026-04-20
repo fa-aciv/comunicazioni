@@ -16,10 +16,12 @@ class ChatThread extends Model
         'creator_type',
         'title',
         'latest_message_date',
+        'last_activity_at',
     ];
 
     protected $casts = [
         'latest_message_date' => 'datetime',
+        'last_activity_at' => 'datetime',
     ];
 
     // Creator (User or Citizen)

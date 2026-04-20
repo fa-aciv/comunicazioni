@@ -4,12 +4,15 @@ namespace App\Actions\Chat;
 
 use App\Models\ChatThread;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class DeleteChatThread
 {
+    public function __construct(
+        private readonly DeleteChatRecords $deleteChatRecords,
+    ) {
+    }
+
     public function handle(int|string $chatId, Model $actor): ChatThread
     {
         $chat = ChatThread::query()->findOrFail($chatId);
@@ -25,18 +28,7 @@ class DeleteChatThread
             ]);
         }
 
-        DB::transaction(function () use ($chat) {
-            foreach ($chat->messages as $message) {
-                foreach ($message->attachments as $attachment) {
-                    Storage::disk(config('filesystems.default', 'local'))->delete($attachment->file_path);
-                    $attachment->delete();
-                }
-
-                $message->delete();
-            }
-
-            $chat->delete();
-        });
+        $this->deleteChatRecords->deleteThread($chat);
 
         return $chat;
     }

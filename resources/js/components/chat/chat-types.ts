@@ -19,6 +19,7 @@ export interface ChatSummary {
     id: number;
     title: string;
     latest_message_date?: string | null;
+    last_activity_at?: string | null;
     latest_message_preview: string;
     message_count: number;
     latest_message_author?: {
@@ -55,6 +56,7 @@ export interface SelectedChatSummary {
     id: number;
     title: string;
     latest_message_date?: string | null;
+    last_activity_at?: string | null;
     citizen: CitizenSummary | null;
     employees: EmployeeSummary[];
     messages: ChatMessageSummary[];

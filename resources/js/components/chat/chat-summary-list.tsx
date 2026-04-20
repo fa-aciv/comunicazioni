@@ -93,7 +93,7 @@ export function ChatSummaryList({
                                 {chat.latest_message_preview}
                             </ItemDescription>
                             <ItemFooter className="justify-start text-xs text-muted-foreground">
-                                {formatDate(chat.latest_message_date)}
+                                {formatDate(chat.last_activity_at ?? chat.latest_message_date)}
                             </ItemFooter>
                         </ItemContent>
                         <ItemActions className="ml-auto self-center">

@@ -13,6 +13,7 @@ use App\Http\Controllers\CitizenDashboardController;
 use App\Http\Controllers\EmployeeChatIndexController;
 use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\EmployeeCitizenController;
+use App\Http\Controllers\EmployeeSettingsController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -95,6 +96,8 @@ Route::prefix('employee')->name('employee.')->group(function () {
 
     Route::middleware(['auth.guard:employee', 'auth:employee'])->group(function () {
         Route::get('dashboard', EmployeeDashboardController::class)->name('dashboard');
+        Route::get('settings', [EmployeeSettingsController::class, 'index'])->name('settings.index');
+        Route::patch('settings', [EmployeeSettingsController::class, 'update'])->name('settings.update');
         Route::get('chats', EmployeeChatIndexController::class)->name('chats.index');
         Route::get('attachments/{attachment}', [ChatAttachmentController::class, 'show'])->name('attachments.show');
         Route::get('attachments/{attachment}/download', [ChatAttachmentController::class, 'download'])->name('attachments.download');
