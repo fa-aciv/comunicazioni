@@ -6,6 +6,8 @@ use App\Actions\Chat\AddEmployeeParticipant;
 use App\Actions\Chat\CreateChatThread;
 use App\Actions\Chat\RemoveEmployeeParticipant;
 use App\Actions\Chat\StoreChatMessage;
+use App\Actions\Chat\DeleteChatMessage;
+use App\Actions\Chat\DeleteChatThread;
 use App\Http\Controllers\Concerns\ResolvesGuardActor;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -50,6 +52,29 @@ class ChatController extends Controller
         return redirect()
             ->route('employee.chats.index', ['chat' => $thread->id])
             ->with('status', 'Chat creata correttamente.');
+    }
+
+    public function destroyThread(Request $request, int|string $chat, DeleteChatThread $action): JsonResponse|RedirectResponse
+    {
+        $actor = $this->resolveGuardActor($request);
+
+        $action->handle($chat, $actor);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status' => 'Chat cancellata correttamente.',
+            ]);
+        }
+
+        if ($actor instanceof User) {
+            return redirect()
+                ->route('employee.chats.index')
+                ->with('status', 'Chat cancellata correttamente.');
+        }
+
+        return redirect()
+            ->route('citizen.chats.index')
+            ->with('status', 'Chat cancellata correttamente.');
     }
 
     public function storeMessage(
@@ -105,7 +130,7 @@ class ChatController extends Controller
         return back()->with('status', 'Messaggio inviato correttamente.');
     }
 
-    public function deleteMessage(
+    public function destroyMessage(
         Request $request,
         int|string $chat,
         int|string $message,

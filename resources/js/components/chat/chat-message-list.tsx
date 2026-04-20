@@ -1,4 +1,5 @@
-import { type RefObject, type UIEvent } from 'react';
+import { router } from '@inertiajs/react';
+import { type RefObject, type UIEvent, useState } from 'react';
 
 import type {
     ChatActorType,
@@ -14,6 +15,7 @@ interface ChatMessageListProps {
     messages: ChatMessageSummary[];
     currentActorId: number;
     currentActorType: ChatActorType;
+    buildMessageDestroyUrl?: (chatId: number, messageId: number) => string;
     messagesViewportRef: RefObject<HTMLDivElement | null>;
     onScroll: (event: UIEvent<HTMLDivElement>) => void;
 }
@@ -23,10 +25,26 @@ export function ChatMessageList({
     messages,
     currentActorId,
     currentActorType,
+    buildMessageDestroyUrl,
     messagesViewportRef,
     onScroll,
 }: ChatMessageListProps) {
+    const [deletingMessageId, setDeletingMessageId] = useState<number | null>(null);
     const groupedMessages = groupMessages(messages);
+
+    const handleDeleteMessage = (messageId: number) => {
+        if (!selectedChat || !buildMessageDestroyUrl || deletingMessageId !== null) {
+            return;
+        }
+
+        setDeletingMessageId(messageId);
+
+        router.delete(buildMessageDestroyUrl(selectedChat.id, messageId), {
+            preserveState: true,
+            preserveScroll: true,
+            onFinish: () => setDeletingMessageId(null),
+        });
+    };
 
     return (
         <div
@@ -61,6 +79,14 @@ export function ChatMessageList({
                                     detailedTimestamp: formatChatTimestamp(
                                         message.created_at,
                                     ),
+                                    canDelete:
+                                        isMessageFromCurrentActor(
+                                            message,
+                                            currentActorType,
+                                            currentActorId,
+                                        ) && !!buildMessageDestroyUrl,
+                                    isDeleting: deletingMessageId === message.id,
+                                    onDelete: () => handleDeleteMessage(message.id),
                                 }))}
                             />
                         ))}

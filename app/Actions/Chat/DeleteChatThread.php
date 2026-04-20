@@ -3,10 +3,9 @@
 namespace App\Actions\Chat;
 
 use App\Models\ChatThread;
-use App\Models\Citizen;
-use App\Models\User;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class DeleteChatThread

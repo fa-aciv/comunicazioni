@@ -76,8 +76,17 @@ export default function EmployeeChatsPage({
                     })
                 }
                 buildThreadStoreUrl={() => employee.chats.store.url()}
+                buildThreadDestroyUrl={(chatId) =>
+                    employee.chats.destroy.url({ chat: chatId })
+                }
                 buildMessageStoreUrl={(chatId) =>
                     employee.chats.messages.store.url({ chat: chatId })
+                }
+                buildMessageDestroyUrl={(chatId, messageId) =>
+                    employee.chats.messages.destroy.url({
+                        chat: chatId,
+                        message: messageId,
+                    })
                 }
                 buildParticipantStoreUrl={(chatId) =>
                     employee.chats.participants.store.url({ chat: chatId })

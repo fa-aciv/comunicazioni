@@ -42,7 +42,9 @@ interface ChatWorkspaceProps {
         activeChatId: number | null,
     ) => string;
     buildThreadStoreUrl?: () => string;
+    buildThreadDestroyUrl?: (chatId: number) => string;
     buildMessageStoreUrl: (chatId: number) => string;
+    buildMessageDestroyUrl?: (chatId: number, messageId: number) => string;
     buildParticipantStoreUrl?: (chatId: number) => string;
     buildParticipantDestroyUrl?: (chatId: number, employeeId: number) => string;
     canManageParticipants?: boolean;
@@ -64,7 +66,9 @@ export function ChatWorkspace({
     buildChatHref,
     buildConversationSearchHref,
     buildThreadStoreUrl,
+    buildThreadDestroyUrl,
     buildMessageStoreUrl,
+    buildMessageDestroyUrl,
     buildParticipantStoreUrl,
     buildParticipantDestroyUrl,
     canManageParticipants = false,
@@ -116,6 +120,7 @@ export function ChatWorkspace({
                                     employees={employees}
                                     currentActorId={currentActorId}
                                     canManageParticipants={canManageParticipants}
+                                    buildThreadDestroyUrl={buildThreadDestroyUrl}
                                     buildParticipantStoreUrl={buildParticipantStoreUrl}
                                     buildParticipantDestroyUrl={buildParticipantDestroyUrl}
                                 />
@@ -126,6 +131,7 @@ export function ChatWorkspace({
                                         messages={selectedMessages}
                                         currentActorId={currentActorId}
                                         currentActorType={currentActorType}
+                                        buildMessageDestroyUrl={buildMessageDestroyUrl}
                                         messagesViewportRef={messagesViewportRef}
                                         onScroll={handleMessagesScroll}
                                     />

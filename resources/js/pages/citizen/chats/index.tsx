@@ -71,8 +71,17 @@ export default function CitizenChatsPage({
                         },
                     })
                 }
+                buildThreadDestroyUrl={(chatId) =>
+                    citizen.chats.destroy.url({ chat: chatId })
+                }
                 buildMessageStoreUrl={(chatId) =>
                     citizen.chats.messages.store.url({ chat: chatId })
+                }
+                buildMessageDestroyUrl={(chatId, messageId) =>
+                    citizen.chats.messages.destroy.url({
+                        chat: chatId,
+                        message: messageId,
+                    })
                 }
             />
         </AppLayout>
