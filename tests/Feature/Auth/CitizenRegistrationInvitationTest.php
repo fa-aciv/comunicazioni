@@ -6,6 +6,10 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\URL;
 
 test('citizen can confirm a pending registration and the account is created only after otp verification', function () {
+    config()->set('services.esendex.api_url', null);
+    config()->set('services.esendex.user_key', null);
+    config()->set('services.esendex.access_token', null);
+
     $invitation = CitizenRegistrationInvitation::query()->create([
         'name' => 'Mario Rossi',
         'email' => 'mario.rossi@example.com',

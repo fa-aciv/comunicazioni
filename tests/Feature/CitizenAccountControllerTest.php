@@ -75,6 +75,10 @@ test('citizens can confirm a pending contact change before the new contacts are 
         test()->markTestSkipped('pdo_sqlite extension is required for contact change confirmation.');
     }
 
+    config()->set('services.esendex.api_url', null);
+    config()->set('services.esendex.user_key', null);
+    config()->set('services.esendex.access_token', null);
+
     $citizen = Citizen::query()->create([
         'name' => 'Mario Rossi',
         'email' => 'mario@example.com',
@@ -119,6 +123,10 @@ test('citizens can confirm a pending account deletion before the account is remo
     if (! extension_loaded('pdo_sqlite')) {
         test()->markTestSkipped('pdo_sqlite extension is required for account deletion confirmation.');
     }
+
+    config()->set('services.esendex.api_url', null);
+    config()->set('services.esendex.user_key', null);
+    config()->set('services.esendex.access_token', null);
 
     $citizen = Citizen::query()->create([
         'name' => 'Mario Rossi',

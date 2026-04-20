@@ -55,8 +55,7 @@ class CitizenAuthController extends Controller
 
     public function showChallenge(
         Request $request,
-        CitizenLoginChallenge $challenge,
-        EsendexSmsService $smsSender
+        CitizenLoginChallenge $challenge
     ): Response|RedirectResponse {
         $challenge->loadMissing('citizen');
 
@@ -87,7 +86,8 @@ class CitizenAuthController extends Controller
                 (string) config('services.esendex.otp_template')
             );
 
-            $smsResult = $smsSender->sendSms($challenge->citizen->phone_number, $message);
+            $smsResult = app(EsendexSmsService::class)
+                ->sendSms($challenge->citizen->phone_number, $message);
 
             if (! ($smsResult['ok'] ?? false)) {
                 report(new \RuntimeException('Citizen OTP SMS delivery failed.'));

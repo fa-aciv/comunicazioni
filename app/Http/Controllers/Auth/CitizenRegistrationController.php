@@ -19,8 +19,7 @@ class CitizenRegistrationController extends Controller
 {
     public function show(
         Request $request,
-        CitizenRegistrationInvitation $invitation,
-        EsendexSmsService $smsSender
+        CitizenRegistrationInvitation $invitation
     ): Response|RedirectResponse {
         if ($invitation->completed_at !== null || $invitation->isExpired()) {
             return redirect()
@@ -49,7 +48,8 @@ class CitizenRegistrationController extends Controller
                 (string) config('services.esendex.otp_template')
             );
 
-            $smsResult = $smsSender->sendSms($invitation->phone_number, $message);
+            $smsResult = app(EsendexSmsService::class)
+                ->sendSms($invitation->phone_number, $message);
 
             if (! ($smsResult['ok'] ?? false)) {
                 report(new \RuntimeException('Citizen registration OTP SMS delivery failed.'));

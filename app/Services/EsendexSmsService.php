@@ -15,10 +15,10 @@ class EsendexSmsService
 
     public function __construct()
     {
-        $this->apiUrl = config('services.esendex.api_url', env('VODAFONE_API_URL'));
-        $this->userKey = config('services.esendex.user_key', env('VODAFONE_USER_KEY'));
-        $this->accessToken = config('services.esendex.access_token', env('VODAFONE_ACCESS_TOKEN'));
-        $this->sender = config('services.esendex.sender', env('VODAFONE_SENDER', 'ARNASCivico'));
+        $this->apiUrl = (string) (config('services.esendex.api_url') ?? '');
+        $this->userKey = (string) (config('services.esendex.user_key') ?? '');
+        $this->accessToken = (string) (config('services.esendex.access_token') ?? '');
+        $this->sender = (string) (config('services.esendex.sender') ?? 'ARNASCivico');
     }
 
     /**
@@ -30,6 +30,18 @@ class EsendexSmsService
      */
     public function sendSms(string $phone, string $message): array
     {
+        if (! $this->isConfigured()) {
+            Log::warning('Esendex SMS skipped because the service is not configured.', [
+                'phone' => $phone,
+            ]);
+
+            return [
+                'ok' => false,
+                'status' => 0,
+                'body' => 'Esendex SMS service is not configured.',
+            ];
+        }
+
         try {
             $payload = [
                 'message_type' => 'L', 
@@ -57,5 +69,12 @@ class EsendexSmsService
             Log::error('Esendex SMS exception', ['message' => $e->getMessage(), 'phone' => $phone]);
             return ['ok' => false, 'status' => 0, 'body' => $e->getMessage()];
         }
+    }
+
+    private function isConfigured(): bool
+    {
+        return filled($this->apiUrl)
+            && filled($this->userKey)
+            && filled($this->accessToken);
     }
 }

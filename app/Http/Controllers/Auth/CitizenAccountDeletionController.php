@@ -18,8 +18,7 @@ class CitizenAccountDeletionController extends Controller
 {
     public function show(
         Request $request,
-        CitizenAccountDeletionRequest $deletionRequest,
-        EsendexSmsService $smsSender
+        CitizenAccountDeletionRequest $deletionRequest
     ): Response|RedirectResponse {
         $deletionRequest->loadMissing('citizen');
 
@@ -50,7 +49,8 @@ class CitizenAccountDeletionController extends Controller
                 (string) config('services.esendex.otp_template')
             );
 
-            $smsResult = $smsSender->sendSms($deletionRequest->verification_phone_number, $message);
+            $smsResult = app(EsendexSmsService::class)
+                ->sendSms($deletionRequest->verification_phone_number, $message);
 
             if (! ($smsResult['ok'] ?? false)) {
                 report(new \RuntimeException('Citizen account deletion OTP SMS delivery failed.'));

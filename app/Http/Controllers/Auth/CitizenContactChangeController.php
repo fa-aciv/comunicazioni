@@ -19,8 +19,7 @@ class CitizenContactChangeController extends Controller
 {
     public function show(
         Request $request,
-        CitizenContactChangeRequest $changeRequest,
-        EsendexSmsService $smsSender
+        CitizenContactChangeRequest $changeRequest
     ): Response|RedirectResponse {
         $changeRequest->loadMissing('citizen');
 
@@ -51,7 +50,8 @@ class CitizenContactChangeController extends Controller
                 (string) config('services.esendex.otp_template')
             );
 
-            $smsResult = $smsSender->sendSms($changeRequest->verification_phone_number, $message);
+            $smsResult = app(EsendexSmsService::class)
+                ->sendSms($changeRequest->verification_phone_number, $message);
 
             if (! ($smsResult['ok'] ?? false)) {
                 report(new \RuntimeException('Citizen contact change OTP SMS delivery failed.'));
