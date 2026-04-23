@@ -183,6 +183,7 @@ export default function CitizenAccountPage({
                                     <Trash2 className="size-4" />
                                     Richiedi eliminazione account
                                 </Button>
+                                <InputError message={deleteAccountForm.errors.account} />
                             </div>
                         </div>
                     </CardContent>

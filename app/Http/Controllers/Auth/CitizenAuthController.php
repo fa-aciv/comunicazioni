@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Exceptions\NotificationDeliveryException;
 use App\Http\Controllers\Controller;
 use App\Models\Citizen;
 use App\Models\CitizenLoginChallenge;
 use App\Notifications\SendCitizenMagicLink;
 use App\Services\EsendexSmsService;
+use App\Services\NotificationDeliveryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,7 +27,10 @@ class CitizenAuthController extends Controller
         ]);
     }
 
-    public function requestMagicLink(Request $request): RedirectResponse
+    public function requestMagicLink(
+        Request $request,
+        NotificationDeliveryService $notifications
+    ): RedirectResponse
     {
         $validated = $request->validate([
             'email' => ['required', 'email:rfc'],
@@ -48,7 +53,21 @@ class CitizenAuthController extends Controller
             'last_ip_address' => $request->ip(),
         ]);
 
-        $citizen->notify(new SendCitizenMagicLink($challenge));
+        try {
+            $notifications->send(
+                $citizen,
+                new SendCitizenMagicLink($challenge),
+                'Non è stato possibile inviare l\'email di accesso. Riprova tra qualche minuto.'
+            );
+        } catch (NotificationDeliveryException $exception) {
+            $challenge->delete();
+
+            return back()
+                ->withInput($request->only('email'))
+                ->withErrors([
+                    'email' => $exception->getMessage(),
+                ]);
+        }
 
         return back()->with('status', $status);
     }

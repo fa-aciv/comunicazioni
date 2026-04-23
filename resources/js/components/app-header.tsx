@@ -27,7 +27,7 @@ import citizen from '@/routes/citizen';
 import employee from '@/routes/employee';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Menu, MessageSquareDot, Settings } from 'lucide-react';
+import { Building2, Inbox, LayoutGrid, LifeBuoy, Menu, MessageSquareDot, Settings } from 'lucide-react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 
@@ -62,6 +62,16 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                       icon: MessageSquareDot,
                   },
                   {
+                      title: 'Gruppi',
+                      href: '/employee/groups',
+                      icon: Building2,
+                  },
+                  {
+                      title: 'Richieste',
+                      href: '/employee/group-contact-requests',
+                      icon: Inbox,
+                  },
+                  {
                       title: 'Impostazioni',
                       href: employee.settings.index().url,
                       icon: Settings,
@@ -78,6 +88,11 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                         title: 'Chat',
                         href: citizen.chats.index().url,
                         icon: MessageSquareDot,
+                    },
+                    {
+                        title: 'Richieste',
+                        href: '/citizen/contact-requests',
+                        icon: LifeBuoy,
                     },
                 ]
               : auth.homeUrl

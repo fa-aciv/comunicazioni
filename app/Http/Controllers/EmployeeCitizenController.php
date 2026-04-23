@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\NotificationDeliveryException;
 use App\Models\CitizenRegistrationInvitation;
 use App\Models\Citizen;
 use App\Notifications\SendCitizenRegistrationInvitation;
+use App\Services\NotificationDeliveryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -73,7 +75,10 @@ class EmployeeCitizenController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(
+        Request $request,
+        NotificationDeliveryService $notifications
+    ): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
             'name' => ['required', 'string', 'max:255'],
@@ -116,7 +121,22 @@ class EmployeeCitizenController extends Controller
             'magic_link_expires_at' => now()->addMinutes(config('auth.citizen.magic_link_expire')),
         ]);
 
-        $invitation->notify(new SendCitizenRegistrationInvitation($invitation));
+        try {
+            $notifications->send(
+                $invitation,
+                new SendCitizenRegistrationInvitation($invitation),
+                'Non è stato possibile inviare l\'email di invito. Riprova tra qualche minuto.'
+            );
+        } catch (NotificationDeliveryException $exception) {
+            $invitation->delete();
+
+            return redirect()
+                ->route('employee.citizens.create')
+                ->withInput()
+                ->withErrors([
+                    'email' => $exception->getMessage(),
+                ]);
+        }
 
         return redirect()
             ->route('employee.citizens.index')

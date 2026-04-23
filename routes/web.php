@@ -10,9 +10,13 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\CitizenAccountController;
 use App\Http\Controllers\CitizenChatIndexController;
 use App\Http\Controllers\CitizenDashboardController;
+use App\Http\Controllers\CitizenGroupContactRequestController;
 use App\Http\Controllers\EmployeeChatIndexController;
 use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\EmployeeCitizenController;
+use App\Http\Controllers\EmployeeGroupContactRequestController;
+use App\Http\Controllers\EmployeeGroupController;
+use App\Http\Controllers\EmployeeGroupMembershipController;
 use App\Http\Controllers\EmployeeSettingsController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -73,6 +77,8 @@ Route::prefix('citizen')->name('citizen.')->group(function () {
     Route::middleware(['auth.guard:citizen', 'auth:citizen'])->group(function () {
         Route::get('dashboard', CitizenDashboardController::class)->name('dashboard');
         Route::get('chats', CitizenChatIndexController::class)->name('chats.index');
+        Route::get('contact-requests', [CitizenGroupContactRequestController::class, 'index'])->name('contact-requests.index');
+        Route::post('contact-requests', [CitizenGroupContactRequestController::class, 'store'])->name('contact-requests.store');
         Route::get('attachments/{attachment}', [ChatAttachmentController::class, 'show'])->name('attachments.show');
         Route::get('attachments/{attachment}/download', [ChatAttachmentController::class, 'download'])->name('attachments.download');
         Route::post('chats/{chat}/messages', [ChatController::class, 'storeMessage'])->name('chats.messages.store');
@@ -98,6 +104,14 @@ Route::prefix('employee')->name('employee.')->group(function () {
         Route::get('dashboard', EmployeeDashboardController::class)->name('dashboard');
         Route::get('settings', [EmployeeSettingsController::class, 'index'])->name('settings.index');
         Route::patch('settings', [EmployeeSettingsController::class, 'update'])->name('settings.update');
+        Route::get('groups', [EmployeeGroupController::class, 'index'])->name('groups.index');
+        Route::post('groups', [EmployeeGroupController::class, 'store'])->name('groups.store');
+        Route::get('groups/{group}', [EmployeeGroupController::class, 'show'])->name('groups.show');
+        Route::post('groups/{group}/memberships', [EmployeeGroupMembershipController::class, 'store'])->name('groups.memberships.store');
+        Route::patch('groups/{group}/memberships/{membership}', [EmployeeGroupMembershipController::class, 'update'])->name('groups.memberships.update');
+        Route::delete('groups/{group}/memberships/{membership}', [EmployeeGroupMembershipController::class, 'destroy'])->name('groups.memberships.destroy');
+        Route::get('group-contact-requests', [EmployeeGroupContactRequestController::class, 'index'])->name('group-contact-requests.index');
+        Route::post('group-contact-requests/{contactRequest}/accept', [EmployeeGroupContactRequestController::class, 'accept'])->name('group-contact-requests.accept');
         Route::get('chats', EmployeeChatIndexController::class)->name('chats.index');
         Route::get('attachments/{attachment}', [ChatAttachmentController::class, 'show'])->name('attachments.show');
         Route::get('attachments/{attachment}/download', [ChatAttachmentController::class, 'download'])->name('attachments.download');

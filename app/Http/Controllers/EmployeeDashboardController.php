@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\MapsChatThreadData;
 use App\Models\ChatThread;
+use App\Models\GroupContactRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -42,11 +43,25 @@ class EmployeeDashboardController extends Controller
             ->map(fn (ChatThread $thread) => $this->mapChatSummary($thread))
             ->values();
 
+        $groupCount = $employee->groupMemberships()->count();
+
+        $openGroupRequestCount = GroupContactRequest::query()
+            ->where('status', 'open')
+            ->whereIn(
+                'group_id',
+                $employee->groupMemberships()
+                    ->whereHas('permissions', fn ($query) => $query->where('key', 'group.contact_requests.accept'))
+                    ->select('group_id')
+            )
+            ->count();
+
         return Inertia::render('employee/dashboard', [
             'status' => $request->session()->get('status'),
             'conversationSearch' => $conversationSearch,
             'hasMoreConversationResults' => $hasMoreConversationResults,
             'activeChats' => $activeChats,
+            'groupCount' => $groupCount,
+            'openGroupRequestCount' => $openGroupRequestCount,
         ]);
     }
 }

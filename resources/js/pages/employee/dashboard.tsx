@@ -14,7 +14,7 @@ import employee from '@/routes/employee';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
-import { MessageSquareMore, Search, Settings, UserCog, X } from 'lucide-react';
+import { Building2, Inbox, MessageSquareMore, Search, Settings, UserCog, X } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -30,6 +30,8 @@ interface DashboardProps {
     conversationSearch?: string;
     hasMoreConversationResults: boolean;
     activeChats: ChatSummary[];
+    groupCount: number;
+    openGroupRequestCount: number;
 }
 
 export default function Dashboard({
@@ -37,6 +39,8 @@ export default function Dashboard({
     conversationSearch = '',
     hasMoreConversationResults,
     activeChats,
+    groupCount,
+    openGroupRequestCount,
 }: DashboardProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -49,13 +53,81 @@ export default function Dashboard({
                     </div>
                 )}
 
-                <div className="grid gap-4 lg:grid-cols-3">
+                <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
                     <ConversationSearchCard
                         key={conversationSearch}
                         appliedSearch={conversationSearch}
                         hasMoreConversationResults={hasMoreConversationResults}
                         activeChats={activeChats}
                     />
+
+                    <Card className="justify-between border-emerald-200">
+                        <CardHeader className="space-y-3">
+                            <div className={cn(
+                                    "flex",
+                                    "size-11",
+                                    "items-center",
+                                    "justify-center",
+                                    "rounded-2xl",
+                                    "bg-emerald-100",
+                                    "text-emerald-700",
+                                    "dark:bg-emerald-950",
+                                    "dark:text-emerald-300"
+                            )}>
+                                <Building2 className="size-5" />
+                            </div>
+                            <div className="space-y-1">
+                                <CardTitle>Gruppi</CardTitle>
+                                <CardDescription>
+                                    Gestisci i gruppi di cui fai parte e i membri assegnati.
+                                </CardDescription>
+                            </div>
+                            <p className="text-sm font-medium text-muted-foreground">
+                                Gruppi assegnati: {groupCount}
+                            </p>
+                        </CardHeader>
+                        <CardContent>
+                            <Button asChild variant="outline" size="lg" className="w-full">
+                                <Link href="/employee/groups">
+                                    Apri gruppi
+                                </Link>
+                            </Button>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="justify-between border-indigo-200">
+                        <CardHeader className="space-y-3">
+                            <div className={cn(
+                                    "flex",
+                                    "size-11",
+                                    "items-center",
+                                    "justify-center",
+                                    "rounded-2xl",
+                                    "bg-indigo-100",
+                                    "text-indigo-700",
+                                    "dark:bg-indigo-950",
+                                    "dark:text-indigo-300"
+                            )}>
+                                <Inbox className="size-5" />
+                            </div>
+                            <div className="space-y-1">
+                                <CardTitle>Richieste di contatto</CardTitle>
+                                <CardDescription>
+                                    Visualizza e prendi in carico le richieste rivolte ai gruppi che segui.
+                                </CardDescription>
+                            </div>
+                            <p className="text-sm font-medium text-muted-foreground">
+                                Richieste aperte: {openGroupRequestCount}
+                            </p>
+                        </CardHeader>
+                        <CardContent>
+                            <Button asChild variant="outline" size="lg" className="w-full">
+                                <Link href="/employee/group-contact-requests">
+                                    Apri inbox richieste
+                                </Link>
+                            </Button>
+                        </CardContent>
+                    </Card>
 
                     <Card className="border-amber-200 justify-between">
                         <CardHeader className="space-y-3">

@@ -6,7 +6,7 @@ import AppLayout from '@/layouts/app-layout';
 import citizen from '@/routes/citizen';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { MessageSquareText, Settings } from 'lucide-react';
+import { LifeBuoy, MessageSquareText, Settings } from 'lucide-react';
 
 interface CitizenDashboardProps {
     status?: string;
@@ -14,12 +14,16 @@ interface CitizenDashboardProps {
         name: string;
     };
     recentChats: ChatSummary[];
+    activeGroupCount: number;
+    openContactRequestCount: number;
 }
 
 export default function CitizenDashboard({
     status,
     citizen: citizenAccount,
     recentChats,
+    activeGroupCount,
+    openContactRequestCount,
 }: CitizenDashboardProps) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -47,7 +51,7 @@ export default function CitizenDashboard({
                     </div>
                 </section>
 
-                <section className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_380px]">
+                <section className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_360px_360px]">
                     <Card>
                         <CardHeader className="space-y-3">
                             <div className="flex items-start justify-between gap-3">
@@ -78,6 +82,33 @@ export default function CitizenDashboard({
                                 emptyTitle="Non hai ancora conversazioni recenti."
                                 emptyDescription="Le conversazioni aperte con l'amministrazione compariranno qui."
                             />
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-emerald-200">
+                        <CardHeader className="space-y-3">
+                            <div className="flex size-11 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                                <LifeBuoy className="size-5" />
+                            </div>
+                            <div className="space-y-1">
+                                <CardTitle>Richieste ai gruppi</CardTitle>
+                                <CardDescription>
+                                    Invia una nuova richiesta ad un gruppo e controlla lo stato di quelle già aperte.
+                                </CardDescription>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                                Gruppi disponibili: {activeGroupCount}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                                Richieste aperte: {openContactRequestCount}
+                            </p>
+                        </CardHeader>
+                        <CardContent>
+                            <Button asChild variant="outline" className="w-full">
+                                <Link href="/citizen/contact-requests">
+                                    Apri richieste ai gruppi
+                                </Link>
+                            </Button>
                         </CardContent>
                     </Card>
 

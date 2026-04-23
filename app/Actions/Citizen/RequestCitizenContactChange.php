@@ -2,12 +2,19 @@
 
 namespace App\Actions\Citizen;
 
+use App\Exceptions\NotificationDeliveryException;
 use App\Models\Citizen;
 use App\Models\CitizenContactChangeRequest;
 use App\Notifications\SendCitizenContactChangeLink;
+use App\Services\NotificationDeliveryService;
 
 class RequestCitizenContactChange
 {
+    public function __construct(
+        private readonly NotificationDeliveryService $notifications
+    ) {
+    }
+
     public function handle(Citizen $citizen, array $data): CitizenContactChangeRequest
     {
         CitizenContactChangeRequest::query()
@@ -30,7 +37,17 @@ class RequestCitizenContactChange
             'magic_link_expires_at' => now()->addMinutes(config('auth.citizen.magic_link_expire')),
         ]);
 
-        $request->notify(new SendCitizenContactChangeLink($request));
+        try {
+            $this->notifications->send(
+                $request,
+                new SendCitizenContactChangeLink($request),
+                'Non è stato possibile inviare l\'email di conferma. Riprova tra qualche minuto.'
+            );
+        } catch (NotificationDeliveryException $exception) {
+            $request->delete();
+
+            throw $exception;
+        }
 
         return $request;
     }

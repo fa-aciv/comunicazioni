@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Actions\Citizen\DeleteCitizenAccount;
 use App\Actions\Citizen\RequestCitizenAccountDeletion;
 use App\Actions\Citizen\RequestCitizenContactChange;
+use App\Exceptions\NotificationDeliveryException;
 use App\Models\CitizenContactChangeRequest;
 use App\Models\Citizen;
 use Illuminate\Http\RedirectResponse;
@@ -79,7 +80,15 @@ class CitizenAccountController extends Controller
             return back()->with('status', 'Nessuna modifica da confermare.');
         }
 
-        $requestCitizenContactChange->handle($citizen, $validated);
+        try {
+            $requestCitizenContactChange->handle($citizen, $validated);
+        } catch (NotificationDeliveryException $exception) {
+            return back()
+                ->withInput($request->only(['email', 'phoneNumber']))
+                ->withErrors([
+                    'email' => $exception->getMessage(),
+                ]);
+        }
 
         return back()->with('status', 'Ti abbiamo inviato una email di conferma. Le modifiche saranno applicate dopo la verifica con OTP SMS.');
     }
@@ -93,7 +102,13 @@ class CitizenAccountController extends Controller
 
         abort_unless($citizen instanceof Citizen, 403);
 
-        $requestCitizenAccountDeletion->handle($citizen);
+        try {
+            $requestCitizenAccountDeletion->handle($citizen);
+        } catch (NotificationDeliveryException $exception) {
+            return back()->withErrors([
+                'account' => $exception->getMessage(),
+            ]);
+        }
 
         return back()->with('status', 'Ti abbiamo inviato una email di conferma. L’account verrà eliminato dopo la verifica con OTP SMS.');
     }

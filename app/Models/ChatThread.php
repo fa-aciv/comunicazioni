@@ -46,4 +46,9 @@ class ChatThread extends Model
     {
         return $this->hasOne(ChatMessage::class, 'chat_id')->latestOfMany('created_at');
     }
+
+    public function groupContactRequest(): HasOne
+    {
+        return $this->hasOne(GroupContactRequest::class, 'chat_thread_id');
+    }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\MapsChatThreadData;
 use App\Models\Citizen;
+use App\Models\Group;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -35,6 +36,14 @@ class CitizenDashboardController extends Controller
             ->map(fn ($thread) => $this->mapChatSummary($thread))
             ->values();
 
+        $activeGroupCount = Group::query()
+            ->where('is_active', true)
+            ->count();
+
+        $openContactRequestCount = $citizen->groupContactRequests()
+            ->where('status', 'open')
+            ->count();
+
         return Inertia::render('citizen/dashboard', [
             'status' => $request->session()->get('status'),
             'citizen' => [
@@ -45,6 +54,8 @@ class CitizenDashboardController extends Controller
                 'lastLoginAt' => $citizen->last_login_at?->toIso8601String(),
             ],
             'recentChats' => $recentChats,
+            'activeGroupCount' => $activeGroupCount,
+            'openContactRequestCount' => $openContactRequestCount,
         ]);
     }
 }

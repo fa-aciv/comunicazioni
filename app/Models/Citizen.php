@@ -5,6 +5,7 @@ namespace App\Models;
 use Database\Factories\CitizenFactory;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
@@ -87,5 +88,10 @@ class Citizen extends Authenticatable
     public function messageAttachments(): MorphMany
     {
         return $this->morphMany(MessageAttachment::class, 'author');
+    }
+
+    public function groupContactRequests(): HasMany
+    {
+        return $this->hasMany(GroupContactRequest::class);
     }
 }

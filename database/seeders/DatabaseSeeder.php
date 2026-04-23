@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Services\EmployeeAuthorizationService;
+use App\Services\GroupPermissionService;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -13,9 +15,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        app(EmployeeAuthorizationService::class)->syncCatalog();
+        app(GroupPermissionService::class)->syncCatalog();
+
         // User::factory(10)->create();
 
-        User::firstOrCreate(
+        $user = User::firstOrCreate(
             ['email' => 'test@example.com'],
             [
                 'name' => 'Test User',
@@ -23,5 +28,7 @@ class DatabaseSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
+
+        $user->assignRole('admin');
     }
 }
