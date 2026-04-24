@@ -113,7 +113,7 @@ export function ChatConversationList({
                                     <ChatThreadItem
                                         title={chatSummary.title}
                                         fullName={resolveConversationName(chatSummary)}
-                                        unreadMessagesAmount={0}
+                                        unreadMessagesAmount={chatSummary.unread_message_count ?? 0}
                                         active={chatSummary.id === activeChatId}
                                     />
                                 </Link>

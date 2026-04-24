@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Item, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from "../ui/item";
 import { Avatar, AvatarFallback } from "../ui/avatar";
-import { UserRound } from "lucide-react";
+import { MessageSquareDot, UserRound } from "lucide-react";
 import { Badge } from "../ui/badge";
 
 type ChatThreadItemProps = {
@@ -44,7 +44,8 @@ export default function ChatThreadItem({ fullName, title, unreadMessagesAmount, 
                 
                 { unreadMessagesAmount > 0 && 
                     <ItemContent>
-                        <Badge className="bg-amber-800 dark:bg-amber-500">{unreadMessagesAmount}</Badge>
+                        
+                        <Badge className="bg-amber-800 dark:bg-amber-500"><MessageSquareDot />{unreadMessagesAmount}</Badge>
                     </ItemContent>
                 }
             </Item>
