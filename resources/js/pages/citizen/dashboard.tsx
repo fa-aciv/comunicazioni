@@ -55,7 +55,7 @@ export default function CitizenDashboard({
                 <section className="rounded-3xl border p-8 shadow-xs">
                     <div className="max-w-2xl">
                         <h1 className="text-3xl font-semibold tracking-tight">
-                            Benvenuto, {citizenAccount.name}
+                            {citizenAccount.name}
                         </h1>
                     </div>
                 </section>
@@ -67,9 +67,9 @@ export default function CitizenDashboard({
                                 <div className="flex size-11 items-center justify-center rounded-2xl bg-sky-100 text-sky-700">
                                     <MessageSquareText className="size-5" />
                                 </div>
-                                <CardTitle>Chat</CardTitle>
+                                <CardTitle>Conversazioni recenti</CardTitle>
                                 <CardDescription>
-                                    Conversazioni aperte e nuove richieste di contatto.
+                                    Lista delle tue conversazioni più recenti. 
                                 </CardDescription>
                             </div>
 
@@ -135,7 +135,7 @@ export default function CitizenDashboard({
                             >
                             <Link href={citizen.chats.index().url}>
                                 <MessageSquareText />
-                                Tutte le chat
+                                Tutte le conversazioni
                             </Link>
                         </Button>
                     </Card>

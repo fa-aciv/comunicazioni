@@ -277,7 +277,7 @@ function ConversationSearchCard({
                     <MessageSquareMore className="size-5" />
                 </div>
                 <div className="space-y-1">
-                    <CardTitle>Conversazioni</CardTitle>
+                    <CardTitle>Conversazioni recenti</CardTitle>
                     <CardDescription>
                         Cerca tra le conversazioni che hai aperto con i cittadini.
                     </CardDescription>
