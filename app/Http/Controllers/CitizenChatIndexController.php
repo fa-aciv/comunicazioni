@@ -68,6 +68,10 @@ class CitizenChatIndexController extends Controller
             }
         }
 
+        $totalUnreadMessageCount = (int) $threads->sum(
+            fn ($thread) => (int) ($thread->unread_message_count ?? 0)
+        );
+
         return Inertia::render('citizen/chats/index', [
             'status' => $request->session()->get('status'),
             'currentCitizenId' => $citizen->id,
@@ -76,6 +80,7 @@ class CitizenChatIndexController extends Controller
             'conversationSearch' => $conversationSearch,
             'conversationListLimit' => $conversationListLimit,
             'hasMoreConversations' => $hasMoreConversations,
+            'totalUnreadMessageCount' => $totalUnreadMessageCount,
             'chatSummaries' => $threads
                 ->map(fn ($thread) => $this->mapChatSummary($thread))
                 ->values(),

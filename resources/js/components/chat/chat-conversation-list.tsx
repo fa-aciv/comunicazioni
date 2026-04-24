@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 interface ChatConversationListProps {
     chatSummaries: ChatSummary[];
     activeChatId: number | null;
+    activeThreadUnreadCount?: number;
     conversationSearch?: string;
     conversationListLimit?: number;
     hasMoreConversations?: boolean;
@@ -26,6 +27,7 @@ interface ChatConversationListProps {
 export function ChatConversationList({
     chatSummaries,
     activeChatId,
+    activeThreadUnreadCount = 0,
     conversationSearch = '',
     conversationListLimit = 100,
     hasMoreConversations = false,
@@ -113,7 +115,11 @@ export function ChatConversationList({
                                     <ChatThreadItem
                                         title={chatSummary.title}
                                         fullName={resolveConversationName(chatSummary)}
-                                        unreadMessagesAmount={chatSummary.unread_message_count ?? 0}
+                                        unreadMessagesAmount={
+                                            chatSummary.id === activeChatId
+                                                ? activeThreadUnreadCount
+                                                : (chatSummary.unread_message_count ?? 0)
+                                        }
                                         active={chatSummary.id === activeChatId}
                                     />
                                 </Link>

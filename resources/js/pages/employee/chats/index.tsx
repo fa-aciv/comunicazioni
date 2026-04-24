@@ -23,6 +23,7 @@ interface EmployeeChatsProps {
     status?: string;
     currentEmployeeId: number;
     pollIntervalSeconds: number;
+    totalUnreadMessageCount: number;
     selectedChatId?: number | null;
     conversationSearch?: string;
     conversationListLimit: number;
@@ -36,6 +37,7 @@ export default function EmployeeChatsPage({
     status,
     currentEmployeeId,
     pollIntervalSeconds,
+    totalUnreadMessageCount,
     selectedChatId,
     conversationSearch,
     conversationListLimit,
@@ -52,6 +54,7 @@ export default function EmployeeChatsPage({
                 currentActorId={currentEmployeeId}
                 currentActorType="User"
                 pollIntervalSeconds={pollIntervalSeconds}
+                totalUnreadMessageCount={totalUnreadMessageCount}
                 selectedChatId={selectedChatId}
                 conversationSearch={conversationSearch}
                 conversationListLimit={conversationListLimit}

@@ -29,6 +29,7 @@ interface ChatWorkspaceProps {
     currentActorId: number;
     currentActorType: ChatActorType;
     pollIntervalSeconds: number;
+    totalUnreadMessageCount: number;
     selectedChatId?: number | null;
     conversationSearch?: string;
     conversationListLimit?: number;
@@ -56,6 +57,7 @@ export function ChatWorkspace({
     currentActorId,
     currentActorType,
     pollIntervalSeconds,
+    totalUnreadMessageCount,
     selectedChatId,
     conversationSearch = '',
     conversationListLimit = 100,
@@ -74,19 +76,24 @@ export function ChatWorkspace({
     canManageParticipants = false,
 }: ChatWorkspaceProps) {
     const {
-        pageTitle,
+        activeThreadUnreadCount,
         selectedChatId: activeSelectedChatId,
         selectedMessages,
         messagesViewportRef,
         handleMessagesScroll,
     } = useChatThreadState({
-        headTitle,
         currentActorId,
         currentActorType,
         selectedChat,
         pollIntervalSeconds,
     });
     const activeChatId = selectedChatId ?? activeSelectedChatId;
+    const effectiveTotalUnreadMessageCount =
+        totalUnreadMessageCount + activeThreadUnreadCount;
+    const pageTitle =
+        effectiveTotalUnreadMessageCount > 0
+            ? `(${effectiveTotalUnreadMessageCount}) ${headTitle}`
+            : headTitle;
 
     return (
         <>
@@ -104,6 +111,7 @@ export function ChatWorkspace({
                         <ChatConversationList
                             chatSummaries={chatSummaries}
                             activeChatId={activeChatId}
+                            activeThreadUnreadCount={activeThreadUnreadCount}
                             conversationSearch={conversationSearch}
                             conversationListLimit={conversationListLimit}
                             hasMoreConversations={hasMoreConversations}

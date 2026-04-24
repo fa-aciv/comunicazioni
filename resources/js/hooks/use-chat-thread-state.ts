@@ -16,7 +16,6 @@ type ChatSnapshot = {
 };
 
 interface UseChatThreadStateOptions {
-    headTitle: string;
     currentActorId: number;
     currentActorType: ChatActorType;
     selectedChat: SelectedChatSummary | null;
@@ -30,7 +29,6 @@ type UnreadCountAction =
 // The hook keeps all the "thread behavior" together: polling, unread tracking
 // and the decision of when the viewport should auto-scroll to the latest message.
 export function useChatThreadState({
-    headTitle,
     currentActorId,
     currentActorType,
     selectedChat,
@@ -181,7 +179,7 @@ export function useChatThreadState({
     };
 
     return {
-        pageTitle: unreadCount > 0 ? `(${unreadCount}) ${headTitle}` : headTitle,
+        activeThreadUnreadCount: unreadCount,
         selectedChatId,
         selectedMessages,
         messagesViewportRef,

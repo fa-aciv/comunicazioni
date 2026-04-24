@@ -22,6 +22,7 @@ interface CitizenChatsPageProps {
     status?: string;
     currentCitizenId: number;
     pollIntervalSeconds: number;
+    totalUnreadMessageCount: number;
     selectedChatId?: number | null;
     conversationSearch?: string;
     conversationListLimit: number;
@@ -34,6 +35,7 @@ export default function CitizenChatsPage({
     status,
     currentCitizenId,
     pollIntervalSeconds,
+    totalUnreadMessageCount,
     selectedChatId,
     conversationSearch,
     conversationListLimit,
@@ -49,6 +51,7 @@ export default function CitizenChatsPage({
                 currentActorId={currentCitizenId}
                 currentActorType="Citizen"
                 pollIntervalSeconds={pollIntervalSeconds}
+                totalUnreadMessageCount={totalUnreadMessageCount}
                 selectedChatId={selectedChatId}
                 conversationSearch={conversationSearch}
                 conversationListLimit={conversationListLimit}

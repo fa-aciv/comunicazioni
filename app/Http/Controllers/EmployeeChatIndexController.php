@@ -69,6 +69,10 @@ class EmployeeChatIndexController extends Controller
             }
         }
 
+        $totalUnreadMessageCount = (int) $threads->sum(
+            fn (ChatThread $thread) => (int) ($thread->unread_message_count ?? 0)
+        );
+
         $employees = User::query()
             ->orderBy('name')
             ->get(['id', 'name', 'email', 'department_name']);
@@ -81,6 +85,7 @@ class EmployeeChatIndexController extends Controller
             'conversationSearch' => $conversationSearch,
             'conversationListLimit' => $conversationListLimit,
             'hasMoreConversations' => $hasMoreConversations,
+            'totalUnreadMessageCount' => $totalUnreadMessageCount,
             'employees' => $employees->map(fn (User $user) => [
                 'id' => $user->id,
                 'name' => $user->name,
