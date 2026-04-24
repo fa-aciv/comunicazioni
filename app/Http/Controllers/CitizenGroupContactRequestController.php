@@ -22,24 +22,15 @@ class CitizenGroupContactRequestController extends Controller
 
         abort_unless($citizen instanceof Citizen, 403);
 
-        $groups = Group::query()
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get(['id', 'name', 'description']);
-
         $contactRequests = GroupContactRequest::query()
             ->where('citizen_id', $citizen->getKey())
-            ->with(['group', 'acceptedBy', 'chatThread'])
+            ->where('status', GroupContactRequestStatus::Open)
+            ->with(['group'])
             ->latest()
             ->get();
 
         return Inertia::render('citizen/contact-requests/index', [
             'status' => $request->session()->get('status'),
-            'groups' => $groups->map(fn (Group $group) => [
-                'id' => $group->id,
-                'name' => $group->name,
-                'description' => $group->description,
-            ])->values(),
             'contactRequests' => $contactRequests->map(fn (GroupContactRequest $contactRequest) => [
                 'id' => $contactRequest->id,
                 'groupName' => $contactRequest->group->name,
@@ -48,16 +39,7 @@ class CitizenGroupContactRequestController extends Controller
                 'status' => $contactRequest->status->value,
                 'statusLabel' => $contactRequest->status->label(),
                 'createdAt' => optional($contactRequest->created_at)->toIso8601String(),
-                'acceptedAt' => optional($contactRequest->accepted_at)->toIso8601String(),
-                'acceptedBy' => $contactRequest->acceptedBy ? [
-                    'name' => $contactRequest->acceptedBy->name,
-                    'email' => $contactRequest->acceptedBy->email,
-                ] : null,
-                'chatUrl' => $contactRequest->status === GroupContactRequestStatus::Accepted && $contactRequest->chatThread
-                    ? route('citizen.chats.index', ['chat' => $contactRequest->chatThread->getKey()])
-                    : null,
             ])->values(),
-            'storeUrl' => route('citizen.contact-requests.store'),
         ]);
     }
 

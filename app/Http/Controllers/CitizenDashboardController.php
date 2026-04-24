@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\GroupContactRequestStatus;
 use App\Http\Controllers\Concerns\MapsChatThreadData;
 use App\Models\Citizen;
 use App\Models\Group;
@@ -36,12 +37,13 @@ class CitizenDashboardController extends Controller
             ->map(fn ($thread) => $this->mapChatSummary($thread))
             ->values();
 
-        $activeGroupCount = Group::query()
+        $activeGroups = Group::query()
             ->where('is_active', true)
-            ->count();
+            ->orderBy('name')
+            ->get(['id', 'name', 'description']);
 
-        $openContactRequestCount = $citizen->groupContactRequests()
-            ->where('status', 'open')
+        $pendingContactRequestCount = $citizen->groupContactRequests()
+            ->where('status', GroupContactRequestStatus::Open->value)
             ->count();
 
         return Inertia::render('citizen/dashboard', [
@@ -54,8 +56,13 @@ class CitizenDashboardController extends Controller
                 'lastLoginAt' => $citizen->last_login_at?->toIso8601String(),
             ],
             'recentChats' => $recentChats,
-            'activeGroupCount' => $activeGroupCount,
-            'openContactRequestCount' => $openContactRequestCount,
+            'groups' => $activeGroups->map(fn (Group $group) => [
+                'id' => $group->id,
+                'name' => $group->name,
+                'description' => $group->description,
+            ])->values(),
+            'pendingContactRequestCount' => $pendingContactRequestCount,
+            'storeUrl' => route('citizen.contact-requests.store'),
         ]);
     }
 }

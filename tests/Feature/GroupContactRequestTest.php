@@ -11,6 +11,7 @@ use App\Models\GroupContactRequest;
 use App\Models\GroupMembership;
 use App\Models\User;
 use App\Services\GroupPermissionService;
+use Inertia\Testing\AssertableInertia as Assert;
 
 function assignRequestGroupMembership(Group $group, User $user, GroupMembershipRole $role, ?array $permissions = null): GroupMembership
 {
@@ -52,6 +53,33 @@ test('citizens can create a contact request for an active group', function () {
         ->and($request?->group_id)->toBe($group->getKey())
         ->and($request?->citizen_id)->toBe($citizen->getKey())
         ->and($request?->status)->toBe(GroupContactRequestStatus::Open);
+});
+
+test('citizens only see pending contact requests in the request list', function () {
+    $citizen = Citizen::factory()->create();
+    $group = Group::factory()->create();
+
+    $openRequest = GroupContactRequest::factory()->create([
+        'citizen_id' => $citizen->getKey(),
+        'group_id' => $group->getKey(),
+        'status' => GroupContactRequestStatus::Open,
+    ]);
+
+    GroupContactRequest::factory()->create([
+        'citizen_id' => $citizen->getKey(),
+        'group_id' => $group->getKey(),
+        'status' => GroupContactRequestStatus::Accepted,
+    ]);
+
+    $this->actingAs($citizen, 'citizen')
+        ->get(route('citizen.contact-requests.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('citizen/contact-requests/index')
+            ->has('contactRequests', 1)
+            ->where('contactRequests.0.id', $openRequest->getKey())
+            ->where('contactRequests.0.status', GroupContactRequestStatus::Open->value)
+        );
 });
 
 test('group users can accept contact requests and a chat is created for the citizen', function () {

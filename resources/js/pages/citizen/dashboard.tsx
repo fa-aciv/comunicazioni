@@ -1,12 +1,17 @@
+import { ContactRequestDialog, type ContactRequestGroup } from '@/components/citizen/contact-request-dialog';
 import { ChatSummaryList } from '@/components/chat/chat-summary-list';
 import type { ChatSummary } from '@/components/chat/chat-types';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import citizen from '@/routes/citizen';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { LifeBuoy, MessageSquareText, Settings } from 'lucide-react';
+import { Clock, LetterText, Mail, MessageSquareText, Plus, Settings } from 'lucide-react';
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
+import citizens from '@/routes/employee/citizens';
 
 interface CitizenDashboardProps {
     status?: string;
@@ -14,17 +19,21 @@ interface CitizenDashboardProps {
         name: string;
     };
     recentChats: ChatSummary[];
-    activeGroupCount: number;
-    openContactRequestCount: number;
+    groups: ContactRequestGroup[];
+    pendingContactRequestCount: number;
+    storeUrl: string;
 }
 
 export default function CitizenDashboard({
     status,
     citizen: citizenAccount,
     recentChats,
-    activeGroupCount,
-    openContactRequestCount,
+    groups,
+    pendingContactRequestCount,
+    storeUrl,
 }: CitizenDashboardProps) {
+    const [createRequestOpen, setCreateRequestOpen] = useState(false);
+
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Dashboard',
@@ -51,27 +60,61 @@ export default function CitizenDashboard({
                     </div>
                 </section>
 
-                <section className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_360px_360px]">
+                <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
                     <Card>
-                        <CardHeader className="space-y-3">
-                            <div className="flex items-start justify-between gap-3">
-                                <div className="space-y-1">
-                                    <div className="flex size-11 items-center justify-center rounded-2xl bg-sky-100 text-sky-700">
-                                        <MessageSquareText className="size-5" />
-                                    </div>
-                                    <CardTitle>Chat recenti</CardTitle>
-                                    <CardDescription>
-                                        Le ultime conversazioni aperte con l&apos;amministrazione.
-                                    </CardDescription>
+                        <CardHeader>
+                            <div className="space-y-1">
+                                <div className="flex size-11 items-center justify-center rounded-2xl bg-sky-100 text-sky-700">
+                                    <MessageSquareText className="size-5" />
                                 </div>
-                                <Button asChild variant="outline">
-                                    <Link href={citizen.chats.index().url}>
-                                        Apri tutte le chat
-                                    </Link>
-                                </Button>
+                                <CardTitle>Chat</CardTitle>
+                                <CardDescription>
+                                    Conversazioni aperte e nuove richieste di contatto.
+                                </CardDescription>
                             </div>
+
+                            <CardAction className="flex flex-wrap justify-end gap-2">
+                                <Button
+                                    disabled={groups.length === 0}
+                                    onClick={() => setCreateRequestOpen(true)}
+                                    size="lg"
+                                >
+                                    <Plus className="size-4" />
+                                    Nuova richiesta di contatto
+                                </Button>
+
+                                {
+                                    pendingContactRequestCount > 0 && (
+                                        <Button 
+                                            asChild 
+                                            variant="outline"
+                                            size="lg"
+                                        >
+                                            <Link
+                                                href="/citizen/contact-requests"
+                                                aria-label={`${pendingContactRequestCount} richieste in attesa`}
+                                            >
+                                                <Mail className="size-4" data-icon="inline-start" />
+                                                <Badge
+                                                    variant="secondary"
+                                                    className="h-5 min-w-5 rounded-full px-1.5 text-xs tabular-nums"
+                                                >
+                                                    {pendingContactRequestCount}
+                                                </Badge>
+                                                In attesa
+                                            </Link>
+                                        </Button>
+                                    )
+                                }
+                            </CardAction>
+
+                            {groups.length === 0 ? (
+                                <p className="col-span-full text-xs text-muted-foreground">
+                                    Al momento non ci sono gruppi disponibili.
+                                </p>
+                            ) : null}
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="space-y-4">
                             <ChatSummaryList
                                 chats={recentChats}
                                 buildChatHref={(chatId) =>
@@ -80,36 +123,21 @@ export default function CitizenDashboard({
                                     })
                                 }
                                 emptyTitle="Non hai ancora conversazioni recenti."
-                                emptyDescription="Le conversazioni aperte con l'amministrazione compariranno qui."
+                                emptyDescription="Invia una richiesta di contatto per avviare una nuova conversazione."
                             />
                         </CardContent>
-                    </Card>
-
-                    <Card className="border-emerald-200">
-                        <CardHeader className="space-y-3">
-                            <div className="flex size-11 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
-                                <LifeBuoy className="size-5" />
-                            </div>
-                            <div className="space-y-1">
-                                <CardTitle>Richieste ai gruppi</CardTitle>
-                                <CardDescription>
-                                    Invia una nuova richiesta ad un gruppo e controlla lo stato di quelle già aperte.
-                                </CardDescription>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                                Gruppi disponibili: {activeGroupCount}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                                Richieste aperte: {openContactRequestCount}
-                            </p>
-                        </CardHeader>
-                        <CardContent>
-                            <Button asChild variant="outline" className="w-full">
-                                <Link href="/citizen/contact-requests">
-                                    Apri richieste ai gruppi
-                                </Link>
-                            </Button>
-                        </CardContent>
+                        <Button 
+                            asChild 
+                            variant="outline"
+                            className={cn(
+                                "mx-4"
+                            )}
+                            >
+                            <Link href={citizen.chats.index().url}>
+                                <MessageSquareText />
+                                Tutte le chat
+                            </Link>
+                        </Button>
                     </Card>
 
                     <Card className="border-amber-200">
@@ -127,12 +155,20 @@ export default function CitizenDashboard({
                         <CardContent>
                             <Button asChild variant="outline" className="w-full">
                                 <Link href={citizen.account.index().url}>
+                                    <Settings className="size-4" />
                                     Gestisci account
                                 </Link>
                             </Button>
                         </CardContent>
                     </Card>
                 </section>
+
+                <ContactRequestDialog
+                    groups={groups}
+                    open={createRequestOpen}
+                    onOpenChange={setCreateRequestOpen}
+                    storeUrl={storeUrl}
+                />
             </div>
         </AppLayout>
     );

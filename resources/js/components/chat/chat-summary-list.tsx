@@ -1,8 +1,13 @@
 import { Link } from '@inertiajs/react';
-import { ChevronRight, MessageSquareText, UserRound } from 'lucide-react';
+import { ChevronRight, Clock, MessageSquareText, MessagesSquare, UserRound } from 'lucide-react';
 
 import type { ChatSummary } from '@/components/chat/chat-types';
 import { Badge } from '@/components/ui/badge';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 import {
     Empty,
     EmptyDescription,
@@ -20,6 +25,7 @@ import {
     ItemHeader,
     ItemTitle,
 } from '@/components/ui/item';
+import { Card } from '../ui/card';
 
 interface ChatSummaryListProps {
     chats: ChatSummary[];
@@ -62,46 +68,128 @@ export function ChatSummaryList({
     }
 
     return (
-        <ItemGroup className="gap-0 overflow-hidden rounded-2xl border">
+        <ItemGroup className="gap-2">
             {chats.map((chat) => (
-                <Item
+                <ChatSummaryItem
                     key={chat.id}
-                    asChild
-                    variant="outline"
-                    className="rounded-none border-x-0 border-t-0 px-4 py-3 last:border-b-0"
-                >
-                    <Link href={buildChatHref(chat.id)}>
-                        <ItemContent className="min-w-0 pr-2">
-                            <ItemHeader className="items-start justify-start flex-wrap-reverse gap-2">
-                                <ItemTitle className="">
-                                    {chat.title}
-                                </ItemTitle>
-                                {showCitizenBadge && chat.citizen?.name ? (
-                                    <Badge
-                                        variant="outline"
-                                        className="max-w-40 truncate"
-                                    >
-                                        <UserRound />
-                                        {chat.citizen.name}
-                                    </Badge>
-                                ) : null}
+                    chat={chat}
+                    buildChatHref={buildChatHref}
+                    showCitizenBadge={showCitizenBadge}
+                />
+            ))}
+        </ItemGroup>
+    );
+}
+
+function ChatSummaryItem({
+    chat,
+    buildChatHref,
+    showCitizenBadge = false,
+}: {
+    chat: ChatSummary;
+    buildChatHref: (chatId: number) => string;
+    showCitizenBadge?: boolean;
+}) {
+    return (
+        <Item
+            key={chat.id}
+            asChild
+            variant="outline"
+            className="shadow-xs"
+        >
+            <Link href={buildChatHref(chat.id)}>
+                <ItemContent className="min-w-0">
+                    <ItemHeader className="items-start justify-between flex-wrap-reverse gap-2">
+                        <div className="flex flex-row gap-2">
+                            <ItemTitle className="">
+                                {chat.title}
+                            </ItemTitle>
+                            {showCitizenBadge && chat.citizen?.name ? (
+                                <Badge
+                                    variant="outline"
+                                    className="max-w-40 truncate"
+                                >
+                                    <UserRound />
+                                    {chat.citizen.name}
+                                </Badge>
+                            ) : null}
+                            {/* TODO: trasformare in messaggi non letti, e mostrare solo se > 0
                                 <Badge variant="secondary" className="hidden sm:inline-flex">
                                     {chat.message_count} messaggi
                                 </Badge>
-                            </ItemHeader>
-                            <ItemDescription>
-                                {chat.latest_message_preview}
-                            </ItemDescription>
-                            <ItemFooter className="justify-start text-xs text-muted-foreground">
-                                {formatDate(chat.last_activity_at ?? chat.latest_message_date)}
-                            </ItemFooter>
-                        </ItemContent>
-                        <ItemActions className="ml-auto self-center">
-                            <ChevronRight className="size-4 text-muted-foreground" />
-                        </ItemActions>
-                    </Link>
-                </Item>
-            ))}
-        </ItemGroup>
+                            */
+                            }
+                        </div>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Badge variant="outline">
+                                    <MessagesSquare />
+                                    {formatDate(chat.last_activity_at ?? chat.latest_message_date)}
+                                </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                Ultima attività
+                            </TooltipContent>
+                        </Tooltip>
+                    </ItemHeader>
+                    <ItemDescription>
+                        {chat.latest_message_preview}
+                    </ItemDescription>
+                </ItemContent>
+                <ItemActions className="ml-auto self-center">
+                    <ChevronRight className="size-4 text-muted-foreground" />
+                </ItemActions>
+            </Link>
+        </Item>
+    );
+}
+
+function ChatSummaryItemOld({
+    chat,
+    buildChatHref,
+    showCitizenBadge = false,
+}: {
+    chat: ChatSummary;
+    buildChatHref: (chatId: number) => string;
+    showCitizenBadge?: boolean;
+}) {
+    return (
+        <Item
+            key={chat.id}
+            asChild
+            variant="outline"
+            className="rounded-none border-x-0 border-t-0 px-4 py-3 last:border-b-0"
+        >
+            <Link href={buildChatHref(chat.id)}>
+                <ItemContent className="min-w-0 pr-2">
+                    <ItemHeader className="items-start justify-start flex-wrap-reverse gap-2">
+                        <ItemTitle className="">
+                            {chat.title}
+                        </ItemTitle>
+                        {showCitizenBadge && chat.citizen?.name ? (
+                            <Badge
+                                variant="outline"
+                                className="max-w-40 truncate"
+                            >
+                                <UserRound />
+                                {chat.citizen.name}
+                            </Badge>
+                        ) : null}
+                        <Badge variant="secondary" className="hidden sm:inline-flex">
+                            {chat.message_count} messaggi
+                        </Badge>
+                    </ItemHeader>
+                    <ItemDescription>
+                        {chat.latest_message_preview}
+                    </ItemDescription>
+                    <ItemFooter className="justify-start text-xs text-muted-foreground">
+                        {formatDate(chat.last_activity_at ?? chat.latest_message_date)}
+                    </ItemFooter>
+                </ItemContent>
+                <ItemActions className="ml-auto self-center">
+                    <ChevronRight className="size-4 text-muted-foreground" />
+                </ItemActions>
+            </Link>
+        </Item>
     );
 }
