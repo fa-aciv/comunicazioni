@@ -23,7 +23,10 @@ class CitizenChatIndexController extends Controller
         $conversationSearch = trim((string) $request->string('search')->toString());
         $conversationListLimit = 100;
 
-        $threads = $this->applyThreadSearch($this->actorThreadsQuery($citizen), $conversationSearch)
+        $threads = $this->withUnreadMessageCount(
+            $this->applyThreadSearch($this->actorThreadsQuery($citizen), $conversationSearch),
+            $citizen
+        )
             ->with([
                 'participants.participant',
                 'latestMessage.author',
@@ -53,6 +56,16 @@ class CitizenChatIndexController extends Controller
                 ->find($selectedChatId);
 
             abort_if($requestedChatId !== null && $selectedChat === null, 404);
+
+            if ($selectedChat !== null) {
+                $this->markThreadAsRead($selectedChat, $citizen);
+
+                $listedThread = $threads->firstWhere('id', $selectedChat->getKey());
+
+                if ($listedThread !== null) {
+                    $listedThread->setAttribute('unread_message_count', 0);
+                }
+            }
         }
 
         return Inertia::render('citizen/chats/index', [

@@ -48,6 +48,7 @@ class AddEmployeeParticipant
             $chat->participants()->create([
                 'participant_id' => $participant->getKey(),
                 'participant_type' => User::class,
+                'last_read_at' => now(),
             ]);
 
             $chat->forceFill([

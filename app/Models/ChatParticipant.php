@@ -16,6 +16,11 @@ class ChatParticipant extends Model
         'chat_id',
         'participant_id',
         'participant_type',
+        'last_read_at',
+    ];
+
+    protected $casts = [
+        'last_read_at' => 'datetime',
     ];
 
     public function chat(): BelongsTo

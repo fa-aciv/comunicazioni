@@ -62,12 +62,14 @@ class AcceptGroupContactRequest
                 'chat_id' => $thread->getKey(),
                 'participant_id' => $lockedRequest->citizen->getKey(),
                 'participant_type' => $lockedRequest->citizen::class,
+                'last_read_at' => now(),
             ]);
 
             ChatParticipant::query()->create([
                 'chat_id' => $thread->getKey(),
                 'participant_id' => $actor->getKey(),
                 'participant_type' => $actor::class,
+                'last_read_at' => now(),
             ]);
 
             $messageContent = $this->initialMessageContent($lockedRequest);

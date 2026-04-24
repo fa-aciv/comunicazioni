@@ -22,6 +22,7 @@ export interface ChatSummary {
     last_activity_at?: string | null;
     latest_message_preview: string;
     message_count: number;
+    unread_message_count?: number;
     latest_message_author?: {
         id?: number | null;
         type: string;

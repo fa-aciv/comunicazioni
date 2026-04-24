@@ -50,12 +50,14 @@ class CreateChatThread
             $thread->participants()->create([
                 'participant_id' => $citizen->getKey(),
                 'participant_type' => $citizen::class,
+                'last_read_at' => now(),
             ]);
 
             $employees->each(function (User $participant) use ($thread): void {
                 $thread->participants()->create([
                     'participant_id' => $participant->getKey(),
                     'participant_type' => $participant::class,
+                    'last_read_at' => now(),
                 ]);
             });
 

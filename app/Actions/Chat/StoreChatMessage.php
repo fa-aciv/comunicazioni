@@ -59,6 +59,11 @@ class StoreChatMessage
                 'last_activity_at' => $message->created_at,
             ])->save();
 
+            $chat->participants()
+                ->where('participant_type', $actor::class)
+                ->where('participant_id', $actor->getKey())
+                ->update(['last_read_at' => $message->created_at]);
+
             return $message->load('attachments');
         });
     }

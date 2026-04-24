@@ -25,7 +25,10 @@ class EmployeeDashboardController extends Controller
         $conversationSearch = trim((string) $request->string('search')->toString());
         $conversationListLimit = $conversationSearch === '' ? 5 : 10;
 
-        $activeChats = $this->applyThreadSearch($this->actorThreadsQuery($employee), $conversationSearch)
+        $activeChats = $this->withUnreadMessageCount(
+            $this->applyThreadSearch($this->actorThreadsQuery($employee), $conversationSearch),
+            $employee
+        )
             ->with([
                 'participants.participant',
                 'latestMessage.author',

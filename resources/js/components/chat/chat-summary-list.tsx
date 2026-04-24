@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { ChevronRight, Clock, MessageSquareText, MessagesSquare, UserRound } from 'lucide-react';
+import { ChevronRight, Clock, Mail, MessageCircle, MessageSquareDot, MessageSquareText, MessagesSquare, UserRound } from 'lucide-react';
 
 import type { ChatSummary } from '@/components/chat/chat-types';
 import { Badge } from '@/components/ui/badge';
@@ -90,6 +90,8 @@ function ChatSummaryItem({
     buildChatHref: (chatId: number) => string;
     showCitizenBadge?: boolean;
 }) {
+    const unreadMessageCount = chat.unread_message_count ?? 0;
+
     return (
         <Item
             key={chat.id}
@@ -113,12 +115,18 @@ function ChatSummaryItem({
                                     {chat.citizen.name}
                                 </Badge>
                             ) : null}
-                            {/* TODO: trasformare in messaggi non letti, e mostrare solo se > 0
-                                <Badge variant="secondary" className="hidden sm:inline-flex">
-                                    {chat.message_count} messaggi
-                                </Badge>
-                            */
-                            }
+                            {unreadMessageCount > 0 ? (
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Badge variant="secondary" className="hidden sm:inline-flex">
+                                            <MessageSquareDot /> {unreadMessageCount}
+                                        </Badge>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        {unreadMessageCount} messaggi non letti
+                                    </TooltipContent>
+                                </Tooltip>
+                            ) : null}
                         </div>
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -135,56 +143,6 @@ function ChatSummaryItem({
                     <ItemDescription>
                         {chat.latest_message_preview}
                     </ItemDescription>
-                </ItemContent>
-                <ItemActions className="ml-auto self-center">
-                    <ChevronRight className="size-4 text-muted-foreground" />
-                </ItemActions>
-            </Link>
-        </Item>
-    );
-}
-
-function ChatSummaryItemOld({
-    chat,
-    buildChatHref,
-    showCitizenBadge = false,
-}: {
-    chat: ChatSummary;
-    buildChatHref: (chatId: number) => string;
-    showCitizenBadge?: boolean;
-}) {
-    return (
-        <Item
-            key={chat.id}
-            asChild
-            variant="outline"
-            className="rounded-none border-x-0 border-t-0 px-4 py-3 last:border-b-0"
-        >
-            <Link href={buildChatHref(chat.id)}>
-                <ItemContent className="min-w-0 pr-2">
-                    <ItemHeader className="items-start justify-start flex-wrap-reverse gap-2">
-                        <ItemTitle className="">
-                            {chat.title}
-                        </ItemTitle>
-                        {showCitizenBadge && chat.citizen?.name ? (
-                            <Badge
-                                variant="outline"
-                                className="max-w-40 truncate"
-                            >
-                                <UserRound />
-                                {chat.citizen.name}
-                            </Badge>
-                        ) : null}
-                        <Badge variant="secondary" className="hidden sm:inline-flex">
-                            {chat.message_count} messaggi
-                        </Badge>
-                    </ItemHeader>
-                    <ItemDescription>
-                        {chat.latest_message_preview}
-                    </ItemDescription>
-                    <ItemFooter className="justify-start text-xs text-muted-foreground">
-                        {formatDate(chat.last_activity_at ?? chat.latest_message_date)}
-                    </ItemFooter>
                 </ItemContent>
                 <ItemActions className="ml-auto self-center">
                     <ChevronRight className="size-4 text-muted-foreground" />

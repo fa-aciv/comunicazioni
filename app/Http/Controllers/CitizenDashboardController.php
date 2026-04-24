@@ -22,7 +22,10 @@ class CitizenDashboardController extends Controller
 
         abort_unless($citizen instanceof Citizen, 403);
 
-        $recentChats = $this->actorThreadsQuery($citizen)
+        $recentChats = $this->withUnreadMessageCount(
+            $this->actorThreadsQuery($citizen),
+            $citizen
+        )
             ->with([
                 'participants.participant',
                 'latestMessage.author',

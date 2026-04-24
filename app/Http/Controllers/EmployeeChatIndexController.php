@@ -24,7 +24,10 @@ class EmployeeChatIndexController extends Controller
         $conversationSearch = trim((string) $request->string('search')->toString());
         $conversationListLimit = 100;
 
-        $threads = $this->applyThreadSearch($this->actorThreadsQuery($employee), $conversationSearch)
+        $threads = $this->withUnreadMessageCount(
+            $this->applyThreadSearch($this->actorThreadsQuery($employee), $conversationSearch),
+            $employee
+        )
             ->with([
                 'participants.participant',
                 'latestMessage.author',
@@ -54,6 +57,16 @@ class EmployeeChatIndexController extends Controller
                 ->find($selectedChatId);
 
             abort_if($requestedChatId !== null && $selectedChat === null, 404);
+
+            if ($selectedChat !== null) {
+                $this->markThreadAsRead($selectedChat, $employee);
+
+                $listedThread = $threads->firstWhere('id', $selectedChat->getKey());
+
+                if ($listedThread !== null) {
+                    $listedThread->setAttribute('unread_message_count', 0);
+                }
+            }
         }
 
         $employees = User::query()

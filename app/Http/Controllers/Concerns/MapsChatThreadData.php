@@ -71,6 +71,43 @@ trait MapsChatThreadData
         });
     }
 
+    protected function withUnreadMessageCount(Builder $query, Model $actor): Builder
+    {
+        return $query->withCount([
+            'messages as unread_message_count' => function (Builder $messageQuery) use ($actor): void {
+                $messageQuery
+                    ->where(function (Builder $authorQuery) use ($actor): void {
+                        $authorQuery
+                            ->where('author_type', '!=', $actor::class)
+                            ->orWhere('author_id', '!=', $actor->getKey());
+                    })
+                    ->where(
+                        'created_at',
+                        '>',
+                        function ($subquery) use ($actor) {
+                            $subquery
+                                ->from('chat_participants')
+                                ->selectRaw('coalesce(last_read_at, ?)', ['1970-01-01 00:00:00'])
+                                ->whereColumn('chat_participants.chat_id', 'chat_messages.chat_id')
+                                ->where('participant_type', $actor::class)
+                                ->where('participant_id', $actor->getKey())
+                                ->limit(1);
+                        }
+                    );
+            },
+        ]);
+    }
+
+    protected function markThreadAsRead(ChatThread $thread, Model $actor): void
+    {
+        $thread->participants()
+            ->where('participant_type', $actor::class)
+            ->where('participant_id', $actor->getKey())
+            ->update([
+                'last_read_at' => $thread->latest_message_date ?? now(),
+            ]);
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -97,6 +134,7 @@ trait MapsChatThreadData
             'latest_message_date' => optional($thread->latest_message_date)->toIso8601String(),
             'last_activity_at' => optional($thread->last_activity_at)->toIso8601String(),
             'message_count' => $thread->messages_count,
+            'unread_message_count' => $thread->unread_message_count ?? 0,
             'latest_message_preview' => $latestPreview,
             'latest_message_author' => $latestMessage ? [
                 'id' => $latestMessage->author?->getKey(),
