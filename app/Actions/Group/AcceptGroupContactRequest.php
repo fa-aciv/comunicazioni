@@ -54,6 +54,7 @@ class AcceptGroupContactRequest
                 'creator_id' => $actor->getKey(),
                 'creator_type' => $actor::class,
                 'title' => $title,
+                'group_id' => $lockedRequest->group?->getKey(),
                 'latest_message_date' => null,
                 'last_activity_at' => now(),
             ]);

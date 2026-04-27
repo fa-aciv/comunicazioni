@@ -4,6 +4,7 @@ namespace App\Actions\Chat;
 
 use App\Models\ChatThread;
 use App\Models\Citizen;
+use App\Models\Group;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -20,6 +21,8 @@ class CreateChatThread
                 'citizen_identifier' => 'Nessun cittadino corrisponde ai dati inseriti.',
             ]);
         }
+
+        $group = $this->resolveGroup($employee, $validated);
 
         $employeeIds = collect($validated['employee_ids'] ?? [])
             ->map(fn (mixed $id) => (int) $id)
@@ -38,11 +41,12 @@ class CreateChatThread
             ]);
         }
 
-        return DB::transaction(function () use ($employee, $citizen, $employees, $validated) {
+        return DB::transaction(function () use ($employee, $citizen, $employees, $validated, $group) {
             $thread = ChatThread::query()->create([
                 'creator_id' => $employee->getKey(),
                 'creator_type' => $employee::class,
                 'title' => trim((string) ($validated['title'] ?? '')) ?: 'Chat con '.$citizen->name,
+                'group_id' => $group?->getKey(),
                 'latest_message_date' => null,
                 'last_activity_at' => now(),
             ]);
@@ -63,6 +67,42 @@ class CreateChatThread
 
             return $thread->load('participants');
         });
+    }
+
+    private function resolveGroup(User $employee, array $validated): ?Group
+    {
+        $employeeGroupIds = $employee->groupMemberships()
+            ->pluck('group_id')
+            ->map(fn (mixed $groupId) => (int) $groupId)
+            ->filter(fn (int $groupId) => $groupId > 0)
+            ->unique()
+            ->values();
+
+        $selectedGroupId = isset($validated['group_id']) ? (int) $validated['group_id'] : null;
+
+        if ($employeeGroupIds->isEmpty()) {
+            if ($selectedGroupId === null) {
+                return null;
+            }
+
+            throw ValidationException::withMessages([
+                'group_id' => 'Puoi associare la chat solo a uno dei tuoi gruppi.',
+            ]);
+        }
+
+        if ($selectedGroupId === null) {
+            throw ValidationException::withMessages([
+                'group_id' => 'Seleziona il gruppo a cui associare la chat.',
+            ]);
+        }
+
+        if (! $employeeGroupIds->contains($selectedGroupId)) {
+            throw ValidationException::withMessages([
+                'group_id' => 'Puoi associare la chat solo a uno dei tuoi gruppi.',
+            ]);
+        }
+
+        return Group::query()->find($selectedGroupId);
     }
 
     private function resolveCitizen(array $validated): ?Citizen

@@ -3,6 +3,7 @@
 namespace App\Actions\Group;
 
 use App\Enums\GroupMembershipRole;
+use App\Models\ChatRetentionSetting;
 use App\Models\Group;
 use App\Models\GroupMembership;
 use App\Models\User;
@@ -50,11 +51,15 @@ class CreateGroup
             ]);
         }
 
-        return DB::transaction(function () use ($name, $description, $managers): Group {
+        $retentionSettings = ChatRetentionSetting::current();
+
+        return DB::transaction(function () use ($name, $description, $managers, $retentionSettings): Group {
             $group = Group::query()->create([
                 'name' => trim($name),
                 'description' => filled($description) ? trim((string) $description) : null,
                 'is_active' => true,
+                'chat_message_retention_days' => $retentionSettings->message_retention_days,
+                'chat_inactive_thread_retention_days' => $retentionSettings->inactive_thread_retention_days,
             ]);
 
             $managers->each(function (User $manager) use ($group): void {

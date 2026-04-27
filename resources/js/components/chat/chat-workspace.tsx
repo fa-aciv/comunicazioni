@@ -2,6 +2,7 @@ import { Head } from '@inertiajs/react';
 
 import type {
     ChatActorType,
+    ChatGroupSummary,
     ChatSummary,
     EmployeeSummary,
     SelectedChatSummary,
@@ -16,6 +17,7 @@ import { Card, CardContent } from '@/components/ui/card';
 export type {
     AttachmentSummary,
     ChatActorType,
+    ChatGroupSummary,
     ChatMessageSummary,
     ChatSummary,
     CitizenSummary,
@@ -35,6 +37,7 @@ interface ChatWorkspaceProps {
     conversationListLimit?: number;
     hasMoreConversations?: boolean;
     employees?: EmployeeSummary[];
+    availableGroups?: ChatGroupSummary[];
     chatSummaries: ChatSummary[];
     selectedChat: SelectedChatSummary | null;
     buildChatHref: (chatId: number) => string;
@@ -63,6 +66,7 @@ export function ChatWorkspace({
     conversationListLimit = 100,
     hasMoreConversations = false,
     employees = [],
+    availableGroups = [],
     chatSummaries,
     selectedChat,
     buildChatHref,
@@ -119,6 +123,7 @@ export function ChatWorkspace({
                             buildConversationSearchHref={buildConversationSearchHref}
                             canCreateChats={canManageParticipants}
                             buildThreadStoreUrl={buildThreadStoreUrl}
+                            availableGroups={availableGroups}
                         />
 
                         <main className="flex h-[calc(100dvh-6rem)] min-h-0 flex-col self-stretch sm:min-w-sm sm:flex-2 sm:shadow-sm">

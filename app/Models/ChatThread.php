@@ -2,6 +2,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -15,6 +16,7 @@ class ChatThread extends Model
         'creator_id',
         'creator_type',
         'title',
+        'group_id',
         'latest_message_date',
         'last_activity_at',
     ];
@@ -28,6 +30,11 @@ class ChatThread extends Model
     public function creator(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    public function group(): BelongsTo
+    {
+        return $this->belongsTo(Group::class);
     }
 
     // Participants

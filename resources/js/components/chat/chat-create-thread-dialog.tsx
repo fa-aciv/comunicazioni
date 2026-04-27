@@ -3,6 +3,7 @@ import { MessageSquarePlus } from 'lucide-react';
 import { useState } from 'react';
 
 import InputError from '@/components/input-error';
+import type { ChatGroupSummary } from '@/components/chat/chat-types';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -14,27 +15,40 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface ChatCreateThreadDialogProps {
     buildThreadStoreUrl: () => string;
+    availableGroups: ChatGroupSummary[];
 }
 
 export function ChatCreateThreadDialog({
     buildThreadStoreUrl,
+    availableGroups,
 }: ChatCreateThreadDialogProps) {
     const [open, setOpen] = useState(false);
+    const defaultGroupId =
+        availableGroups.length === 1 ? String(availableGroups[0].id) : '';
     const createThreadForm = useForm({
         title: '',
         citizen_identifier: '',
+        group_id: defaultGroupId,
     });
+    const selectedGroup =
+        availableGroups.find(
+            (group) => String(group.id) === createThreadForm.data.group_id,
+        ) ?? null;
 
     const handleOpenChange = (nextOpen: boolean) => {
         setOpen(nextOpen);
 
-        if (!nextOpen) {
-            createThreadForm.reset();
-            createThreadForm.clearErrors();
-        }
+        createThreadForm.reset();
+        createThreadForm.setData({
+            title: '',
+            citizen_identifier: '',
+            group_id: defaultGroupId,
+        });
+        createThreadForm.clearErrors();
     };
 
     const handleSubmit = () => {
@@ -67,6 +81,54 @@ export function ChatCreateThreadDialog({
                 </DialogHeader>
 
                 <div className="space-y-3">
+                    <div className="space-y-2">
+                        {availableGroups.length > 0 ? (
+                            <>
+                                <label className="text-sm font-medium">
+                                    Gruppo
+                                </label>
+                                <Select
+                                    value={createThreadForm.data.group_id}
+                                    onValueChange={(value) =>
+                                        createThreadForm.setData('group_id', value)
+                                    }
+                                    disabled={
+                                        createThreadForm.processing ||
+                                        availableGroups.length === 1
+                                    }
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Seleziona un gruppo" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {availableGroups.map((group) => (
+                                            <SelectItem
+                                                key={group.id}
+                                                value={String(group.id)}
+                                            >
+                                                {group.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <InputError message={createThreadForm.errors.group_id} />
+                                {selectedGroup ? (
+                                    <p className="text-sm text-muted-foreground">
+                                        La retention della chat seguira la policy del gruppo{' '}
+                                        <span className="font-medium text-foreground">
+                                            {selectedGroup.name}
+                                        </span>
+                                        .
+                                    </p>
+                                ) : null}
+                            </>
+                        ) : (
+                            <div className="rounded-lg border border-dashed px-3 py-2 text-sm text-muted-foreground">
+                                Non appartieni a nessun gruppo: questa chat usera la retention globale.
+                            </div>
+                        )}
+                    </div>
+
                     <div className="space-y-2">
                         <label
                             htmlFor="chat-title"
@@ -122,6 +184,8 @@ export function ChatCreateThreadDialog({
                         onClick={handleSubmit}
                         disabled={
                             !createThreadForm.data.citizen_identifier.trim() ||
+                            (availableGroups.length > 0 &&
+                                createThreadForm.data.group_id.trim() === '') ||
                             createThreadForm.processing
                         }
                     >

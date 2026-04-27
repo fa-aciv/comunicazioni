@@ -1,5 +1,6 @@
 import {
     ChatWorkspace,
+    type ChatGroupSummary,
     type ChatSummary,
     type EmployeeSummary,
     type SelectedChatSummary,
@@ -29,6 +30,7 @@ interface EmployeeChatsProps {
     conversationListLimit: number;
     hasMoreConversations: boolean;
     employees: EmployeeSummary[];
+    availableGroups: ChatGroupSummary[];
     chatSummaries: ChatSummary[];
     selectedChat: SelectedChatSummary | null;
 }
@@ -43,6 +45,7 @@ export default function EmployeeChatsPage({
     conversationListLimit,
     hasMoreConversations,
     employees,
+    availableGroups,
     chatSummaries,
     selectedChat,
 }: EmployeeChatsProps) {
@@ -60,6 +63,7 @@ export default function EmployeeChatsPage({
                 conversationListLimit={conversationListLimit}
                 hasMoreConversations={hasMoreConversations}
                 employees={employees}
+                availableGroups={availableGroups}
                 chatSummaries={chatSummaries}
                 selectedChat={selectedChat}
                 buildChatHref={(chatId) =>

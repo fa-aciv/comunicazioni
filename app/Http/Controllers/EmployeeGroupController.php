@@ -161,12 +161,15 @@ class EmployeeGroupController extends Controller
                 'description' => $group->description,
                 'isActive' => $group->is_active,
                 'openContactRequestCount' => $group->open_contact_requests_count,
+                'chatMessageRetentionDays' => $group->chat_message_retention_days,
+                'chatInactiveThreadRetentionDays' => $group->chat_inactive_thread_retention_days,
             ],
             'currentEmployeeId' => $employee->getKey(),
             'abilities' => [
                 'canAddMembers' => ($currentMembership?->hasPermission('group.members.add') ?? false) || $canAssignGroupManagers,
                 'canRemoveMembers' => ($currentMembership?->hasPermission('group.members.remove') ?? false) || $canAssignGroupManagers,
                 'canManageMemberPermissions' => ($currentMembership?->hasPermission('group.members.permissions.manage') ?? false) || $canAssignGroupManagers,
+                'canManageRetention' => ($currentMembership?->hasPermission('group.members.permissions.manage') ?? false) || $canAssignGroupManagers,
                 'canAcceptContactRequests' => $currentMembership?->hasPermission('group.contact_requests.accept') ?? false,
             ],
             'memberships' => $group->memberships
@@ -202,8 +205,46 @@ class EmployeeGroupController extends Controller
                     $role->value => $permissions->defaultPermissionKeysForRole($role),
                 ]),
             'membershipStoreUrl' => route('employee.groups.memberships.store', $group),
+            'retentionUpdateUrl' => route('employee.groups.retention.update', $group),
             'requestsInboxUrl' => route('employee.group-contact-requests.index'),
             'indexUrl' => route('employee.groups.index'),
         ]);
+    }
+
+    public function updateRetention(
+        Request $request,
+        Group $group,
+        GroupPermissionService $permissions,
+        EmployeeAuthorizationService $employeeAuthorization
+    ): RedirectResponse
+    {
+        /** @var User|null $employee */
+        $employee = Auth::guard('employee')->user();
+
+        abort_unless($employee instanceof User, 403);
+
+        $employeeAuthorization->syncCatalog();
+        $permissions->syncCatalog();
+        $canAssignGroupManagers = $employee->can('groups.managers.assign');
+        $currentMembership = $permissions->membershipFor($employee, $group);
+
+        abort_unless(
+            (($currentMembership?->hasPermission('group.members.permissions.manage') ?? false) || $canAssignGroupManagers),
+            403
+        );
+
+        $validated = $request->validate([
+            'chatMessageRetentionDays' => ['required', 'integer', 'min:1', 'max:3650'],
+            'chatInactiveThreadRetentionDays' => ['required', 'integer', 'min:1', 'max:3650', 'gte:chatMessageRetentionDays'],
+        ], [
+            'chatInactiveThreadRetentionDays.gte' => 'La retention delle chat inattive deve essere uguale o superiore a quella dei messaggi.',
+        ]);
+
+        $group->forceFill([
+            'chat_message_retention_days' => (int) $validated['chatMessageRetentionDays'],
+            'chat_inactive_thread_retention_days' => (int) $validated['chatInactiveThreadRetentionDays'],
+        ])->save();
+
+        return back()->with('status', 'Impostazioni di retention del gruppo aggiornate correttamente.');
     }
 }

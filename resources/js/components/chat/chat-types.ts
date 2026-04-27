@@ -7,6 +7,11 @@ export interface EmployeeSummary {
     department_name?: string;
 }
 
+export interface ChatGroupSummary {
+    id: number;
+    name: string;
+}
+
 export interface CitizenSummary {
     id: number;
     name: string;

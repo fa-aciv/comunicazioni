@@ -107,6 +107,7 @@ Route::prefix('employee')->name('employee.')->group(function () {
         Route::get('groups', [EmployeeGroupController::class, 'index'])->name('groups.index');
         Route::post('groups', [EmployeeGroupController::class, 'store'])->name('groups.store');
         Route::get('groups/{group}', [EmployeeGroupController::class, 'show'])->name('groups.show');
+        Route::patch('groups/{group}/retention', [EmployeeGroupController::class, 'updateRetention'])->name('groups.retention.update');
         Route::post('groups/{group}/memberships', [EmployeeGroupMembershipController::class, 'store'])->name('groups.memberships.store');
         Route::patch('groups/{group}/memberships/{membership}', [EmployeeGroupMembershipController::class, 'update'])->name('groups.memberships.update');
         Route::delete('groups/{group}/memberships/{membership}', [EmployeeGroupMembershipController::class, 'destroy'])->name('groups.memberships.destroy');

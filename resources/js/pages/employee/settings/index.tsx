@@ -78,7 +78,7 @@ export default function EmployeeSettingsPage({
                                 </div>
                                 <CardTitle>Impostazioni chat</CardTitle>
                                 <CardDescription>
-                                    Configura per quanti giorni conservare i messaggi e quando una chat inattiva va eliminata in modo permanente.
+                                    Configura la policy di retention predefinita per le chat non associate a un gruppo. Le chat di gruppo seguono la policy configurata sul gruppo stesso.
                                 </CardDescription>
                             </div>
                             <Button asChild variant="outline">
@@ -120,7 +120,7 @@ export default function EmployeeSettingsPage({
                                         required
                                     />
                                     <p className="text-sm text-muted-foreground">
-                                        I messaggi più vecchi di questo limite verranno rimossi automaticamente.
+                                        I messaggi delle chat non di gruppo più vecchi di questo limite verranno rimossi automaticamente.
                                     </p>
                                     <InputError message={form.errors.messageRetentionDays} />
                                 </div>
@@ -139,7 +139,7 @@ export default function EmployeeSettingsPage({
                                         required
                                     />
                                     <p className="text-sm text-muted-foreground">
-                                        Una chat senza nuove azioni oltre questo limite viene eliminata definitivamente.
+                                        Una chat non di gruppo senza nuove azioni oltre questo limite viene eliminata definitivamente.
                                     </p>
                                     <InputError message={form.errors.inactiveThreadRetentionDays} />
                                 </div>

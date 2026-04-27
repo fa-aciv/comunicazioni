@@ -77,6 +77,10 @@ class EmployeeChatIndexController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'email', 'department_name']);
 
+        $availableGroups = $employee->groups()
+            ->orderBy('name')
+            ->get(['groups.id', 'groups.name']);
+
         return Inertia::render('employee/chats/index', [
             'status' => $request->session()->get('status'),
             'currentEmployeeId' => $employee->id,
@@ -91,6 +95,10 @@ class EmployeeChatIndexController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'department_name' => $user->department_name,
+            ])->values(),
+            'availableGroups' => $availableGroups->map(fn ($group) => [
+                'id' => $group->id,
+                'name' => $group->name,
             ])->values(),
             'chatSummaries' => $threads->map(fn (ChatThread $thread) => $this->mapChatSummary($thread))->values(),
             'selectedChat' => $selectedChat ? $this->mapSelectedChat($selectedChat, 'employee') : null,

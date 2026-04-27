@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
@@ -10,7 +11,7 @@ import AppLayout from '@/layouts/app-layout';
 import employee from '@/routes/employee';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ShieldCheck, UserMinus, UserPlus } from 'lucide-react';
+import { Clock3, ShieldCheck, UserMinus, UserPlus } from 'lucide-react';
 
 const roleOptions = [
     { value: 'manager', label: 'Manager' },
@@ -25,12 +26,15 @@ interface EmployeeGroupShowPageProps {
         description: string | null;
         isActive: boolean;
         openContactRequestCount: number;
+        chatMessageRetentionDays: number;
+        chatInactiveThreadRetentionDays: number;
     };
     currentEmployeeId: number;
     abilities: {
         canAddMembers: boolean;
         canRemoveMembers: boolean;
         canManageMemberPermissions: boolean;
+        canManageRetention: boolean;
         canAcceptContactRequests: boolean;
     };
     memberships: Array<{
@@ -59,6 +63,7 @@ interface EmployeeGroupShowPageProps {
     }>;
     roleDefaults: Record<string, string[]>;
     membershipStoreUrl: string;
+    retentionUpdateUrl: string;
     requestsInboxUrl: string;
     indexUrl: string;
 }
@@ -74,6 +79,7 @@ export default function EmployeeGroupShowPage(props: EmployeeGroupShowPageProps)
         permissionCatalog,
         roleDefaults,
         membershipStoreUrl,
+        retentionUpdateUrl,
         requestsInboxUrl,
         indexUrl,
     } = props;
@@ -143,6 +149,12 @@ export default function EmployeeGroupShowPage(props: EmployeeGroupShowPageProps)
                     />
                 ) : null}
 
+                <GroupRetentionCard
+                    group={group}
+                    canManageRetention={abilities.canManageRetention}
+                    updateUrl={retentionUpdateUrl}
+                />
+
                 <Card>
                     <CardHeader>
                         <CardTitle>Membri del gruppo</CardTitle>
@@ -172,6 +184,125 @@ export default function EmployeeGroupShowPage(props: EmployeeGroupShowPageProps)
                 </Card>
             </div>
         </AppLayout>
+    );
+}
+
+function GroupRetentionCard({
+    group,
+    canManageRetention,
+    updateUrl,
+}: {
+    group: EmployeeGroupShowPageProps['group'];
+    canManageRetention: boolean;
+    updateUrl: string;
+}) {
+    const form = useForm({
+        chatMessageRetentionDays: group.chatMessageRetentionDays.toString(),
+        chatInactiveThreadRetentionDays: group.chatInactiveThreadRetentionDays.toString(),
+    });
+
+    function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+
+        form.patch(updateUrl, {
+            preserveScroll: true,
+        });
+    }
+
+    return (
+        <Card className="border-sky-200">
+            <CardHeader className="space-y-3">
+                <div className="flex size-11 items-center justify-center rounded-2xl bg-sky-100 text-sky-700">
+                    <Clock3 className="size-5" />
+                </div>
+                <div className="space-y-1">
+                    <CardTitle>Retention chat del gruppo</CardTitle>
+                    <CardDescription>
+                        Le chat generate dalle richieste di contatto di questo gruppo seguono questa policy di retention dedicata.
+                    </CardDescription>
+                </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="grid gap-4 rounded-2xl border bg-muted/20 p-4 md:grid-cols-2">
+                    <div className="rounded-xl border bg-background p-4">
+                        <div className="text-sm text-muted-foreground">Retention messaggi</div>
+                        <div className="mt-1 text-sm font-semibold">
+                            {group.chatMessageRetentionDays} giorni
+                        </div>
+                    </div>
+                    <div className="rounded-xl border bg-background p-4">
+                        <div className="text-sm text-muted-foreground">Retention chat inattive</div>
+                        <div className="mt-1 text-sm font-semibold">
+                            {group.chatInactiveThreadRetentionDays} giorni
+                        </div>
+                    </div>
+                </div>
+
+                {canManageRetention ? (
+                    <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl border p-4">
+                        <div className="grid gap-5 md:grid-cols-2">
+                            <div className="grid gap-2">
+                                <Label htmlFor="chatMessageRetentionDays">Messaggi</Label>
+                                <Input
+                                    id="chatMessageRetentionDays"
+                                    type="number"
+                                    min={1}
+                                    max={3650}
+                                    value={form.data.chatMessageRetentionDays}
+                                    onChange={(event) =>
+                                        form.setData('chatMessageRetentionDays', event.currentTarget.value)
+                                    }
+                                    required
+                                />
+                                <p className="text-sm text-muted-foreground">
+                                    I messaggi delle chat del gruppo più vecchi di questo limite verranno rimossi automaticamente.
+                                </p>
+                                <InputError message={form.errors.chatMessageRetentionDays} />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="chatInactiveThreadRetentionDays">Chat inattive</Label>
+                                <Input
+                                    id="chatInactiveThreadRetentionDays"
+                                    type="number"
+                                    min={1}
+                                    max={3650}
+                                    value={form.data.chatInactiveThreadRetentionDays}
+                                    onChange={(event) =>
+                                        form.setData('chatInactiveThreadRetentionDays', event.currentTarget.value)
+                                    }
+                                    required
+                                />
+                                <p className="text-sm text-muted-foreground">
+                                    Le chat del gruppo senza nuove azioni oltre questo limite vengono eliminate definitivamente.
+                                </p>
+                                <InputError message={form.errors.chatInactiveThreadRetentionDays} />
+                            </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                            <p className="font-medium">
+                                Le eliminazioni sono permanenti.
+                            </p>
+                            <p className="mt-1 text-amber-800">
+                                Mantieni la retention delle chat inattive uguale o superiore a quella dei messaggi.
+                            </p>
+                        </div>
+
+                        <div className="flex justify-end">
+                            <Button type="submit" disabled={form.processing || !form.isDirty}>
+                                Salva retention
+                                {form.processing && <Spinner />}
+                            </Button>
+                        </div>
+                    </form>
+                ) : (
+                    <p className="text-sm text-muted-foreground">
+                        Non hai i permessi per modificare la retention delle chat di questo gruppo.
+                    </p>
+                )}
+            </CardContent>
+        </Card>
     );
 }
 

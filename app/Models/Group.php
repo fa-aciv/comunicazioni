@@ -17,12 +17,16 @@ class Group extends Model
         'name',
         'description',
         'is_active',
+        'chat_message_retention_days',
+        'chat_inactive_thread_retention_days',
     ];
 
     protected function casts(): array
     {
         return [
             'is_active' => 'bool',
+            'chat_message_retention_days' => 'integer',
+            'chat_inactive_thread_retention_days' => 'integer',
         ];
     }
 
@@ -47,5 +51,10 @@ class Group extends Model
     public function contactRequests(): HasMany
     {
         return $this->hasMany(GroupContactRequest::class);
+    }
+
+    public function chatThreads(): HasMany
+    {
+        return $this->hasMany(ChatThread::class);
     }
 }

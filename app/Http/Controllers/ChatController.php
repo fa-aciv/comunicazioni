@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rule;
 
 class ChatController extends Controller
 {
@@ -34,6 +35,7 @@ class ChatController extends Controller
             'citizen_email' => ['nullable', 'email:rfc', 'max:255'],
             'citizen_phone_number' => ['nullable', 'string', 'max:30', 'regex:/^\+?[0-9]+$/'],
             'citizen_fiscal_code' => ['nullable', 'string', 'size:16', 'regex:/^[A-Z0-9]{16}$/'],
+            'group_id' => ['nullable', 'integer', Rule::exists('groups', 'id')],
             'employee_ids' => ['nullable', 'array'],
             'employee_ids.*' => ['integer', 'distinct'],
         ]);

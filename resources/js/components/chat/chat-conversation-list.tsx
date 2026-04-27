@@ -3,7 +3,7 @@ import { Search } from 'lucide-react';
 import { useDeferredValue, useEffect, useState } from 'react';
 
 import { ChatCreateThreadDialog } from '@/components/chat/chat-create-thread-dialog';
-import type { ChatSummary } from '@/components/chat/chat-types';
+import type { ChatGroupSummary, ChatSummary } from '@/components/chat/chat-types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ChatThreadItem from '@/components/chat/chat-thread-item';
 import { Input } from '@/components/ui/input';
@@ -22,6 +22,7 @@ interface ChatConversationListProps {
     ) => string;
     canCreateChats?: boolean;
     buildThreadStoreUrl?: () => string;
+    availableGroups?: ChatGroupSummary[];
 }
 
 export function ChatConversationList({
@@ -35,6 +36,7 @@ export function ChatConversationList({
     buildConversationSearchHref,
     canCreateChats = false,
     buildThreadStoreUrl,
+    availableGroups = [],
 }: ChatConversationListProps) {
     const [searchTerm, setSearchTerm] = useState(conversationSearch);
     const deferredSearchTerm = useDeferredValue(searchTerm);
@@ -76,6 +78,7 @@ export function ChatConversationList({
                         {canCreateChats && buildThreadStoreUrl ? (
                             <ChatCreateThreadDialog
                                 buildThreadStoreUrl={buildThreadStoreUrl}
+                                availableGroups={availableGroups}
                             />
                         ) : null}
                     </CardTitle>

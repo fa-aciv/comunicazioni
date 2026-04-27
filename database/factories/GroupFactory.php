@@ -18,6 +18,8 @@ class GroupFactory extends Factory
             'name' => fake()->unique()->company().' Team',
             'description' => fake()->sentence(),
             'is_active' => true,
+            'chat_message_retention_days' => 15,
+            'chat_inactive_thread_retention_days' => 60,
         ];
     }
 }
