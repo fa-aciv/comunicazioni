@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Enums\GroupMembershipRole;
 use App\Models\Group;
 use App\Models\GroupMembership;
+use App\Models\GroupRole;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -17,10 +17,17 @@ class GroupMembershipFactory extends Factory
 
     public function definition(): array
     {
+        $role = GroupRole::query()->where('key', 'user')->first();
+
+        if (! $role) {
+            $role = GroupRole::factory()->create();
+        }
+
         return [
             'group_id' => Group::factory(),
             'user_id' => User::factory(),
-            'role' => GroupMembershipRole::User,
+            'group_role_id' => $role->getKey(),
+            'role' => $role->key,
         ];
     }
 }

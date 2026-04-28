@@ -44,7 +44,7 @@ class Group extends Model
     {
         return $this->belongsToMany(User::class, 'group_memberships')
             ->using(GroupMembership::class)
-            ->withPivot(['id', 'role'])
+            ->withPivot(['id', 'group_role_id', 'role'])
             ->withTimestamps();
     }
 

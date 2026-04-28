@@ -23,22 +23,17 @@ class EmployeeGroupMembershipController extends Controller
 
         $validated = $request->validate([
             'user_id' => ['required', 'integer'],
-            'role' => ['required', 'string', 'in:manager,user'],
-            'permissions' => ['nullable', 'array'],
-            'permissions.*' => ['string'],
+            'group_role_id' => ['required', 'integer'],
         ]);
 
         $action->handle(
             $group,
             $employee,
             (int) $validated['user_id'],
-            $validated['role'],
-            $validated['permissions'] ?? null
+            (int) $validated['group_role_id']
         );
 
-        return redirect()
-            ->route('employee.groups.show', $group)
-            ->with('status', 'Membro aggiunto correttamente al gruppo.');
+        return back()->with('status', 'Membro aggiunto correttamente al gruppo.');
     }
 
     public function update(
@@ -53,22 +48,17 @@ class EmployeeGroupMembershipController extends Controller
         abort_unless($employee instanceof User, 403);
 
         $validated = $request->validate([
-            'role' => ['required', 'string', 'in:manager,user'],
-            'permissions' => ['nullable', 'array'],
-            'permissions.*' => ['string'],
+            'group_role_id' => ['required', 'integer'],
         ]);
 
         $action->handle(
             $group,
             $employee,
             $membership,
-            $validated['role'],
-            $validated['permissions'] ?? []
+            (int) $validated['group_role_id']
         );
 
-        return redirect()
-            ->route('employee.groups.show', $group)
-            ->with('status', 'Membro aggiornato correttamente.');
+        return back()->with('status', 'Membro aggiornato correttamente.');
     }
 
     public function destroy(
@@ -84,8 +74,6 @@ class EmployeeGroupMembershipController extends Controller
 
         $action->handle($group, $employee, $membership);
 
-        return redirect()
-            ->route('employee.groups.show', $group)
-            ->with('status', 'Membro rimosso correttamente dal gruppo.');
+        return back()->with('status', 'Membro rimosso correttamente dal gruppo.');
     }
 }

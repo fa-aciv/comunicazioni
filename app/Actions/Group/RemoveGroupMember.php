@@ -2,7 +2,6 @@
 
 namespace App\Actions\Group;
 
-use App\Enums\GroupMembershipRole;
 use App\Models\Group;
 use App\Models\GroupMembership;
 use App\Models\User;
@@ -34,8 +33,11 @@ class RemoveGroupMember
             ]);
         }
 
+        $membership->loadMissing('groupRole.permissions');
+
         if (
-            $membership->role === GroupMembershipRole::Manager
+            $membership->groupRole
+            && $this->permissions->roleIsManager($membership->groupRole)
             && $this->isLastManager($group, $membership)
         ) {
             throw ValidationException::withMessages([
@@ -44,17 +46,21 @@ class RemoveGroupMember
         }
 
         DB::transaction(function () use ($membership): void {
-            $membership->permissions()->detach();
             $membership->delete();
         });
     }
 
     private function isLastManager(Group $group, GroupMembership $membership): bool
     {
-        return GroupMembership::query()
+        $otherMemberships = GroupMembership::query()
             ->where('group_id', $group->getKey())
-            ->where('role', GroupMembershipRole::Manager->value)
             ->whereKeyNot($membership->getKey())
-            ->doesntExist();
+            ->with('groupRole.permissions')
+            ->get();
+
+        return $otherMemberships->doesntContain(
+            fn (GroupMembership $otherMembership) => $otherMembership->groupRole
+                && $this->permissions->roleIsManager($otherMembership->groupRole)
+        );
     }
 }

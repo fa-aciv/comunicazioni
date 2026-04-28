@@ -1,7 +1,6 @@
 <?php
 
 use App\Enums\GroupContactRequestStatus;
-use App\Enums\GroupMembershipRole;
 use App\Models\ChatMessage;
 use App\Models\ChatParticipant;
 use App\Models\ChatThread;
@@ -9,27 +8,24 @@ use App\Models\Citizen;
 use App\Models\Group;
 use App\Models\GroupContactRequest;
 use App\Models\GroupMembership;
+use App\Models\GroupRole;
 use App\Models\User;
-use App\Services\GroupPermissionService;
 use Inertia\Testing\AssertableInertia as Assert;
 
-function assignRequestGroupMembership(Group $group, User $user, GroupMembershipRole $role, ?array $permissions = null): GroupMembership
+function assignRequestGroupMembership(Group $group, User $user, string $roleKey): GroupMembership
 {
-    $membership = GroupMembership::query()->create([
-        'group_id' => $group->getKey(),
-        'user_id' => $user->getKey(),
-        'role' => $role,
-    ]);
+    $role = GroupRole::query()
+        ->where('key', $roleKey)
+        ->firstOrFail();
 
-    $permissionService = app(GroupPermissionService::class);
-
-    if ($permissions === null) {
-        $permissionService->applyRoleDefaults($membership);
-    } else {
-        $permissionService->syncMembershipPermissions($membership, $permissions);
-    }
-
-    return $membership->fresh('permissions');
+    return GroupMembership::query()
+        ->create([
+            'group_id' => $group->getKey(),
+            'user_id' => $user->getKey(),
+            'group_role_id' => $role->getKey(),
+            'role' => $role->key,
+        ])
+        ->fresh('groupRole.permissions');
 }
 
 test('citizens can create a contact request for an active group', function () {
@@ -93,7 +89,7 @@ test('group users can accept contact requests and a chat is created for the citi
         'name' => 'Ufficio Relazioni',
     ]);
 
-    assignRequestGroupMembership($group, $employee, GroupMembershipRole::User);
+    assignRequestGroupMembership($group, $employee, 'user');
 
     $contactRequest = GroupContactRequest::factory()->create([
         'group_id' => $group->getKey(),
@@ -150,8 +146,8 @@ test('a contact request cannot be accepted twice', function () {
     $secondEmployee = User::factory()->withoutTwoFactor()->create();
     $group = Group::factory()->create();
 
-    assignRequestGroupMembership($group, $firstEmployee, GroupMembershipRole::User);
-    assignRequestGroupMembership($group, $secondEmployee, GroupMembershipRole::User);
+    assignRequestGroupMembership($group, $firstEmployee, 'user');
+    assignRequestGroupMembership($group, $secondEmployee, 'user');
 
     $contactRequest = GroupContactRequest::factory()->create([
         'group_id' => $group->getKey(),
@@ -184,7 +180,7 @@ test('accepting a contact request requires a chat title', function () {
     $employee = User::factory()->withoutTwoFactor()->create();
     $group = Group::factory()->create();
 
-    assignRequestGroupMembership($group, $employee, GroupMembershipRole::User);
+    assignRequestGroupMembership($group, $employee, 'user');
 
     $contactRequest = GroupContactRequest::factory()->create([
         'group_id' => $group->getKey(),

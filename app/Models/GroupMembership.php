@@ -2,11 +2,9 @@
 
 namespace App\Models;
 
-use App\Enums\GroupMembershipRole;
 use Database\Factories\GroupMembershipFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class GroupMembership extends Pivot
@@ -21,15 +19,9 @@ class GroupMembership extends Pivot
     protected $fillable = [
         'group_id',
         'user_id',
+        'group_role_id',
         'role',
     ];
-
-    protected function casts(): array
-    {
-        return [
-            'role' => GroupMembershipRole::class,
-        ];
-    }
 
     protected static function newFactory(): GroupMembershipFactory
     {
@@ -46,23 +38,15 @@ class GroupMembership extends Pivot
         return $this->belongsTo(User::class);
     }
 
-    public function permissions(): BelongsToMany
+    public function groupRole(): BelongsTo
     {
-        return $this->belongsToMany(
-            GroupPermission::class,
-            'group_membership_permissions',
-            'group_membership_id',
-            'group_permission_id',
-            'id',
-            'id'
-        )
-            ->withTimestamps();
+        return $this->belongsTo(GroupRole::class);
     }
 
     public function hasPermission(string $permissionKey): bool
     {
-        return $this->permissions->contains(
-            fn (GroupPermission $permission) => $permission->key === $permissionKey
-        );
+        return $this->relationLoaded('groupRole')
+            ? ($this->groupRole?->hasPermission($permissionKey) ?? false)
+            : ($this->groupRole()->with('permissions')->first()?->hasPermission($permissionKey) ?? false);
     }
 }

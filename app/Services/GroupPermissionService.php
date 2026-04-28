@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
-use App\Enums\GroupMembershipRole;
 use App\Models\Group;
 use App\Models\GroupMembership;
 use App\Models\GroupPermission;
+use App\Models\GroupRole;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
@@ -46,9 +46,44 @@ class GroupPermissionService
     /**
      * @return list<string>
      */
-    public function defaultPermissionKeysForRole(GroupMembershipRole $role): array
+    public function managerPermissionKeys(): array
     {
-        return array_values(config('groups.role_defaults.'.$role->value, []));
+        return collect(config('groups.manager_permission_keys', []))
+            ->filter(fn (mixed $key) => is_string($key) && $key !== '')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    public function roleIsManager(GroupRole $role): bool
+    {
+        $permissionKeys = $role->relationLoaded('permissions')
+            ? $role->permissions->pluck('key')->all()
+            : $role->permissions()->pluck('key')->all();
+
+        return $this->permissionKeysGrantManagerAccess($permissionKeys);
+    }
+
+    /**
+     * @param  list<string>  $permissionKeys
+     */
+    public function permissionKeysGrantManagerAccess(array $permissionKeys): bool
+    {
+        $granted = collect($permissionKeys)->values();
+
+        return collect($this->managerPermissionKeys())
+            ->every(fn (string $permissionKey) => $granted->contains($permissionKey));
+    }
+
+    public function defaultManagerRole(): ?GroupRole
+    {
+        $roles = GroupRole::query()
+            ->with('permissions')
+            ->orderByRaw("case when `key` = 'manager' then 0 else 1 end")
+            ->orderBy('name')
+            ->get();
+
+        return $roles->first(fn (GroupRole $role) => $this->roleIsManager($role));
     }
 
     public function membershipFor(User $user, Group $group): ?GroupMembership
@@ -56,7 +91,7 @@ class GroupPermissionService
         return GroupMembership::query()
             ->where('group_id', $group->getKey())
             ->where('user_id', $user->getKey())
-            ->with('permissions')
+            ->with('groupRole.permissions')
             ->first();
     }
 
@@ -74,7 +109,7 @@ class GroupPermissionService
     /**
      * @param  list<string>  $permissionKeys
      */
-    public function syncMembershipPermissions(GroupMembership $membership, array $permissionKeys): void
+    public function syncRolePermissions(GroupRole $role, array $permissionKeys): void
     {
         $this->syncCatalog();
 
@@ -92,23 +127,11 @@ class GroupPermissionService
             $invalidKeys = $requestedKeys->diff($knownKeys)->values()->all();
 
             throw ValidationException::withMessages([
-                'permissions' => 'Permessi non validi: '.implode(', ', $invalidKeys),
+                'permission_keys' => 'Permessi non validi: '.implode(', ', $invalidKeys),
             ]);
         }
 
-        $membership->permissions()->sync($permissions->pluck('id')->all());
-        $membership->load('permissions');
-    }
-
-    public function applyRoleDefaults(GroupMembership $membership): void
-    {
-        $role = $membership->role instanceof GroupMembershipRole
-            ? $membership->role
-            : GroupMembershipRole::from((string) $membership->role);
-
-        $this->syncMembershipPermissions(
-            $membership,
-            $this->defaultPermissionKeysForRole($role)
-        );
+        $role->permissions()->sync($permissions->pluck('id')->all());
+        $role->load('permissions');
     }
 }

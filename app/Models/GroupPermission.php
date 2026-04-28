@@ -13,15 +13,13 @@ class GroupPermission extends Model
         'description',
     ];
 
-    public function memberships(): BelongsToMany
+    public function roles(): BelongsToMany
     {
         return $this->belongsToMany(
-            GroupMembership::class,
-            'group_membership_permissions',
+            GroupRole::class,
+            'group_role_permissions',
             'group_permission_id',
-            'group_membership_id',
-            'id',
-            'id'
+            'group_role_id'
         )
             ->withTimestamps();
     }

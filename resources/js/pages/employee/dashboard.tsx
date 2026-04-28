@@ -14,7 +14,7 @@ import employee from '@/routes/employee';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
-import { Building2, Inbox, MessageSquareMore, Search, Settings, UserCog, X } from 'lucide-react';
+import { Building2, Inbox, MessageSquareMore, Search, Settings, UserCog, UserPen, UserRoundCog, UsersRound, X } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -32,6 +32,11 @@ interface DashboardProps {
     activeChats: ChatSummary[];
     groupCount: number;
     openGroupRequestCount: number;
+    canOpenAdminGroupPanel: boolean;
+    adminGroupPanelUrl: string | null;
+    canOpenManagerGroupPanel: boolean;
+    managerGroupPanelUrl: string | null;
+    groupsOverviewUrl: string;
 }
 
 export default function Dashboard({
@@ -41,6 +46,11 @@ export default function Dashboard({
     activeChats,
     groupCount,
     openGroupRequestCount,
+    canOpenAdminGroupPanel,
+    adminGroupPanelUrl,
+    canOpenManagerGroupPanel,
+    managerGroupPanelUrl,
+    groupsOverviewUrl,
 }: DashboardProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -79,21 +89,68 @@ export default function Dashboard({
                             <div className="space-y-1">
                                 <CardTitle>Gruppi</CardTitle>
                                 <CardDescription>
-                                    Gestisci i gruppi di cui fai parte e i membri assegnati.
+                                    Consulta i gruppi a cui appartieni
                                 </CardDescription>
                             </div>
                             <p className="text-sm font-medium text-muted-foreground">
                                 Gruppi assegnati: {groupCount}
                             </p>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="space-y-2">
                             <Button asChild variant="outline" size="lg" className="w-full">
-                                <Link href="/employee/groups">
-                                    Apri gruppi
+                                <Link href={groupsOverviewUrl}>
+                                    Consulta i tuoi gruppi
                                 </Link>
                             </Button>
                         </CardContent>
                     </Card>
+
+                    {   (canOpenManagerGroupPanel || canOpenAdminGroupPanel) && (
+                        <Card className="justify-between border-emerald-200">
+                            <CardHeader className="space-y-3">
+                                <div className={cn(
+                                        "flex",
+                                        "size-11",
+                                        "items-center",
+                                        "justify-center",
+                                        "rounded-2xl",
+                                        "bg-red-100",
+                                        "text-red-700",
+                                        "dark:bg-red-950",
+                                        "dark:text-red-300"
+                                )}>
+                                    <UserRoundCog className="size-5" />
+                                </div>
+                                <div className="space-y-1">
+                                    <CardTitle>Gestione gruppi</CardTitle>
+                                    <CardDescription>
+                                        Consulta i gruppi assegnati e raggiungi i pannelli dedicati per amministrazione o gestione quando disponibili.
+                                    </CardDescription>
+                                </div>
+                                <p className="text-sm font-medium text-muted-foreground">
+                                    Gruppi assegnati: {groupCount}
+                                </p>
+                            </CardHeader>
+                            <CardContent className="space-y-2">
+                                {canOpenManagerGroupPanel && managerGroupPanelUrl ? (
+                                    <Button asChild variant="outline" className="w-full">
+                                        <Link href={managerGroupPanelUrl}>
+                                            <Building2 className="size-4" />
+                                            Gestisci gruppi
+                                        </Link>
+                                    </Button>
+                                ) : null}
+                                {canOpenAdminGroupPanel && adminGroupPanelUrl ? (
+                                    <Button asChild variant="outline" className="w-full">
+                                        <Link href={adminGroupPanelUrl}>
+                                            <Settings className="size-4" />
+                                            Amministra gruppi
+                                        </Link>
+                                    </Button>
+                                ) : null}
+                            </CardContent>
+                        </Card>
+                    )}
 
                     <Card className="justify-between border-indigo-200">
                         <CardHeader className="space-y-3">
@@ -142,7 +199,7 @@ export default function Dashboard({
                                     "dark:text-amber-300",
                                     "text-amber-700"
                             )}>
-                                <UserCog className="size-5" />
+                                <UserPen className="size-5" />
                             </div>
                             <div className="space-y-1">
                                 <CardTitle>Account cittadini</CardTitle>

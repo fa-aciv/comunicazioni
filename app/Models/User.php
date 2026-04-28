@@ -93,7 +93,7 @@ class User extends Authenticatable  implements LdapAuthenticatable
     {
         return $this->belongsToMany(Group::class, 'group_memberships')
             ->using(GroupMembership::class)
-            ->withPivot(['id', 'role'])
+            ->withPivot(['id', 'group_role_id', 'role'])
             ->withTimestamps();
     }
 

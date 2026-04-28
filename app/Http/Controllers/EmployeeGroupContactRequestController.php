@@ -24,7 +24,7 @@ class EmployeeGroupContactRequestController extends Controller
         $permissions->syncCatalog();
 
         $accessibleGroupIds = $employee->groupMemberships()
-            ->whereHas('permissions', fn ($query) => $query->where('key', 'group.contact_requests.accept'))
+            ->whereHas('groupRole.permissions', fn ($query) => $query->where('key', 'group.contact_requests.accept'))
             ->pluck('group_id');
 
         $contactRequests = GroupContactRequest::query()

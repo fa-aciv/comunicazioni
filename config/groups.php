@@ -19,18 +19,33 @@ return [
         ],
         [
             'key' => 'group.members.permissions.manage',
-            'name' => 'Gestire permessi membri',
-            'description' => 'Può modificare ruolo e permessi specifici dei membri del gruppo.',
+            'name' => 'Gestire ruoli membri',
+            'description' => 'Può modificare il ruolo assegnato ai membri del gruppo.',
         ],
     ],
-    'role_defaults' => [
-        'manager' => [
-            'group.members.add',
-            'group.members.remove',
-            'group.members.permissions.manage',
+    'manager_permission_keys' => [
+        'group.members.add',
+        'group.members.remove',
+        'group.members.permissions.manage',
+    ],
+    'seed_roles' => [
+        [
+            'key' => 'manager',
+            'name' => 'Manager',
+            'description' => 'Può gestire i membri del gruppo e le loro assegnazioni di ruolo.',
+            'permission_keys' => [
+                'group.members.add',
+                'group.members.remove',
+                'group.members.permissions.manage',
+            ],
         ],
-        'user' => [
-            'group.contact_requests.accept',
+        [
+            'key' => 'user',
+            'name' => 'User',
+            'description' => 'Può accettare le richieste di contatto indirizzate al gruppo.',
+            'permission_keys' => [
+                'group.contact_requests.accept',
+            ],
         ],
     ],
 ];

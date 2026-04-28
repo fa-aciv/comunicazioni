@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\GroupMembershipRole;
 use App\Models\ChatMessage;
 use App\Models\ChatRetentionSetting;
 use App\Models\ChatThread;
@@ -8,9 +7,10 @@ use App\Models\Citizen;
 use App\Models\Group;
 use App\Models\GroupContactRequest;
 use App\Models\GroupMembership;
+use App\Models\GroupRole;
 use App\Models\MessageAttachment;
 use App\Models\User;
-use App\Services\GroupPermissionService;
+use App\Services\EmployeeAuthorizationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -24,6 +24,28 @@ if (! extension_loaded('pdo_sqlite')) {
 }
 
 uses(RefreshDatabase::class);
+
+function attachEmployeeToGroup(Group $group, User $user, string $roleKey): GroupMembership
+{
+    $role = GroupRole::query()
+        ->where('key', $roleKey)
+        ->firstOrFail();
+
+    return GroupMembership::query()->create([
+        'group_id' => $group->getKey(),
+        'user_id' => $user->getKey(),
+        'group_role_id' => $role->getKey(),
+        'role' => $role->key,
+    ]);
+}
+
+function makeEmployeeAdminForRetention(User $user): User
+{
+    app(EmployeeAuthorizationService::class)->syncCatalog();
+    $user->assignRole('admin');
+
+    return $user->refresh();
+}
 
 test('employees can update chat retention settings', function () {
     $employee = User::factory()->withoutTwoFactor()->create();
@@ -42,17 +64,9 @@ test('employees can update chat retention settings', function () {
         ->and($settings->inactive_thread_retention_days)->toBe(75);
 });
 
-test('employees can update group chat retention settings', function () {
-    $employee = User::factory()->withoutTwoFactor()->create();
+test('admins can update group chat retention settings', function () {
+    $employee = makeEmployeeAdminForRetention(User::factory()->withoutTwoFactor()->create());
     $group = Group::factory()->create();
-
-    $membership = GroupMembership::factory()->create([
-        'group_id' => $group->getKey(),
-        'user_id' => $employee->getKey(),
-        'role' => GroupMembershipRole::Manager,
-    ]);
-
-    app(GroupPermissionService::class)->applyRoleDefaults($membership);
 
     $this->actingAs($employee, 'employee')
         ->patch(route('employee.groups.retention.update', $group), [
@@ -66,6 +80,25 @@ test('employees can update group chat retention settings', function () {
 
     expect($group->chat_message_retention_days)->toBe(12)
         ->and($group->chat_inactive_thread_retention_days)->toBe(40);
+});
+
+test('group managers without admin permissions cannot update group chat retention settings', function () {
+    $employee = User::factory()->withoutTwoFactor()->create();
+    $group = Group::factory()->create();
+
+    attachEmployeeToGroup($group, $employee, 'manager');
+
+    $this->actingAs($employee, 'employee')
+        ->patch(route('employee.groups.retention.update', $group), [
+            'chatMessageRetentionDays' => 12,
+            'chatInactiveThreadRetentionDays' => 40,
+        ])
+        ->assertForbidden();
+
+    $group->refresh();
+
+    expect($group->chat_message_retention_days)->not->toBe(12)
+        ->and($group->chat_inactive_thread_retention_days)->not->toBe(40);
 });
 
 test('chat cleanup command deletes inactive threads and expired messages', function () {
@@ -335,11 +368,7 @@ test('employee-created chats use the selected group retention policy', function 
         'chat_inactive_thread_retention_days' => 10,
     ]);
 
-    GroupMembership::factory()->create([
-        'group_id' => $group->getKey(),
-        'user_id' => $employee->getKey(),
-        'role' => GroupMembershipRole::User,
-    ]);
+    attachEmployeeToGroup($group, $employee, 'user');
 
     $this->actingAs($employee, 'employee')
         ->post(route('employee.chats.store'), [
@@ -419,11 +448,7 @@ test('employee chat creation requires a group selection when the employee belong
     ]);
     $group = Group::factory()->create();
 
-    GroupMembership::factory()->create([
-        'group_id' => $group->getKey(),
-        'user_id' => $employee->getKey(),
-        'role' => GroupMembershipRole::User,
-    ]);
+    attachEmployeeToGroup($group, $employee, 'user');
 
     $this->actingAs($employee, 'employee')
         ->post(route('employee.chats.store'), [

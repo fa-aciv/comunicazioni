@@ -2,7 +2,6 @@
 
 namespace App\Actions\Group;
 
-use App\Enums\GroupMembershipRole;
 use App\Models\ChatRetentionSetting;
 use App\Models\Group;
 use App\Models\GroupMembership;
@@ -52,8 +51,15 @@ class CreateGroup
         }
 
         $retentionSettings = ChatRetentionSetting::current();
+        $managerRole = $this->groupPermissions->defaultManagerRole();
 
-        return DB::transaction(function () use ($name, $description, $managers, $retentionSettings): Group {
+        if (! $managerRole) {
+            throw ValidationException::withMessages([
+                'manager_ids' => 'Configura almeno un ruolo manager prima di creare nuovi gruppi.',
+            ]);
+        }
+
+        return DB::transaction(function () use ($name, $description, $managers, $retentionSettings, $managerRole): Group {
             $group = Group::query()->create([
                 'name' => trim($name),
                 'description' => filled($description) ? trim((string) $description) : null,
@@ -62,17 +68,16 @@ class CreateGroup
                 'chat_inactive_thread_retention_days' => $retentionSettings->inactive_thread_retention_days,
             ]);
 
-            $managers->each(function (User $manager) use ($group): void {
-                $membership = GroupMembership::query()->create([
+            $managers->each(function (User $manager) use ($group, $managerRole): void {
+                GroupMembership::query()->create([
                     'group_id' => $group->getKey(),
                     'user_id' => $manager->getKey(),
-                    'role' => GroupMembershipRole::Manager,
+                    'group_role_id' => $managerRole->getKey(),
+                    'role' => $managerRole->key,
                 ]);
-
-                $this->groupPermissions->applyRoleDefaults($membership);
             });
 
-            return $group->load(['memberships.user', 'memberships.permissions']);
+            return $group->load(['memberships.user', 'memberships.groupRole.permissions']);
         });
     }
 }

@@ -12,11 +12,17 @@ return [
             'name' => 'Assegnare group manager',
             'description' => 'Può assegnare e aggiornare i manager iniziali dei gruppi.',
         ],
+        [
+            'key' => 'groups.roles.manage',
+            'name' => 'Gestire ruoli dei gruppi',
+            'description' => 'Può creare, aggiornare ed eliminare i ruoli assegnabili nei gruppi.',
+        ],
     ],
     'role_defaults' => [
         'admin' => [
             'groups.create',
             'groups.managers.assign',
+            'groups.roles.manage',
         ],
     ],
 ];

@@ -2,9 +2,9 @@
 
 namespace App\Actions\Group;
 
-use App\Enums\GroupMembershipRole;
 use App\Models\Group;
 use App\Models\GroupMembership;
+use App\Models\GroupRole;
 use App\Models\User;
 use App\Services\GroupPermissionService;
 use Illuminate\Support\Facades\DB;
@@ -17,22 +17,18 @@ class UpdateGroupMember
     ) {
     }
 
-    /**
-     * @param  list<string>  $permissionKeys
-     */
     public function handle(
         Group $group,
         User $actor,
         GroupMembership $membership,
-        string $role,
-        array $permissionKeys
+        int $groupRoleId
     ): GroupMembership {
         if (
             ! $this->permissions->has($actor, $group, 'group.members.permissions.manage')
             && ! $actor->can('groups.managers.assign')
         ) {
             throw ValidationException::withMessages([
-                'permissions' => 'Non puoi modificare ruolo e permessi dei membri di questo gruppo.',
+                'group_role_id' => 'Non puoi modificare il ruolo dei membri di questo gruppo.',
             ]);
         }
 
@@ -42,41 +38,50 @@ class UpdateGroupMember
             ]);
         }
 
-        $roleEnum = GroupMembershipRole::tryFrom($role);
+        $membership->loadMissing('groupRole.permissions');
 
-        if (! $roleEnum) {
+        $groupRole = GroupRole::query()
+            ->with('permissions')
+            ->find($groupRoleId);
+
+        if (! $groupRole) {
             throw ValidationException::withMessages([
-                'role' => 'Il ruolo selezionato non è valido.',
+                'group_role_id' => 'Il ruolo selezionato non è valido.',
             ]);
         }
 
         if (
-            $membership->role === GroupMembershipRole::Manager
-            && $roleEnum !== GroupMembershipRole::Manager
+            $membership->groupRole
+            && $this->permissions->roleIsManager($membership->groupRole)
+            && ! $this->permissions->roleIsManager($groupRole)
             && $this->isLastManager($group, $membership)
         ) {
             throw ValidationException::withMessages([
-                'role' => 'Ogni gruppo deve avere almeno un manager.',
+                'group_role_id' => 'Ogni gruppo deve avere almeno un manager.',
             ]);
         }
 
-        return DB::transaction(function () use ($membership, $roleEnum, $permissionKeys): GroupMembership {
+        return DB::transaction(function () use ($membership, $groupRole): GroupMembership {
             $membership->forceFill([
-                'role' => $roleEnum,
+                'group_role_id' => $groupRole->getKey(),
+                'role' => $groupRole->key,
             ])->save();
 
-            $this->permissions->syncMembershipPermissions($membership, $permissionKeys);
-
-            return $membership->fresh(['user', 'permissions']);
+            return $membership->fresh(['user', 'groupRole.permissions']);
         });
     }
 
     private function isLastManager(Group $group, GroupMembership $membership): bool
     {
-        return GroupMembership::query()
+        $otherMemberships = GroupMembership::query()
             ->where('group_id', $group->getKey())
-            ->where('role', GroupMembershipRole::Manager->value)
             ->whereKeyNot($membership->getKey())
-            ->doesntExist();
+            ->with('groupRole.permissions')
+            ->get();
+
+        return $otherMemberships->doesntContain(
+            fn (GroupMembership $otherMembership) => $otherMembership->groupRole
+                && $this->permissions->roleIsManager($otherMembership->groupRole)
+        );
     }
 }

@@ -1,70 +1,72 @@
 <?php
 
-use App\Enums\GroupMembershipRole;
 use App\Models\Group;
 use App\Models\GroupMembership;
+use App\Models\GroupRole;
 use App\Models\User;
-use App\Services\GroupPermissionService;
+use App\Services\GroupRoleService;
+use Inertia\Testing\AssertableInertia as Assert;
 
-function assignGroupMembership(Group $group, User $user, GroupMembershipRole $role, ?array $permissions = null): GroupMembership
+function assignGroupMembership(Group $group, User $user, string $roleKey): GroupMembership
 {
-    $membership = GroupMembership::query()->create([
-        'group_id' => $group->getKey(),
-        'user_id' => $user->getKey(),
-        'role' => $role,
-    ]);
+    $role = GroupRole::query()
+        ->where('key', $roleKey)
+        ->firstOrFail();
 
-    $permissionService = app(GroupPermissionService::class);
-
-    if ($permissions === null) {
-        $permissionService->applyRoleDefaults($membership);
-    } else {
-        $permissionService->syncMembershipPermissions($membership, $permissions);
-    }
-
-    return $membership->fresh('permissions');
+    return GroupMembership::query()
+        ->create([
+            'group_id' => $group->getKey(),
+            'user_id' => $user->getKey(),
+            'group_role_id' => $role->getKey(),
+            'role' => $role->key,
+        ])
+        ->fresh('groupRole.permissions');
 }
 
 test('group managers can add employees with default permissions', function () {
     $group = Group::factory()->create();
     $manager = User::factory()->withoutTwoFactor()->create();
     $employee = User::factory()->withoutTwoFactor()->create();
+    $userRole = GroupRole::query()->where('key', 'user')->firstOrFail();
 
-    assignGroupMembership($group, $manager, GroupMembershipRole::Manager);
+    assignGroupMembership($group, $manager, 'manager');
 
-    $this->actingAs($manager, 'employee')
+    $this->from(route('employee.groups.manage'))
+        ->actingAs($manager, 'employee')
         ->post(route('employee.groups.memberships.store', $group), [
             'user_id' => $employee->getKey(),
-            'role' => GroupMembershipRole::User->value,
+            'group_role_id' => $userRole->getKey(),
         ])
-        ->assertRedirect(route('employee.groups.show', $group))
+        ->assertRedirect(route('employee.groups.manage'))
         ->assertSessionHas('status', 'Membro aggiunto correttamente al gruppo.');
 
     $membership = GroupMembership::query()
         ->where('group_id', $group->getKey())
         ->where('user_id', $employee->getKey())
-        ->with('permissions')
+        ->with('groupRole.permissions')
         ->first();
 
     expect($membership)->not->toBeNull()
-        ->and($membership?->role)->toBe(GroupMembershipRole::User)
-        ->and($membership?->permissions->pluck('key')->all())->toBe(['group.contact_requests.accept']);
+        ->and($membership?->role)->toBe('user')
+        ->and($membership?->groupRole?->key)->toBe('user')
+        ->and($membership?->groupRole?->permissions->pluck('key')->all())->toBe(['group.contact_requests.accept']);
 });
 
 test('group users cannot add employees to a group', function () {
     $group = Group::factory()->create();
     $groupUser = User::factory()->withoutTwoFactor()->create();
     $employee = User::factory()->withoutTwoFactor()->create();
+    $userRole = GroupRole::query()->where('key', 'user')->firstOrFail();
 
-    assignGroupMembership($group, $groupUser, GroupMembershipRole::User);
+    assignGroupMembership($group, $groupUser, 'user');
 
-    $this->from(route('employee.groups.show', $group))
+    $this->from(route('employee.groups.manage'))
         ->actingAs($groupUser, 'employee')
         ->post(route('employee.groups.memberships.store', $group), [
             'user_id' => $employee->getKey(),
-            'role' => GroupMembershipRole::User->value,
+            'group_role_id' => $userRole->getKey(),
         ])
-        ->assertRedirect(route('employee.groups.show', $group))
+        ->assertRedirect(route('employee.groups.manage'))
         ->assertSessionHasErrors(['user_id']);
 
     expect(
@@ -75,28 +77,34 @@ test('group users cannot add employees to a group', function () {
     )->toBeFalse();
 });
 
-test('group managers can customize a member permissions', function () {
+test('group managers can assign a different role to a member', function () {
     $group = Group::factory()->create();
     $manager = User::factory()->withoutTwoFactor()->create();
     $employee = User::factory()->withoutTwoFactor()->create();
+    $customRole = app(GroupRoleService::class)->create(
+        'Operatore avanzato',
+        'Può accettare richieste e rimuovere membri.',
+        [
+            'group.contact_requests.accept',
+            'group.members.remove',
+        ]
+    );
 
-    assignGroupMembership($group, $manager, GroupMembershipRole::Manager);
-    $membership = assignGroupMembership($group, $employee, GroupMembershipRole::User);
+    assignGroupMembership($group, $manager, 'manager');
+    $membership = assignGroupMembership($group, $employee, 'user');
 
-    $this->actingAs($manager, 'employee')
+    $this->from(route('employee.groups.manage'))
+        ->actingAs($manager, 'employee')
         ->patch(route('employee.groups.memberships.update', [$group, $membership]), [
-            'role' => GroupMembershipRole::User->value,
-            'permissions' => [
-                'group.contact_requests.accept',
-                'group.members.remove',
-            ],
+            'group_role_id' => $customRole->getKey(),
         ])
-        ->assertRedirect(route('employee.groups.show', $group))
+        ->assertRedirect(route('employee.groups.manage'))
         ->assertSessionHas('status', 'Membro aggiornato correttamente.');
 
-    $membership->refresh()->load('permissions');
+    $membership->refresh()->load('groupRole.permissions');
 
-    expect($membership->permissions->pluck('key')->sort()->values()->all())
+    expect($membership->groupRole?->name)->toBe('Operatore avanzato')
+        ->and($membership->groupRole?->permissions->pluck('key')->sort()->values()->all())
         ->toBe([
             'group.contact_requests.accept',
             'group.members.remove',
@@ -106,25 +114,55 @@ test('group managers can customize a member permissions', function () {
 test('the last group manager cannot be demoted or removed', function () {
     $group = Group::factory()->create();
     $manager = User::factory()->withoutTwoFactor()->create();
+    $userRole = GroupRole::query()->where('key', 'user')->firstOrFail();
 
-    $membership = assignGroupMembership($group, $manager, GroupMembershipRole::Manager);
+    $membership = assignGroupMembership($group, $manager, 'manager');
 
-    $this->from(route('employee.groups.show', $group))
+    $this->from(route('employee.groups.manage'))
         ->actingAs($manager, 'employee')
         ->patch(route('employee.groups.memberships.update', [$group, $membership]), [
-            'role' => GroupMembershipRole::User->value,
-            'permissions' => ['group.contact_requests.accept'],
+            'group_role_id' => $userRole->getKey(),
         ])
-        ->assertRedirect(route('employee.groups.show', $group))
-        ->assertSessionHasErrors(['role']);
+        ->assertRedirect(route('employee.groups.manage'))
+        ->assertSessionHasErrors(['group_role_id']);
 
-    $this->from(route('employee.groups.show', $group))
+    $this->from(route('employee.groups.manage'))
         ->actingAs($manager, 'employee')
         ->delete(route('employee.groups.memberships.destroy', [$group, $membership]))
-        ->assertRedirect(route('employee.groups.show', $group))
+        ->assertRedirect(route('employee.groups.manage'))
         ->assertSessionHasErrors(['membership']);
 
     $membership->refresh();
 
-    expect($membership->role)->toBe(GroupMembershipRole::Manager);
+    expect($membership->role)->toBe('manager')
+        ->and($membership->groupRole?->key)->toBe('manager');
+});
+
+test('manager panel includes inline membership management data for each group', function () {
+    $group = Group::factory()->create([
+        'name' => 'Protocollo',
+    ]);
+    $manager = User::factory()->withoutTwoFactor()->create();
+    $member = User::factory()->withoutTwoFactor()->create();
+    $unassignedEmployee = User::factory()->withoutTwoFactor()->create();
+
+    assignGroupMembership($group, $manager, 'manager');
+    assignGroupMembership($group, $member, 'user');
+
+    $this->actingAs($manager, 'employee')
+        ->get(route('employee.groups.manage'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('employee/groups/manage')
+            ->has('availableRoles')
+            ->has('groups', 1, fn (Assert $groupPage) => $groupPage
+                ->where('name', 'Protocollo')
+                ->where('abilities.canAddMembers', true)
+                ->has('memberships', 2)
+                ->has('availableEmployees', 1)
+                ->where('availableEmployees.0.id', $unassignedEmployee->getKey())
+                ->where('membershipStoreUrl', route('employee.groups.memberships.store', $group))
+                ->etc()
+            )
+        );
 });

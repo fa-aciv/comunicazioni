@@ -2,9 +2,9 @@
 
 namespace App\Actions\Group;
 
-use App\Enums\GroupMembershipRole;
 use App\Models\Group;
 use App\Models\GroupMembership;
+use App\Models\GroupRole;
 use App\Models\User;
 use App\Services\GroupPermissionService;
 use Illuminate\Support\Facades\DB;
@@ -17,15 +17,11 @@ class AddGroupMember
     ) {
     }
 
-    /**
-     * @param  list<string>|null  $permissionKeys
-     */
     public function handle(
         Group $group,
         User $actor,
         int $userId,
-        string $role,
-        ?array $permissionKeys = null
+        int $groupRoleId
     ): GroupMembership {
         if (
             ! $this->permissions->has($actor, $group, 'group.members.add')
@@ -44,11 +40,13 @@ class AddGroupMember
             ]);
         }
 
-        $roleEnum = GroupMembershipRole::tryFrom($role);
+        $groupRole = GroupRole::query()
+            ->with('permissions')
+            ->find($groupRoleId);
 
-        if (! $roleEnum) {
+        if (! $groupRole) {
             throw ValidationException::withMessages([
-                'role' => 'Il ruolo selezionato non è valido.',
+                'group_role_id' => 'Il ruolo selezionato non è valido.',
             ]);
         }
 
@@ -63,20 +61,15 @@ class AddGroupMember
             ]);
         }
 
-        return DB::transaction(function () use ($group, $member, $roleEnum, $permissionKeys): GroupMembership {
-            $membership = GroupMembership::query()->create([
-                'group_id' => $group->getKey(),
-                'user_id' => $member->getKey(),
-                'role' => $roleEnum,
-            ]);
-
-            if ($permissionKeys === null || $permissionKeys === []) {
-                $this->permissions->applyRoleDefaults($membership);
-            } else {
-                $this->permissions->syncMembershipPermissions($membership, $permissionKeys);
-            }
-
-            return $membership->fresh(['user', 'permissions']);
+        return DB::transaction(function () use ($group, $member, $groupRole): GroupMembership {
+            return GroupMembership::query()
+                ->create([
+                    'group_id' => $group->getKey(),
+                    'user_id' => $member->getKey(),
+                    'group_role_id' => $groupRole->getKey(),
+                    'role' => $groupRole->key,
+                ])
+                ->fresh(['user', 'groupRole.permissions']);
         });
     }
 }
