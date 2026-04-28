@@ -26,17 +26,15 @@ return [
     'manager_permission_keys' => [
         'group.members.add',
         'group.members.remove',
-        'group.members.permissions.manage',
     ],
     'seed_roles' => [
         [
             'key' => 'manager',
             'name' => 'Manager',
-            'description' => 'Può gestire i membri del gruppo e le loro assegnazioni di ruolo.',
+            'description' => 'Può aggiungere e rimuovere membri dal gruppo.',
             'permission_keys' => [
                 'group.members.add',
                 'group.members.remove',
-                'group.members.permissions.manage',
             ],
         ],
         [

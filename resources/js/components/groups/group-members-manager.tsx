@@ -1,12 +1,14 @@
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ButtonGroup } from '@/components/ui/button-group';
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandItem,
+    CommandList,
+} from '@/components/ui/command';
 import {
     Dialog,
     DialogClose,
@@ -16,22 +18,19 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandItem,
-    CommandList,
-} from '@/components/ui/command';
 import { useForm } from '@inertiajs/react';
-import { Check, ChevronDown, IdCard, MoreHorizontal, MoreVertical, Save, UserMinus, UserPlus } from 'lucide-react';
+import { Check, ChevronDown, IdCard, MoreHorizontal, Save, UserMinus, UserPlus } from 'lucide-react';
 import { useState } from 'react';
-import { ButtonGroup } from '../ui/button-group';
-import { cn } from '@/lib/utils';
 
 export interface GroupRoleSummary {
     id: number;
@@ -73,6 +72,7 @@ interface GroupMembersManagerProps {
     availableEmployees: GroupEmployeeOption[];
     availableRoles: GroupRoleSummary[];
     membershipStoreUrl: string;
+    defaultRole: GroupRoleSummary | null;
 }
 
 export function GroupMembersManager({
@@ -82,14 +82,21 @@ export function GroupMembersManager({
     availableEmployees,
     availableRoles,
     membershipStoreUrl,
+    defaultRole,
 }: GroupMembersManagerProps) {
+    const canSelectRoleOnAdd = abilities.canManageMemberRoles;
+
     return (
         <div className="space-y-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="space-y-1">
                     <h2 className="font-semibold">Membri del gruppo</h2>
                     <p className="text-sm text-muted-foreground">
-                        Assegna ai membri uno dei ruoli configurati. I permessi derivano sempre dal ruolo selezionato.
+                        {abilities.canManageMemberRoles
+                            ? 'Da questo pannello puoi aggiungere membri, rimuoverli e modificarne il ruolo all’interno del gruppo.'
+                            : defaultRole
+                              ? `Da questo pannello puoi aggiungere e rimuovere membri. I nuovi membri verranno inseriti con il ruolo predefinito "${defaultRole.name}".`
+                              : 'Da questo pannello puoi aggiungere e rimuovere membri. Il ruolo dei nuovi membri viene deciso dall’amministrazione del gruppo.'}
                     </p>
                 </div>
                 {abilities.canAddMembers ? (
@@ -97,6 +104,8 @@ export function GroupMembersManager({
                         availableEmployees={availableEmployees}
                         availableRoles={availableRoles}
                         storeUrl={membershipStoreUrl}
+                        defaultRole={defaultRole}
+                        canSelectRole={canSelectRoleOnAdd}
                     />
                 ) : null}
             </div>
@@ -122,7 +131,7 @@ export function GroupMembersManager({
 
             {abilities.canAddMembers && availableEmployees.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                    Tutti i dipendenti risultano gia assegnati a questo gruppo.
+                    Tutti i dipendenti risultano già assegnati a questo gruppo.
                 </p>
             ) : null}
         </div>
@@ -133,24 +142,25 @@ function AddMemberDialog({
     availableEmployees,
     availableRoles,
     storeUrl,
+    defaultRole,
+    canSelectRole,
 }: {
     availableEmployees: GroupEmployeeOption[];
     availableRoles: GroupRoleSummary[];
     storeUrl: string;
+    defaultRole: GroupRoleSummary | null;
+    canSelectRole: boolean;
 }) {
     const [open, setOpen] = useState(false);
-    const defaultRoleId = (
-        availableRoles.find((role) => role.key === 'user') ?? availableRoles[0]
-    )?.id;
-    const defaultRoleValue = defaultRoleId ? String(defaultRoleId) : '';
+    const fallbackRole = defaultRole ?? availableRoles.find((role) => role.key === 'user') ?? availableRoles[0] ?? null;
+    const defaultRoleValue = fallbackRole ? String(fallbackRole.id) : '';
 
     const form = useForm({
         user_id: '',
         group_role_id: defaultRoleValue,
     });
 
-    const selectedRole =
-        availableRoles.find((role) => String(role.id) === form.data.group_role_id) ?? null;
+    const selectedRole = availableRoles.find((role) => String(role.id) === form.data.group_role_id) ?? fallbackRole;
 
     function resetForm() {
         form.reset();
@@ -161,7 +171,7 @@ function AddMemberDialog({
     function handleOpenChange(nextOpen: boolean) {
         setOpen(nextOpen);
 
-        if (! nextOpen) {
+        if (!nextOpen) {
             resetForm();
         }
     }
@@ -186,7 +196,7 @@ function AddMemberDialog({
                 variant="outline"
                 size="sm"
                 onClick={() => setOpen(true)}
-                disabled={availableEmployees.length === 0 || availableRoles.length === 0}
+                disabled={availableEmployees.length === 0 || selectedRole === null}
             >
                 <UserPlus className="size-4" />
                 Aggiungi utente
@@ -196,14 +206,29 @@ function AddMemberDialog({
                 <DialogHeader>
                     <DialogTitle>Aggiungi un membro</DialogTitle>
                     <DialogDescription>
-                        Seleziona un dipendente e assegnagli uno dei ruoli disponibili per questo gruppo.
+                        {canSelectRole
+                            ? 'Seleziona un dipendente e assegnagli uno dei ruoli disponibili per questo gruppo.'
+                            : 'Seleziona un dipendente da aggiungere al gruppo. Il ruolo verrà assegnato automaticamente in base alla configurazione del gruppo.'}
                     </DialogDescription>
                 </DialogHeader>
 
                 {availableEmployees.length === 0 ? (
                     <div className="space-y-4">
                         <p className="text-sm text-muted-foreground">
-                            Tutti i dipendenti risultano gia assegnati a questo gruppo.
+                            Tutti i dipendenti risultano già assegnati a questo gruppo.
+                        </p>
+                        <DialogFooter>
+                            <DialogClose asChild>
+                                <Button type="button" variant="outline">
+                                    Chiudi
+                                </Button>
+                            </DialogClose>
+                        </DialogFooter>
+                    </div>
+                ) : selectedRole === null ? (
+                    <div className="space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                            Nessun ruolo disponibile per aggiungere nuovi membri. Configura prima un ruolo utente predefinito da amministrazione gruppi.
                         </p>
                         <DialogFooter>
                             <DialogClose asChild>
@@ -240,14 +265,25 @@ function AddMemberDialog({
                             </div>
 
                             <div className="grid gap-2">
-                                <Label>Ruolo</Label>
-                                <RolePicker
-                                    roles={availableRoles}
-                                    value={form.data.group_role_id}
-                                    onValueChange={(value) => form.setData('group_role_id', value)}
-                                    placeholder="Seleziona un ruolo"
-                                    disabled={availableRoles.length === 0}
-                                />
+                                <Label>{canSelectRole ? 'Ruolo' : 'Ruolo assegnato'}</Label>
+                                {canSelectRole ? (
+                                    <RolePicker
+                                        roles={availableRoles}
+                                        value={form.data.group_role_id}
+                                        onValueChange={(value) => form.setData('group_role_id', value)}
+                                        placeholder="Seleziona un ruolo"
+                                        disabled={availableRoles.length === 0}
+                                    />
+                                ) : (
+                                    <div className="rounded-lg border bg-muted/30 px-3 py-2">
+                                        <div className="text-sm font-medium">{selectedRole.name}</div>
+                                        {selectedRole.description ? (
+                                            <p className="mt-1 text-sm text-muted-foreground">
+                                                {selectedRole.description}
+                                            </p>
+                                        ) : null}
+                                    </div>
+                                )}
                                 <InputError message={form.errors.group_role_id} />
                             </div>
                         </div>
@@ -295,9 +331,6 @@ function MembershipCard({
         group_role_id: currentRoleId,
     });
 
-    const selectedRole =
-        availableRoles.find((role) => String(role.id) === form.data.group_role_id) ?? membership.role;
-
     function handleRoleSave(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
@@ -315,79 +348,87 @@ function MembershipCard({
     }
 
     return (
-        <div className="rounded-lg border px-4 py-2">
-            <form 
-                onSubmit={handleRoleSave} 
-                className="flex flex-row flex-wrap items-center justify-between gap-2"
-            >
-                <div className="flex flex-row flex-wrap items-center gap-2">
+        <div className="rounded-lg border px-4 py-3">
+            <form onSubmit={handleRoleSave} className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
                     <div className="text-base font-medium">{membership.user.name}</div>
+                    {membership.user.id === currentEmployeeId ? (
+                        <Badge variant="secondary">Tu</Badge>
+                    ) : null}
                     {membership.user.employeeId ? (
                         <Badge variant="outline">
-                            <IdCard />{membership.user.employeeId}
+                            <IdCard className="size-3.5" />
+                            {membership.user.employeeId}
                         </Badge>
                     ) : null}
-                    {   membership.user.departmentName &&
-                        <Badge variant="outline">
-                            {membership.user.departmentName}
-                        </Badge>
-                    }
+                    {membership.user.departmentName ? (
+                        <Badge variant="outline">{membership.user.departmentName}</Badge>
+                    ) : null}
                 </div>
 
-                <div className="flex flex-col gap-2 justify-end items-end">
-                    <div className="flex flex-row gap-1">
-                        
+                <div className="flex flex-wrap items-start justify-end gap-2">
+                    {canManageMemberRoles ? (
                         <ButtonGroup>
                             <RolePicker
-                            roles={availableRoles}
-                            value={form.data.group_role_id}
-                            onValueChange={(value) => form.setData('group_role_id', value)}
-                            placeholder="Seleziona un ruolo"
-                            disabled={!canManageMemberRoles || availableRoles.length === 0}
+                                roles={availableRoles}
+                                value={form.data.group_role_id}
+                                onValueChange={(value) => form.setData('group_role_id', value)}
+                                placeholder="Seleziona un ruolo"
+                                disabled={availableRoles.length === 0}
                             />
-                            {
-                                canManageMemberRoles
-                                && !(form.data.group_role_id === currentRoleId)
-                             ? (
+                            {form.data.group_role_id !== currentRoleId ? (
                                 <Button
                                     type="submit"
                                     disabled={form.processing || form.data.group_role_id === currentRoleId}
                                 >
-                                    <Save />
+                                    <Save className="size-4" />
                                     Salva
                                     {form.processing ? <Spinner /> : null}
                                 </Button>
                             ) : null}
-                            </ButtonGroup>
-                            {canRemoveMembers ? (
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            disabled={form.processing}
-                                            aria-label="Azioni membro"
-                                        >
-                                            <MoreHorizontal className="size-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-48 min-w-0">
-                                        <DropdownMenuItem
-                                            variant="destructive"
-                                            onClick={handleRemove}
-                                            disabled={form.processing}
-                                        >
-                                            <UserMinus className="size-4" />
-                                            Rimuovi utente
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                        </ButtonGroup>
+                    ) : (
+                        <div className="rounded-lg border bg-muted/30 px-3 py-2 text-right">
+                            <div className="text-sm font-medium">
+                                {membership.role?.name ?? 'Ruolo non assegnato'}
+                            </div>
+                            {membership.role?.permissionNames.length ? (
+                                <div className="mt-1 flex flex-wrap justify-end gap-1.5">
+                                    {membership.role.permissionNames.map((permissionName) => (
+                                        <Badge key={permissionName} variant="outline">
+                                            {permissionName}
+                                        </Badge>
+                                    ))}
+                                </div>
                             ) : null}
-                        
-                    </div>
+                        </div>
+                    )}
+
+                    {canRemoveMembers ? (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    disabled={form.processing}
+                                    aria-label="Azioni membro"
+                                >
+                                    <MoreHorizontal className="size-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48 min-w-0">
+                                <DropdownMenuItem
+                                    variant="destructive"
+                                    onClick={handleRemove}
+                                    disabled={form.processing}
+                                >
+                                    <UserMinus className="size-4" />
+                                    Rimuovi utente
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    ) : null}
                 </div>
-                
-                
             </form>
             <InputError message={form.errors.group_role_id} />
         </div>
@@ -435,7 +476,7 @@ function RolePicker({
                 </Button>
             </PopoverTrigger>
 
-            <PopoverContent className="sm:w-105 p-0" align="start">
+            <PopoverContent className="p-0 sm:w-105" align="start">
                 <Command>
                     <CommandList>
                         <CommandEmpty>Nessun ruolo disponibile.</CommandEmpty>
@@ -460,7 +501,7 @@ function RolePicker({
                                                 }`}
                                             />
 
-                                            <div className="flex flex-wrap items-center gap-2">
+                                            <div className="flex-1 space-y-1">
                                                 <div className="text-sm font-medium">{role.name}</div>
                                                 {role.description ? (
                                                     <p className="text-sm text-muted-foreground">
@@ -469,7 +510,7 @@ function RolePicker({
                                                 ) : null}
                                             </div>
 
-                                            <div className="flex flex-wrap gap-2 pt-1">
+                                            <div className="flex flex-wrap justify-end gap-2 pt-1">
                                                 {role.permissionNames.length > 0 ? (
                                                     role.permissionNames.map((permissionName) => (
                                                         <Badge key={permissionName} variant="outline">

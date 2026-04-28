@@ -5,8 +5,6 @@ import {
     type GroupMembershipSummary,
     type GroupRoleSummary,
 } from '@/components/groups/group-members-manager';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Item } from '@/components/ui/item';
@@ -14,8 +12,8 @@ import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import employee from '@/routes/employee';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/react';
-import { ChevronDown, ShieldCheck, Users } from 'lucide-react';
+import { Head } from '@inertiajs/react';
+import { ChevronDown, Users } from 'lucide-react';
 import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -44,6 +42,7 @@ interface EmployeeGroupManagePageProps {
         isActive: boolean;
         membershipCount: number;
         openContactRequestCount: number;
+        defaultRole: GroupRoleSummary | null;
         currentRoleName: string | null;
         currentPermissionNames: string[];
         abilities: GroupManagementAbilities;
@@ -79,7 +78,7 @@ export default function EmployeeGroupManagePage({
                     <div className="space-y-1">
                         <h1 className="text-3xl font-semibold tracking-tight">Gestione gruppi</h1>
                         <p className="text-sm text-muted-foreground">
-                            Apri un gruppo per gestire membri, ruoli assegnati e accesso operativo del team.
+                            Apri un gruppo per aggiungere o rimuovere membri. I ruoli vengono configurati dall’amministrazione gruppi.
                         </p>
                     </div>
                 </div>
@@ -149,6 +148,7 @@ export default function EmployeeGroupManagePage({
                                                     availableEmployees={group.availableEmployees}
                                                     availableRoles={availableRoles}
                                                     membershipStoreUrl={group.membershipStoreUrl}
+                                                    defaultRole={group.defaultRole}
                                                 />
                                         </CollapsibleContent>
                                     </Item>

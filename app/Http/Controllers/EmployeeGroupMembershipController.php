@@ -23,14 +23,14 @@ class EmployeeGroupMembershipController extends Controller
 
         $validated = $request->validate([
             'user_id' => ['required', 'integer'],
-            'group_role_id' => ['required', 'integer'],
+            'group_role_id' => ['nullable', 'integer'],
         ]);
 
         $action->handle(
             $group,
             $employee,
             (int) $validated['user_id'],
-            (int) $validated['group_role_id']
+            isset($validated['group_role_id']) ? (int) $validated['group_role_id'] : null
         );
 
         return back()->with('status', 'Membro aggiunto correttamente al gruppo.');

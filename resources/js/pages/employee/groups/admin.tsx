@@ -1,17 +1,31 @@
 import InputError from '@/components/input-error';
+import { type GroupRoleSummary } from '@/components/groups/group-members-manager';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Item, ItemActions, ItemContent, ItemFooter, ItemGroup, ItemHeader, ItemTitle } from '@/components/ui/item';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import AppLayout from '@/layouts/app-layout';
 import employee from '@/routes/employee';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Building2, Clock3, ShieldCheck, ShieldPlus, Users } from 'lucide-react';
+import { Building2, ChevronRight, Clock3, FileClock, IdCard, Plus, ShieldCheck, ShieldPlus } from 'lucide-react';
 import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -36,13 +50,13 @@ interface PermissionDefinition {
 }
 
 interface RoleSummary {
-    id: number;
-    key: string;
-    name: string;
-    description: string | null;
-    isManager: boolean;
-    permissionKeys: string[];
-    permissionNames: string[];
+    id: GroupRoleSummary['id'];
+    key: GroupRoleSummary['key'];
+    name: GroupRoleSummary['name'];
+    description: GroupRoleSummary['description'];
+    isManager: GroupRoleSummary['isManager'];
+    permissionKeys: GroupRoleSummary['permissionKeys'];
+    permissionNames: GroupRoleSummary['permissionNames'];
     memberCount: number;
     updateUrl: string;
     destroyUrl: string;
@@ -56,13 +70,14 @@ interface EmployeeGroupAdminPageProps {
         description: string | null;
         isActive: boolean;
         membershipCount: number;
-        openContactRequestCount: number;
         chatMessageRetentionDays: number;
         chatInactiveThreadRetentionDays: number;
-        retentionUpdateUrl: string;
+        defaultRole: GroupRoleSummary | null;
+        detailUrl: string;
     }>;
     canCreateGroups: boolean;
     canManageGroupRoles: boolean;
+    availableRoles: GroupRoleSummary[];
     availableManagers: Array<{
         id: number;
         name: string;
@@ -141,11 +156,11 @@ export default function EmployeeGroupAdminPage({
                                 </div>
                             </div>
                         ) : (
-                            <div className="grid gap-4 lg:grid-cols-2">
+                            <ItemGroup className="gap-3">
                                 {groups.map((group) => (
                                     <GroupAdminCard key={group.id} group={group} />
                                 ))}
-                            </div>
+                            </ItemGroup>
                         )}
                     </CardContent>
                 </Card>
@@ -283,104 +298,63 @@ function GroupAdminCard({
 }: {
     group: EmployeeGroupAdminPageProps['groups'][number];
 }) {
-    const form = useForm({
-        chatMessageRetentionDays: group.chatMessageRetentionDays.toString(),
-        chatInactiveThreadRetentionDays: group.chatInactiveThreadRetentionDays.toString(),
-    });
-
-    function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-
-        form.patch(group.retentionUpdateUrl, {
-            preserveScroll: true,
-        });
-    }
-
     return (
-        <Card size="sm">
-            <CardHeader className="space-y-2">
-                <div className="flex items-start justify-between gap-3">
-                    <div className="space-y-1">
-                        <CardTitle>{group.name}</CardTitle>
-                        <CardDescription>
-                            {group.description || 'Nessuna descrizione disponibile.'}
-                        </CardDescription>
-                    </div>
-                    <Badge variant={group.isActive ? 'secondary' : 'outline'}>
-                        {group.isActive ? 'Attivo' : 'Non attivo'}
-                    </Badge>
-                </div>
-            </CardHeader>
-            <CardContent className="space-y-5">
-                <div className="px-2">
-                    <div className="mb-3 flex items-center gap-2 text-sm font-medium">
-                        <Clock3 className="size-4 text-muted-foreground" />
-                        Rimozione automatica (policy di retention)
-                    </div>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                        <div className="rounded-xl border bg-background p-3">
-                            <div className="text-sm text-muted-foreground">Messaggi </div>
-                            <div className="mt-1 text-sm font-semibold">
-                                {group.chatMessageRetentionDays} giorni
-                            </div>
+        <Item asChild variant="outline" className="hover:bg-muted/40">
+            <Link href={group.detailUrl}>
+                <ItemContent className="min-w-0">
+                    <ItemHeader className="items-start gap-3">
+                        <div className="min-w-0 space-y-1">
+                            <ItemTitle className="max-w-full flex-wrap">
+                                <span className="truncate">{group.name}</span>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Badge variant="outline">{group.membershipCount} membri</Badge>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Numero totale di membri assegnati al gruppo.</TooltipContent>
+                                </Tooltip>
+                            </ItemTitle>
                         </div>
-                        <div className="rounded-xl border bg-background p-3">
-                            <div className="text-sm text-muted-foreground">Chat inattive</div>
-                            <div className="mt-1 text-sm font-semibold">
-                                {group.chatInactiveThreadRetentionDays} giorni
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                        <Badge variant={group.isActive ? 'secondary' : 'outline'}>
+                            {group.isActive ? 'Attivo' : 'Non attivo'}
+                        </Badge>
+                    </ItemHeader>
 
-                <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border p-4">
-                    <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="grid gap-2">
-                            <Label htmlFor={`group-${group.id}-message-retention`}>Messaggi</Label>
-                            <Input
-                                id={`group-${group.id}-message-retention`}
-                                type="number"
-                                min={1}
-                                max={3650}
-                                value={form.data.chatMessageRetentionDays}
-                                onChange={(event) =>
-                                    form.setData('chatMessageRetentionDays', event.currentTarget.value)
-                                }
-                                required
-                            />
-                            <InputError message={form.errors.chatMessageRetentionDays} />
-                        </div>
+                    <ItemFooter className="mt-2 flex-wrap items-start justify-start gap-2">
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Badge variant="outline">
+                                    <FileClock className="size-3.5" />
+                                    {group.chatMessageRetentionDays} giorni
+                                </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent>Retention dei messaggi della chat per questo gruppo.</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Badge variant="outline">
+                                    <Clock3 className="size-3.5" />
+                                    {group.chatInactiveThreadRetentionDays} giorni
+                                </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent>Retention delle chat inattive per questo gruppo.</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Badge variant="outline">
+                                    <IdCard className="size-3.5" />
+                                    {group.defaultRole?.name ?? 'Ruolo default non configurato'}
+                                </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent>Ruolo di default assegnato ai nuovi membri del gruppo.</TooltipContent>
+                        </Tooltip>
+                    </ItemFooter>
+                </ItemContent>
 
-                        <div className="grid gap-2">
-                            <Label htmlFor={`group-${group.id}-inactive-retention`}>Chat inattive</Label>
-                            <Input
-                                id={`group-${group.id}-inactive-retention`}
-                                type="number"
-                                min={1}
-                                max={3650}
-                                value={form.data.chatInactiveThreadRetentionDays}
-                                onChange={(event) =>
-                                    form.setData('chatInactiveThreadRetentionDays', event.currentTarget.value)
-                                }
-                                required
-                            />
-                            <InputError message={form.errors.chatInactiveThreadRetentionDays} />
-                        </div>
-                    </div>
-
-                    <p className="text-sm text-muted-foreground">
-                        Mantieni la retention delle chat inattive uguale o superiore a quella dei messaggi.
-                    </p>
-
-                    <div className="flex justify-end">
-                        <Button type="submit" disabled={form.processing || !form.isDirty}>
-                            Salva retention
-                            {form.processing ? <Spinner /> : null}
-                        </Button>
-                    </div>
-                </form>
-            </CardContent>
-        </Card>
+                <ItemActions className="ml-auto self-center">
+                    <ChevronRight className="size-4 text-muted-foreground" />
+                </ItemActions>
+            </Link>
+        </Item>
     );
 }
 
@@ -399,16 +373,17 @@ function RoleCatalogCard({
                 <div className="flex size-11 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
                     <ShieldCheck className="size-5" />
                 </div>
-                <div className="space-y-1">
-                    <CardTitle>Ruoli assegnabili</CardTitle>
-                    <CardDescription>
-                        I permessi dei membri derivano sempre dal ruolo assegnato. Da qui puoi creare, aggiornare o eliminare i ruoli disponibili.
-                    </CardDescription>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="space-y-1">
+                        <CardTitle>Ruoli assegnabili</CardTitle>
+                        <CardDescription>
+                            I permessi dei membri derivano sempre dal ruolo assegnato. Da qui puoi creare, aggiornare o eliminare i ruoli disponibili.
+                        </CardDescription>
+                    </div>
+                    <CreateRoleForm permissionCatalog={permissionCatalog} storeUrl={storeUrl} />
                 </div>
             </CardHeader>
             <CardContent className="space-y-6">
-                <CreateRoleForm permissionCatalog={permissionCatalog} storeUrl={storeUrl} />
-
                 <div className="space-y-4">
                     {roles.length === 0 ? (
                         <p className="text-sm text-muted-foreground">
@@ -445,6 +420,7 @@ function CreateRoleForm({
         description: '',
         permission_keys: [],
     });
+    const [open, setOpen] = useState(false);
 
     function togglePermission(permissionKey: string, checked: boolean) {
         form.setData(
@@ -460,59 +436,87 @@ function CreateRoleForm({
 
         form.post(storeUrl, {
             preserveScroll: true,
-            onSuccess: () => form.reset(),
+            onSuccess: () => {
+                form.reset();
+                setOpen(false);
+            },
         });
     }
 
+    function handleOpenChange(nextOpen: boolean) {
+        setOpen(nextOpen);
+
+        if (!nextOpen) {
+            form.reset();
+            form.clearErrors();
+        }
+    }
+
     return (
-        <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl border p-4">
-            <div className="space-y-1">
-                <h2 className="text-sm font-semibold">Nuovo ruolo</h2>
-                <p className="text-sm text-muted-foreground">
-                    Crea un ruolo riutilizzabile da assegnare ai membri dei gruppi.
-                </p>
-            </div>
-
-            <div className="grid gap-4">
-                <div className="grid gap-2">
-                    <Label htmlFor="group-role-name">Nome ruolo</Label>
-                    <Input
-                        id="group-role-name"
-                        value={form.data.name}
-                        onChange={(event) => form.setData('name', event.currentTarget.value)}
-                        placeholder="Es. Operatore protocollo"
-                        required
-                    />
-                    <InputError message={form.errors.name} />
-                </div>
-
-                <div className="grid gap-2">
-                    <Label htmlFor="group-role-description">Descrizione</Label>
-                    <Textarea
-                        id="group-role-description"
-                        value={form.data.description}
-                        onChange={(event) => form.setData('description', event.currentTarget.value)}
-                        placeholder="Descrivi quando usare questo ruolo."
-                    />
-                    <InputError message={form.errors.description} />
-                </div>
-            </div>
-
-            <RolePermissionChecklist
-                permissionCatalog={permissionCatalog}
-                selectedKeys={form.data.permission_keys}
-                onToggle={togglePermission}
-                error={form.errors.permission_keys}
-                disabled={form.processing}
-            />
-
-            <div className="flex justify-end">
-                <Button type="submit" disabled={form.processing}>
-                    Crea ruolo
-                    {form.processing ? <Spinner /> : null}
+        <Dialog open={open} onOpenChange={handleOpenChange}>
+            <DialogTrigger asChild>
+                <Button type="button" size="sm">
+                    <Plus className="size-4" />
+                    Nuovo ruolo
                 </Button>
-            </div>
-        </form>
+            </DialogTrigger>
+
+            <DialogContent className="sm:max-w-2xl">
+                <DialogHeader>
+                    <DialogTitle>Nuovo ruolo</DialogTitle>
+                    <DialogDescription>
+                        Crea un ruolo riutilizzabile da assegnare ai membri dei gruppi.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <form onSubmit={handleSubmit} className="space-y-5">
+                    <div className="grid gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="group-role-name">Nome ruolo</Label>
+                            <Input
+                                id="group-role-name"
+                                value={form.data.name}
+                                onChange={(event) => form.setData('name', event.currentTarget.value)}
+                                placeholder="Es. Operatore protocollo"
+                                required
+                            />
+                            <InputError message={form.errors.name} />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="group-role-description">Descrizione</Label>
+                            <Textarea
+                                id="group-role-description"
+                                value={form.data.description}
+                                onChange={(event) => form.setData('description', event.currentTarget.value)}
+                                placeholder="Descrivi quando usare questo ruolo."
+                            />
+                            <InputError message={form.errors.description} />
+                        </div>
+                    </div>
+
+                    <RolePermissionChecklist
+                        permissionCatalog={permissionCatalog}
+                        selectedKeys={form.data.permission_keys}
+                        onToggle={togglePermission}
+                        error={form.errors.permission_keys}
+                        disabled={form.processing}
+                    />
+
+                    <DialogFooter>
+                        <DialogClose asChild>
+                            <Button type="button" variant="outline" disabled={form.processing}>
+                                Annulla
+                            </Button>
+                        </DialogClose>
+                        <Button type="submit" disabled={form.processing}>
+                            Crea ruolo
+                            {form.processing ? <Spinner /> : null}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
     );
 }
 

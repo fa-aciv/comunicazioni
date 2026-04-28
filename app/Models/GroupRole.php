@@ -39,6 +39,11 @@ class GroupRole extends Model
         return $this->hasMany(GroupMembership::class);
     }
 
+    public function groupsUsingAsDefault(): HasMany
+    {
+        return $this->hasMany(Group::class, 'default_group_role_id');
+    }
+
     public function hasPermission(string $permissionKey): bool
     {
         return $this->permissions->contains(

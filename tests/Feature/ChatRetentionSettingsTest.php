@@ -74,7 +74,7 @@ test('admins can update group chat retention settings', function () {
             'chatInactiveThreadRetentionDays' => 40,
         ])
         ->assertRedirect()
-        ->assertSessionHas('status', 'Impostazioni di retention del gruppo aggiornate correttamente.');
+        ->assertSessionHas('status', 'Impostazioni del gruppo aggiornate correttamente.');
 
     $group->refresh();
 

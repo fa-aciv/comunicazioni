@@ -35,7 +35,6 @@ class EmployeeSettingsController extends Controller
                 ->whereHas('groupRole.permissions', fn ($query) => $query->whereIn('key', [
                     'group.members.add',
                     'group.members.remove',
-                    'group.members.permissions.manage',
                 ]))
                 ->exists();
 

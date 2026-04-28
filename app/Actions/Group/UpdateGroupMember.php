@@ -23,10 +23,7 @@ class UpdateGroupMember
         GroupMembership $membership,
         int $groupRoleId
     ): GroupMembership {
-        if (
-            ! $this->permissions->has($actor, $group, 'group.members.permissions.manage')
-            && ! $actor->can('groups.managers.assign')
-        ) {
+        if (! $actor->can('groups.roles.manage') && ! $actor->can('groups.managers.assign')) {
             throw ValidationException::withMessages([
                 'group_role_id' => 'Non puoi modificare il ruolo dei membri di questo gruppo.',
             ]);

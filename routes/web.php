@@ -107,6 +107,7 @@ Route::prefix('employee')->name('employee.')->group(function () {
         Route::patch('settings', [EmployeeSettingsController::class, 'update'])->name('settings.update');
         Route::get('groups', [EmployeeGroupController::class, 'index'])->name('groups.index');
         Route::get('groups/admin', [EmployeeGroupController::class, 'admin'])->name('groups.admin');
+        Route::get('groups/admin/{group}', [EmployeeGroupController::class, 'adminShow'])->name('groups.admin.show');
         Route::get('groups/manage', [EmployeeGroupController::class, 'manage'])->name('groups.manage');
         Route::get('groups/manage/{group}', [EmployeeGroupController::class, 'show'])->name('groups.manage.show');
         Route::post('groups', [EmployeeGroupController::class, 'store'])->name('groups.store');

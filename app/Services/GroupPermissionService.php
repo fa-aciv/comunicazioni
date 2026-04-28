@@ -86,6 +86,17 @@ class GroupPermissionService
         return $roles->first(fn (GroupRole $role) => $this->roleIsManager($role));
     }
 
+    public function defaultMemberRole(): ?GroupRole
+    {
+        $roles = GroupRole::query()
+            ->with('permissions')
+            ->orderByRaw("case when `key` = 'user' then 0 when `key` = 'manager' then 2 else 1 end")
+            ->orderBy('name')
+            ->get();
+
+        return $roles->first(fn (GroupRole $role) => ! $this->roleIsManager($role));
+    }
+
     public function membershipFor(User $user, Group $group): ?GroupMembership
     {
         return GroupMembership::query()

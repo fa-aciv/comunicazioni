@@ -5,6 +5,7 @@ namespace App\Models;
 use Database\Factories\GroupFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -17,6 +18,7 @@ class Group extends Model
         'name',
         'description',
         'is_active',
+        'default_group_role_id',
         'chat_message_retention_days',
         'chat_inactive_thread_retention_days',
     ];
@@ -38,6 +40,11 @@ class Group extends Model
     public function memberships(): HasMany
     {
         return $this->hasMany(GroupMembership::class);
+    }
+
+    public function defaultRole(): BelongsTo
+    {
+        return $this->belongsTo(GroupRole::class, 'default_group_role_id');
     }
 
     public function users(): BelongsToMany

@@ -21,12 +21,12 @@ class AddGroupMember
         Group $group,
         User $actor,
         int $userId,
-        int $groupRoleId
+        ?int $groupRoleId = null
     ): GroupMembership {
-        if (
-            ! $this->permissions->has($actor, $group, 'group.members.add')
-            && ! $actor->can('groups.managers.assign')
-        ) {
+        $canAddMembers = $this->permissions->has($actor, $group, 'group.members.add')
+            || $actor->can('groups.managers.assign');
+
+        if (! $canAddMembers) {
             throw ValidationException::withMessages([
                 'user_id' => 'Non puoi aggiungere membri a questo gruppo.',
             ]);
@@ -40,14 +40,26 @@ class AddGroupMember
             ]);
         }
 
-        $groupRole = GroupRole::query()
-            ->with('permissions')
-            ->find($groupRoleId);
+        $group->loadMissing('defaultRole.permissions');
+
+        $groupRole = $groupRoleId !== null
+            ? GroupRole::query()->with('permissions')->find($groupRoleId)
+            : ($group->defaultRole ?? $this->permissions->defaultMemberRole());
 
         if (! $groupRole) {
             throw ValidationException::withMessages([
-                'group_role_id' => 'Il ruolo selezionato non è valido.',
+                'group_role_id' => 'Il ruolo selezionato non è valido o non esiste un ruolo predefinito configurato per il gruppo.',
             ]);
+        }
+
+        if ($groupRoleId !== null) {
+            $canAssignExplicitRole = $actor->can('groups.roles.manage') || $actor->can('groups.managers.assign');
+
+            if (! $canAssignExplicitRole) {
+                throw ValidationException::withMessages([
+                    'group_role_id' => 'Non puoi scegliere manualmente il ruolo dei nuovi membri di questo gruppo.',
+                ]);
+            }
         }
 
         $alreadyMember = GroupMembership::query()

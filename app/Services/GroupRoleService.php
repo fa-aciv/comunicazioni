@@ -80,6 +80,12 @@ class GroupRoleService
             ]);
         }
 
+        if ($role->groupsUsingAsDefault()->exists()) {
+            throw ValidationException::withMessages([
+                'role' => 'Non puoi eliminare un ruolo usato come default in uno o più gruppi.',
+            ]);
+        }
+
         $this->ensureManagerCoverageAfterMutation($role, false);
 
         $role->delete();

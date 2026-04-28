@@ -52,6 +52,7 @@ class CreateGroup
 
         $retentionSettings = ChatRetentionSetting::current();
         $managerRole = $this->groupPermissions->defaultManagerRole();
+        $defaultMemberRole = $this->groupPermissions->defaultMemberRole();
 
         if (! $managerRole) {
             throw ValidationException::withMessages([
@@ -59,11 +60,18 @@ class CreateGroup
             ]);
         }
 
-        return DB::transaction(function () use ($name, $description, $managers, $retentionSettings, $managerRole): Group {
+        if (! $defaultMemberRole) {
+            throw ValidationException::withMessages([
+                'manager_ids' => 'Configura almeno un ruolo utente predefinito prima di creare nuovi gruppi.',
+            ]);
+        }
+
+        return DB::transaction(function () use ($name, $description, $managers, $retentionSettings, $managerRole, $defaultMemberRole): Group {
             $group = Group::query()->create([
                 'name' => trim($name),
                 'description' => filled($description) ? trim((string) $description) : null,
                 'is_active' => true,
+                'default_group_role_id' => $defaultMemberRole->getKey(),
                 'chat_message_retention_days' => $retentionSettings->message_retention_days,
                 'chat_inactive_thread_retention_days' => $retentionSettings->inactive_thread_retention_days,
             ]);

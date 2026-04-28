@@ -28,7 +28,7 @@ test('admins can create groups and assign initial managers', function () {
         ->assertRedirect(route('employee.groups.index'))
         ->assertSessionHas('status', 'Gruppo creato correttamente e manager assegnati.');
 
-    $group = Group::query()->where('name', 'Ufficio Relazioni')->first();
+    $group = Group::query()->where('name', 'Ufficio Relazioni')->with('defaultRole')->first();
 
     expect($group)->not->toBeNull()
         ->and($group?->description)->toBe('Gestione richieste e smistamento iniziale.');
@@ -41,8 +41,8 @@ test('admins can create groups and assign initial managers', function () {
         ->toBe([
             'group.members.add',
             'group.members.remove',
-            'group.members.permissions.manage',
-        ]);
+        ])
+        ->and($group?->defaultRole?->key)->toBe('user');
 });
 
 test('non admin employees cannot create groups', function () {
@@ -70,6 +70,9 @@ test('admins can open group pages even when they are not members', function () {
 
 test('admins can manage group roles through the groups ui', function () {
     $admin = makeEmployeeAdmin(User::factory()->withoutTwoFactor()->create());
+    $group = Group::factory()->create([
+        'name' => 'Protocollo',
+    ]);
 
     $this->actingAs($admin, 'employee')
         ->get(route('employee.groups.admin'))
@@ -78,7 +81,73 @@ test('admins can manage group roles through the groups ui', function () {
             ->component('employee/groups/admin')
             ->has('permissionCatalog')
             ->has('groupRoles')
+            ->has('availableRoles')
+            ->has('groups', 1, fn (Assert $groupPage) => $groupPage
+                ->where('name', 'Protocollo')
+                ->where('detailUrl', route('employee.groups.admin.show', $group))
+                ->etc()
+            )
         );
+});
+
+test('admins can open the detail administration page for a group', function () {
+    $admin = makeEmployeeAdmin(User::factory()->withoutTwoFactor()->create());
+    $group = Group::factory()->create([
+        'name' => 'Sportello edilizia',
+    ]);
+
+    $this->actingAs($admin, 'employee')
+        ->get(route('employee.groups.admin.show', $group))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('employee/groups/admin-show')
+            ->where('group.name', 'Sportello edilizia')
+            ->where('adminIndexUrl', route('employee.groups.admin'))
+            ->has('memberships')
+            ->has('availableEmployees')
+            ->has('availableRoles')
+        );
+});
+
+test('admins can manage members and configure the default role from the admin groups panel', function () {
+    $admin = makeEmployeeAdmin(User::factory()->withoutTwoFactor()->create());
+    $group = Group::factory()->create();
+    $employee = User::factory()->withoutTwoFactor()->create();
+    $customRole = app(\App\Services\GroupRoleService::class)->create(
+        'Operatore protocollo',
+        'Ruolo standard per il gruppo.',
+        ['group.contact_requests.accept']
+    );
+
+    $detailUrl = route('employee.groups.admin.show', $group);
+
+    $this->from($detailUrl)
+        ->actingAs($admin, 'employee')
+        ->patch(route('employee.groups.retention.update', $group), [
+            'chatMessageRetentionDays' => 15,
+            'chatInactiveThreadRetentionDays' => 60,
+            'defaultGroupRoleId' => $customRole->getKey(),
+        ])
+        ->assertRedirect($detailUrl)
+        ->assertSessionHas('status', 'Impostazioni del gruppo aggiornate correttamente.');
+
+    $group->refresh();
+
+    expect($group->defaultRole?->key)->toBe($customRole->key);
+
+    $this->from($detailUrl)
+        ->actingAs($admin, 'employee')
+        ->post(route('employee.groups.memberships.store', $group), [
+            'user_id' => $employee->getKey(),
+            'group_role_id' => $customRole->getKey(),
+        ])
+        ->assertRedirect($detailUrl)
+        ->assertSessionHas('status', 'Membro aggiunto correttamente al gruppo.');
+
+    $membership = $group->memberships()->with('groupRole')->where('user_id', $employee->getKey())->first();
+
+    expect($membership)->not->toBeNull()
+        ->and($membership?->groupRole?->key)->toBe($customRole->key);
 });
 
 test('admins can create, update and delete unassigned group roles', function () {
