@@ -6,7 +6,6 @@ use App\Http\Controllers\Concerns\MapsChatThreadData;
 use App\Models\ChatThread;
 use App\Models\GroupContactRequest;
 use App\Models\User;
-use App\Services\EmployeeAuthorizationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -16,17 +15,12 @@ class EmployeeDashboardController extends Controller
 {
     use MapsChatThreadData;
 
-    public function __invoke(
-        Request $request,
-        EmployeeAuthorizationService $employeeAuthorization
-    ): Response
+    public function __invoke(Request $request): Response
     {
         /** @var User|null $employee */
         $employee = Auth::guard('employee')->user();
 
         abort_unless($employee instanceof User, 403);
-
-        $employeeAuthorization->syncCatalog();
 
         $conversationSearch = trim((string) $request->string('search')->toString());
         $conversationListLimit = $conversationSearch === '' ? 5 : 10;
@@ -52,8 +46,6 @@ class EmployeeDashboardController extends Controller
             ->map(fn (ChatThread $thread) => $this->mapChatSummary($thread))
             ->values();
 
-        $groupCount = $employee->groupMemberships()->count();
-
         $openGroupRequestCount = GroupContactRequest::query()
             ->where('status', 'open')
             ->whereIn(
@@ -64,30 +56,12 @@ class EmployeeDashboardController extends Controller
             )
             ->count();
 
-        $canOpenAdminGroupPanel = $employee->can('groups.create')
-            || $employee->can('groups.managers.assign')
-            || $employee->can('groups.roles.manage');
-        $canOpenManagerGroupPanel = $employee->can('groups.managers.assign')
-            || $employee->groupMemberships()
-                ->whereHas('groupRole.permissions', fn ($query) => $query->whereIn('key', [
-                    'group.members.add',
-                    'group.members.remove',
-                    'group.members.permissions.manage',
-                ]))
-                ->exists();
-
         return Inertia::render('employee/dashboard', [
             'status' => $request->session()->get('status'),
             'conversationSearch' => $conversationSearch,
             'hasMoreConversationResults' => $hasMoreConversationResults,
             'activeChats' => $activeChats,
-            'groupCount' => $groupCount,
             'openGroupRequestCount' => $openGroupRequestCount,
-            'canOpenAdminGroupPanel' => $canOpenAdminGroupPanel,
-            'adminGroupPanelUrl' => $canOpenAdminGroupPanel ? route('employee.groups.admin') : null,
-            'canOpenManagerGroupPanel' => $canOpenManagerGroupPanel,
-            'managerGroupPanelUrl' => $canOpenManagerGroupPanel ? route('employee.groups.manage') : null,
-            'groupsOverviewUrl' => route('employee.groups.index'),
         ]);
     }
 }

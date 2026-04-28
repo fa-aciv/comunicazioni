@@ -24,7 +24,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/employee/groups',
     },
     {
-        title: 'Panel admin',
+        title: 'Gestione gruppi',
         href: '/employee/groups/admin',
     },
 ];
@@ -88,13 +88,10 @@ export default function EmployeeGroupAdminPage({
     permissionCatalog,
     groupRoles,
     groupRoleStoreUrl,
-    groupsOverviewUrl,
-    canOpenManagerPanel,
-    managerPanelUrl,
 }: EmployeeGroupAdminPageProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Panel admin gruppi" />
+            <Head title="Gestione gruppi" />
 
             <div className="mx-auto flex h-full w-full max-w-7xl flex-col gap-6 p-4 md:p-6">
                 {status ? (
@@ -105,23 +102,10 @@ export default function EmployeeGroupAdminPage({
 
                 <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="space-y-1">
-                        <h1 className="text-3xl font-semibold tracking-tight">Panel admin gruppi</h1>
+                        <h1 className="text-3xl font-semibold tracking-tight">Gestione admin gruppi</h1>
                         <p className="text-sm text-muted-foreground">
                             Crea nuovi gruppi, gestisci i ruoli assegnabili e configura la retention delle chat per ogni gruppo.
                         </p>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                        {canOpenManagerPanel && managerPanelUrl ? (
-                            <Button asChild variant="outline">
-                                <Link href={managerPanelUrl}>
-                                    <Users className="size-4" />
-                                    Panel manager
-                                </Link>
-                            </Button>
-                        ) : null}
-                        <Button asChild variant="outline">
-                            <Link href={groupsOverviewUrl}>Panoramica gruppi</Link>
-                        </Button>
                     </div>
                 </div>
 
@@ -328,19 +312,14 @@ function GroupAdminCard({
                 </div>
             </CardHeader>
             <CardContent className="space-y-5">
-                <div className="flex flex-wrap gap-2">
-                    <Badge variant="outline">Membri: {group.membershipCount}</Badge>
-                    <Badge variant="outline">Richieste aperte: {group.openContactRequestCount}</Badge>
-                </div>
-
-                <div className="rounded-2xl border bg-muted/20 p-4">
+                <div className="px-2">
                     <div className="mb-3 flex items-center gap-2 text-sm font-medium">
                         <Clock3 className="size-4 text-muted-foreground" />
-                        Retention chat
+                        Rimozione automatica (policy di retention)
                     </div>
                     <div className="grid gap-3 sm:grid-cols-2">
                         <div className="rounded-xl border bg-background p-3">
-                            <div className="text-sm text-muted-foreground">Messaggi</div>
+                            <div className="text-sm text-muted-foreground">Messaggi </div>
                             <div className="mt-1 text-sm font-semibold">
                                 {group.chatMessageRetentionDays} giorni
                             </div>

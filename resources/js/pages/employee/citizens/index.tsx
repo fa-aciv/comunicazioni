@@ -1,3 +1,4 @@
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -5,7 +6,7 @@ import AppLayout from '@/layouts/app-layout';
 import employee from '@/routes/employee';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { ChevronRight, Search, UserPlus, UsersRound } from 'lucide-react';
+import { ChevronRight, Info, Search, UserPlus, UsersRound } from 'lucide-react';
 import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -69,7 +70,7 @@ export default function EmployeeCitizensPage({
                             <div className="space-y-1">
                                 <CardTitle>Account cittadini</CardTitle>
                                 <CardDescription>
-                                    Elenco minimale degli account. Clicca una riga per aprire la modifica dei contatti.
+                                    Seleziona una riga per gestire l'utenza.
                                 </CardDescription>
                             </div>
                             <div className="flex gap-2 flex-wrap">
@@ -93,11 +94,14 @@ export default function EmployeeCitizensPage({
                             initialSearch={filters.search}
                         />
 
-                        <div className="rounded-2xl border border-dashed bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
-                            {filters.search
+                        <Alert>
+                            <Info />
+                            <AlertDescription>
+                                {filters.search
                                 ? `Risultati per "${filters.search}". Mostro fino a ${resultsLimit} account.`
-                                : `Mostro ${resultsLimit} account ordinati per nome.`}
-                        </div>
+                                : `Mostrati fino a ${resultsLimit} account ordinati per nome.`}
+                            </AlertDescription>
+                        </Alert>
 
                         {citizens.length > 0 ? (
                             <div className="overflow-hidden rounded-2xl border">

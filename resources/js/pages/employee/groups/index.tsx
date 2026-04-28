@@ -65,30 +65,6 @@ export default function EmployeeGroupIndexPage({
                             Qui trovi una panoramica dei gruppi assegnati e del ruolo con cui operi in ciascuno.
                         </p>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                        {canOpenManagerPanel && managerPanelUrl ? (
-                            <Button asChild variant="outline">
-                                <Link href={managerPanelUrl}>
-                                    <Users className="size-4" />
-                                    Panel manager
-                                </Link>
-                            </Button>
-                        ) : null}
-                        {canOpenAdminPanel && adminPanelUrl ? (
-                            <Button asChild variant="outline">
-                                <Link href={adminPanelUrl}>
-                                    <ShieldCheck className="size-4" />
-                                    Panel admin
-                                </Link>
-                            </Button>
-                        ) : null}
-                        <Button asChild variant="outline">
-                            <Link href={requestsInboxUrl}>
-                                <Inbox className="size-4" />
-                                Inbox richieste
-                            </Link>
-                        </Button>
-                    </div>
                 </div>
 
                 {groups.length === 0 ? (

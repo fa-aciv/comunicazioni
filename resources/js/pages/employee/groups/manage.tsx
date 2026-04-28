@@ -28,7 +28,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/employee/groups',
     },
     {
-        title: 'Panel manager',
+        title: 'Gestione gruppi',
         href: '/employee/groups/manage',
     },
 ];
@@ -61,15 +61,12 @@ export default function EmployeeGroupManagePage({
     currentEmployeeId,
     availableRoles,
     groups,
-    groupsOverviewUrl,
-    canOpenAdminPanel,
-    adminPanelUrl,
 }: EmployeeGroupManagePageProps) {
     const [openGroupId, setOpenGroupId] = useState<number | null>(null);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Panel manager gruppi" />
+            <Head title="Gestione gruppi" />
 
             <div className="mx-auto flex h-full w-full max-w-6xl flex-col gap-6 p-4 md:p-6">
                 {status ? (
@@ -84,19 +81,6 @@ export default function EmployeeGroupManagePage({
                         <p className="text-sm text-muted-foreground">
                             Apri un gruppo per gestire membri, ruoli assegnati e accesso operativo del team.
                         </p>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                        {canOpenAdminPanel && adminPanelUrl ? (
-                            <Button asChild variant="outline">
-                                <Link href={adminPanelUrl}>
-                                    <ShieldCheck className="size-4" />
-                                    Panel admin
-                                </Link>
-                            </Button>
-                        ) : null}
-                        <Button asChild variant="outline">
-                            <Link href={groupsOverviewUrl}>Panoramica gruppi</Link>
-                        </Button>
                     </div>
                 </div>
 
@@ -157,8 +141,7 @@ export default function EmployeeGroupManagePage({
                                             </div>
                                         </CollapsibleTrigger>
 
-                                        <CollapsibleContent>
-                                            <div className="border-t py-4 ps-2 mt-2">
+                                        <CollapsibleContent className="border-t py-4 ps-2 mt-2 w-full">
                                                 <GroupMembersManager
                                                     currentEmployeeId={currentEmployeeId}
                                                     abilities={group.abilities}
@@ -167,7 +150,6 @@ export default function EmployeeGroupManagePage({
                                                     availableRoles={availableRoles}
                                                     membershipStoreUrl={group.membershipStoreUrl}
                                                 />
-                                            </div>
                                         </CollapsibleContent>
                                     </Item>
                                 </Collapsible>

@@ -85,9 +85,6 @@ export default function EmployeeGroupContactRequestsPage({
                             Accetta le richieste di contatto indirizzate ai gruppi che segui.
                         </p>
                     </div>
-                    <Button asChild variant="outline">
-                        <Link href={groupsUrl}>Apri i miei gruppi</Link>
-                    </Button>
                 </div>
 
                 {contactRequests.length === 0 ? (

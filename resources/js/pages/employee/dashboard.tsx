@@ -14,7 +14,7 @@ import employee from '@/routes/employee';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
-import { Building2, Inbox, MessageSquareMore, Search, Settings, UserCog, UserPen, UserRoundCog, UsersRound, X } from 'lucide-react';
+import { Inbox, MessageSquareMore, Search, Settings, UserPen, X } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -30,13 +30,7 @@ interface DashboardProps {
     conversationSearch?: string;
     hasMoreConversationResults: boolean;
     activeChats: ChatSummary[];
-    groupCount: number;
     openGroupRequestCount: number;
-    canOpenAdminGroupPanel: boolean;
-    adminGroupPanelUrl: string | null;
-    canOpenManagerGroupPanel: boolean;
-    managerGroupPanelUrl: string | null;
-    groupsOverviewUrl: string;
 }
 
 export default function Dashboard({
@@ -44,113 +38,26 @@ export default function Dashboard({
     conversationSearch = '',
     hasMoreConversationResults,
     activeChats,
-    groupCount,
     openGroupRequestCount,
-    canOpenAdminGroupPanel,
-    adminGroupPanelUrl,
-    canOpenManagerGroupPanel,
-    managerGroupPanelUrl,
-    groupsOverviewUrl,
 }: DashboardProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
 
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+            <div className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-4 p-4 md:p-6">
                 {status && (
                     <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
                         {status}
                     </div>
                 )}
 
-                <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
+                <div className="grid gap-4 lg:grid-cols-2">
                     <ConversationSearchCard
                         key={conversationSearch}
                         appliedSearch={conversationSearch}
                         hasMoreConversationResults={hasMoreConversationResults}
                         activeChats={activeChats}
                     />
-
-                    <Card className="justify-between border-emerald-200">
-                        <CardHeader className="space-y-3">
-                            <div className={cn(
-                                    "flex",
-                                    "size-11",
-                                    "items-center",
-                                    "justify-center",
-                                    "rounded-2xl",
-                                    "bg-emerald-100",
-                                    "text-emerald-700",
-                                    "dark:bg-emerald-950",
-                                    "dark:text-emerald-300"
-                            )}>
-                                <Building2 className="size-5" />
-                            </div>
-                            <div className="space-y-1">
-                                <CardTitle>Gruppi</CardTitle>
-                                <CardDescription>
-                                    Consulta i gruppi a cui appartieni
-                                </CardDescription>
-                            </div>
-                            <p className="text-sm font-medium text-muted-foreground">
-                                Gruppi assegnati: {groupCount}
-                            </p>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                            <Button asChild variant="outline" size="lg" className="w-full">
-                                <Link href={groupsOverviewUrl}>
-                                    Consulta i tuoi gruppi
-                                </Link>
-                            </Button>
-                        </CardContent>
-                    </Card>
-
-                    {   (canOpenManagerGroupPanel || canOpenAdminGroupPanel) && (
-                        <Card className="justify-between border-emerald-200">
-                            <CardHeader className="space-y-3">
-                                <div className={cn(
-                                        "flex",
-                                        "size-11",
-                                        "items-center",
-                                        "justify-center",
-                                        "rounded-2xl",
-                                        "bg-red-100",
-                                        "text-red-700",
-                                        "dark:bg-red-950",
-                                        "dark:text-red-300"
-                                )}>
-                                    <UserRoundCog className="size-5" />
-                                </div>
-                                <div className="space-y-1">
-                                    <CardTitle>Gestione gruppi</CardTitle>
-                                    <CardDescription>
-                                        Consulta i gruppi assegnati e raggiungi i pannelli dedicati per amministrazione o gestione quando disponibili.
-                                    </CardDescription>
-                                </div>
-                                <p className="text-sm font-medium text-muted-foreground">
-                                    Gruppi assegnati: {groupCount}
-                                </p>
-                            </CardHeader>
-                            <CardContent className="space-y-2">
-                                {canOpenManagerGroupPanel && managerGroupPanelUrl ? (
-                                    <Button asChild variant="outline" className="w-full">
-                                        <Link href={managerGroupPanelUrl}>
-                                            <Building2 className="size-4" />
-                                            Gestisci gruppi
-                                        </Link>
-                                    </Button>
-                                ) : null}
-                                {canOpenAdminGroupPanel && adminGroupPanelUrl ? (
-                                    <Button asChild variant="outline" className="w-full">
-                                        <Link href={adminGroupPanelUrl}>
-                                            <Settings className="size-4" />
-                                            Amministra gruppi
-                                        </Link>
-                                    </Button>
-                                ) : null}
-                            </CardContent>
-                        </Card>
-                    )}
 
                     <Card className="justify-between border-indigo-200">
                         <CardHeader className="space-y-3">

@@ -62,14 +62,14 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                       icon: MessageSquareDot,
                   },
                   {
-                      title: 'Gruppi',
-                      href: '/employee/groups',
-                      icon: Building2,
-                  },
-                  {
                       title: 'Richieste',
                       href: '/employee/group-contact-requests',
                       icon: Inbox,
+                  },
+                  {
+                      title: 'Gruppi',
+                      href: '/employee/groups',
+                      icon: Building2,
                   },
                   {
                       title: 'Impostazioni',
