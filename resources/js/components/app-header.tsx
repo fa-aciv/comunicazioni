@@ -67,11 +67,6 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                       icon: Inbox,
                   },
                   {
-                      title: 'Gruppi',
-                      href: '/employee/groups',
-                      icon: Building2,
-                  },
-                  {
                       title: 'Impostazioni',
                       href: employee.settings.index().url,
                       icon: Settings,
