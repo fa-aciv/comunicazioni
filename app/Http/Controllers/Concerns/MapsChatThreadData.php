@@ -105,6 +105,7 @@ trait MapsChatThreadData
             ->where('participant_id', $actor->getKey())
             ->update([
                 'last_read_at' => $thread->latest_message_date ?? now(),
+                'last_unread_notification_sent_at' => null,
             ]);
     }
 

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -100,5 +101,18 @@ class User extends Authenticatable  implements LdapAuthenticatable
     public function acceptedGroupContactRequests(): HasMany
     {
         return $this->hasMany(GroupContactRequest::class, 'accepted_by_user_id');
+    }
+
+    public function notificationPreference(): HasOne
+    {
+        return $this->hasOne(EmployeeNotificationPreference::class);
+    }
+
+    public function notificationPreferences(): EmployeeNotificationPreference
+    {
+        return $this->notificationPreference()->firstOrCreate(
+            [],
+            EmployeeNotificationPreference::defaults()
+        );
     }
 }

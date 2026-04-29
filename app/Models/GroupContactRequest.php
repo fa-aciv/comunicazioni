@@ -7,6 +7,7 @@ use Database\Factories\GroupContactRequestFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class GroupContactRequest extends Model
 {
@@ -55,5 +56,10 @@ class GroupContactRequest extends Model
     public function chatThread(): BelongsTo
     {
         return $this->belongsTo(ChatThread::class, 'chat_thread_id');
+    }
+
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(GroupContactRequestNotification::class);
     }
 }

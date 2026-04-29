@@ -17,10 +17,12 @@ class ChatParticipant extends Model
         'participant_id',
         'participant_type',
         'last_read_at',
+        'last_unread_notification_sent_at',
     ];
 
     protected $casts = [
         'last_read_at' => 'datetime',
+        'last_unread_notification_sent_at' => 'datetime',
     ];
 
     public function chat(): BelongsTo
