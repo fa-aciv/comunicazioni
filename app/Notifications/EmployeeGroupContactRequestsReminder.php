@@ -24,18 +24,21 @@ class EmployeeGroupContactRequestsReminder extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         $requestLabel = $this->requestCount === 1
-            ? 'richiesta di contatto'
-            : 'richieste di contatto';
+            ? 'richiesta'
+            : 'richieste';
+        $addressedLabel = $this->requestCount === 1
+            ? 'indirizzata'
+            : 'indirizzate';
 
         $message = (new MailMessage)
-            ->subject("Hai {$this->requestCount} {$requestLabel} indirizzate ai tuoi gruppi")
+            ->subject("Hai {$this->requestCount} {$requestLabel} {$addressedLabel} ai tuoi gruppi")
             ->greeting("Ciao {$notifiable->name},")
-            ->line("Hai {$this->requestCount} {$requestLabel} indirizzate ai tuoi gruppi:");
+            ->line("Hai {$this->requestCount} {$requestLabel} {$addressedLabel} ai tuoi gruppi:");
 
         foreach ($this->groupSummaries as $groupSummary) {
             $countLabel = $groupSummary['count'] === 1
-                ? 'richiesta di contatto'
-                : 'richieste di contatto';
+                ? 'richiesta'
+                : 'richieste';
 
             $message->line("• {$groupSummary['count']} {$countLabel} per {$groupSummary['group_name']}");
         }

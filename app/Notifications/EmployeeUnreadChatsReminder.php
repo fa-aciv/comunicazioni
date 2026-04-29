@@ -23,14 +23,15 @@ class EmployeeUnreadChatsReminder extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
+        $threadLabel = $this->threadCount === 1 ? 'chat' : 'chat';
         $unreadMessageLabel = $this->unreadMessageCount === 1
             ? 'messaggio non letto'
             : 'messaggi non letti';
 
         $message = (new MailMessage)
-            ->subject("Hai {$this->threadCount} chat e {$this->unreadMessageCount} {$unreadMessageLabel}")
+            ->subject("Hai {$this->threadCount} {$threadLabel} con {$this->unreadMessageCount} {$unreadMessageLabel}")
             ->greeting("Ciao {$notifiable->name},")
-            ->line("Hai {$this->threadCount} chat e {$this->unreadMessageCount} {$unreadMessageLabel}.");
+            ->line("Hai {$this->threadCount} {$threadLabel} con {$this->unreadMessageCount} {$unreadMessageLabel} in totale.");
 
         return $message
             ->action('Apri le chat', route('employee.chats.index'))
