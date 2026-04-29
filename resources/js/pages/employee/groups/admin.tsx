@@ -5,6 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from '@/components/ui/command';
+import {
     Dialog,
     DialogClose,
     DialogContent,
@@ -17,7 +25,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Item, ItemActions, ItemContent, ItemFooter, ItemGroup, ItemHeader, ItemTitle } from '@/components/ui/item';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -25,8 +34,8 @@ import AppLayout from '@/layouts/app-layout';
 import employee from '@/routes/employee';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Building2, ChevronRight, Clock3, FileClock, IdCard, Plus, ShieldCheck, ShieldPlus } from 'lucide-react';
-import { useState } from 'react';
+import { Building2, Check, ChevronDown, ChevronRight, Clock3, FileClock, IdCard, Plus, ShieldCheck, ShieldPlus, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -62,6 +71,14 @@ interface RoleSummary {
     destroyUrl: string;
 }
 
+interface ManagerSearchOption {
+    id: number;
+    name: string;
+    email: string;
+    employeeId: string | null;
+    departmentName: string | null;
+}
+
 interface EmployeeGroupAdminPageProps {
     status?: string;
     groups: Array<{
@@ -78,13 +95,8 @@ interface EmployeeGroupAdminPageProps {
     canCreateGroups: boolean;
     canManageGroupRoles: boolean;
     availableRoles: GroupRoleSummary[];
-    availableManagers: Array<{
-        id: number;
-        name: string;
-        email: string;
-        departmentName: string | null;
-    }>;
     storeUrl: string;
+    managerSearchUrl: string;
     permissionCatalog: PermissionDefinition[];
     groupRoles: RoleSummary[];
     groupRoleStoreUrl: string;
@@ -98,8 +110,8 @@ export default function EmployeeGroupAdminPage({
     groups,
     canCreateGroups,
     canManageGroupRoles,
-    availableManagers,
     storeUrl,
+    managerSearchUrl,
     permissionCatalog,
     groupRoles,
     groupRoleStoreUrl,
@@ -124,25 +136,27 @@ export default function EmployeeGroupAdminPage({
                     </div>
                 </div>
 
-                <div className="grid gap-4 xl:grid-cols-[1.05fr_1.35fr]">
-                    {canCreateGroups ? (
-                        <CreateGroupCard availableManagers={availableManagers} storeUrl={storeUrl} />
-                    ) : null}
-                    {canManageGroupRoles ? (
-                        <RoleCatalogCard
-                            permissionCatalog={permissionCatalog}
-                            roles={groupRoles}
-                            storeUrl={groupRoleStoreUrl}
-                        />
-                    ) : null}
-                </div>
+                {canManageGroupRoles ? (
+                    <RoleCatalogCard
+                        permissionCatalog={permissionCatalog}
+                        roles={groupRoles}
+                        storeUrl={groupRoleStoreUrl}
+                    />
+                ) : null}
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Gruppi esistenti</CardTitle>
-                        <CardDescription>
-                            Panoramica rapida dei gruppi attualmente configurati, con le relative impostazioni di retention.
-                        </CardDescription>
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                            <div className="space-y-1">
+                                <CardTitle>Gruppi esistenti</CardTitle>
+                                <CardDescription>
+                                    Panoramica rapida dei gruppi attualmente configurati, con le relative impostazioni di retention.
+                                </CardDescription>
+                            </div>
+                            {canCreateGroups ? (
+                                <CreateGroupDialog storeUrl={storeUrl} managerSearchUrl={managerSearchUrl} />
+                            ) : null}
+                        </div>
                     </CardHeader>
                     <CardContent>
                         {groups.length === 0 ? (
@@ -151,7 +165,9 @@ export default function EmployeeGroupAdminPage({
                                 <div className="space-y-1">
                                     <p className="font-medium">Nessun gruppo configurato.</p>
                                     <p className="text-sm text-muted-foreground">
-                                        Crea il primo gruppo da questo pannello.
+                                        {canCreateGroups
+                                            ? 'Crea il primo gruppo con il pulsante Nuovo gruppo.'
+                                            : 'Nessun gruppo disponibile in questo momento.'}
                                     </p>
                                 </div>
                             </div>
@@ -169,13 +185,20 @@ export default function EmployeeGroupAdminPage({
     );
 }
 
-function CreateGroupCard({
-    availableManagers,
+function CreateGroupDialog({
     storeUrl,
+    managerSearchUrl,
 }: {
-    availableManagers: EmployeeGroupAdminPageProps['availableManagers'];
     storeUrl: string;
+    managerSearchUrl: string;
 }) {
+    const [open, setOpen] = useState(false);
+    const [pickerOpen, setPickerOpen] = useState(false);
+    const [query, setQuery] = useState('');
+    const [searchStatus, setSearchStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
+    const [searchResults, setSearchResults] = useState<ManagerSearchOption[]>([]);
+    const [selectedManagers, setSelectedManagers] = useState<ManagerSearchOption[]>([]);
+
     const form = useForm<{
         name: string;
         description: string;
@@ -186,12 +209,95 @@ function CreateGroupCard({
         manager_ids: [],
     });
 
-    function toggleManager(managerId: number, checked: boolean) {
+    useEffect(() => {
+        if (!open) {
+            return;
+        }
+
+        const trimmedQuery = query.trim();
+        const controller = new AbortController();
+        const timeoutId = window.setTimeout(() => {
+            if (trimmedQuery.length < 2) {
+                setSearchResults([]);
+                setSearchStatus('idle');
+                return;
+            }
+
+            setSearchResults([]);
+            setSearchStatus('loading');
+
+            void fetch(`${managerSearchUrl}?${new URLSearchParams({ query: trimmedQuery }).toString()}`, {
+                signal: controller.signal,
+                headers: {
+                    Accept: 'application/json',
+                },
+            })
+                .then(async (response) => {
+                    if (!response.ok) {
+                        throw new Error('Unable to load managers');
+                    }
+
+                    const payload = (await response.json()) as { employees: ManagerSearchOption[] };
+
+                    setSearchResults(
+                        payload.employees.filter(
+                            (manager) => !form.data.manager_ids.includes(manager.id),
+                        ),
+                    );
+                    setSearchStatus('ready');
+                })
+                .catch(() => {
+                    if (controller.signal.aborted) {
+                        return;
+                    }
+
+                    setSearchResults([]);
+                    setSearchStatus('error');
+                });
+        }, trimmedQuery.length >= 2 ? 250 : 0);
+
+        return () => {
+            controller.abort();
+            window.clearTimeout(timeoutId);
+        };
+    }, [form.data.manager_ids, managerSearchUrl, open, query]);
+
+    function resetDialog() {
+        form.reset();
+        form.clearErrors();
+        setPickerOpen(false);
+        setQuery('');
+        setSearchStatus('idle');
+        setSearchResults([]);
+        setSelectedManagers([]);
+    }
+
+    function handleOpenChange(nextOpen: boolean) {
+        setOpen(nextOpen);
+
+        if (!nextOpen) {
+            resetDialog();
+        }
+    }
+
+    function addManager(manager: ManagerSearchOption) {
+        if (form.data.manager_ids.includes(manager.id)) {
+            return;
+        }
+
+        setSelectedManagers((current) => [...current, manager]);
+        form.setData('manager_ids', [...form.data.manager_ids, manager.id]);
+        setQuery('');
+        setSearchResults([]);
+        setSearchStatus('idle');
+        setPickerOpen(false);
+    }
+
+    function removeManager(managerId: number) {
+        setSelectedManagers((current) => current.filter((manager) => manager.id !== managerId));
         form.setData(
             'manager_ids',
-            checked
-                ? [...new Set([...form.data.manager_ids, managerId])]
-                : form.data.manager_ids.filter((value) => value !== managerId),
+            form.data.manager_ids.filter((value) => value !== managerId),
         );
     }
 
@@ -200,96 +306,173 @@ function CreateGroupCard({
 
         form.post(storeUrl, {
             preserveScroll: true,
-            onSuccess: () => form.reset(),
+            onSuccess: () => {
+                resetDialog();
+                setOpen(false);
+            },
         });
     }
 
     return (
-        <Card className="border-sky-200">
-            <CardHeader className="space-y-3">
-                <div className="flex size-11 items-center justify-center rounded-2xl bg-sky-100 text-sky-700">
-                    <ShieldPlus className="size-5" />
-                </div>
-                <div className="space-y-1">
-                    <CardTitle>Crea un nuovo gruppo</CardTitle>
-                    <CardDescription>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
+            <DialogTrigger asChild>
+                <Button type="button">
+                    <Plus />
+                    Nuovo gruppo
+                </Button>
+            </DialogTrigger>
+
+            <DialogContent className="sm:max-w-3xl">
+                <DialogHeader>
+                    <DialogTitle>Nuovo gruppo</DialogTitle>
+                    <DialogDescription>
                         Definisci il nome del gruppo e assegna subito uno o più group manager iniziali.
-                    </CardDescription>
-                </div>
-            </CardHeader>
-            <CardContent>
-                {availableManagers.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                        Non ci sono dipendenti disponibili da assegnare come manager iniziali.
-                    </p>
-                ) : (
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        <div className="grid gap-5">
-                            <div className="grid gap-2">
-                                <Label htmlFor="group-name">Nome gruppo</Label>
-                                <Input
-                                    id="group-name"
-                                    value={form.data.name}
-                                    onChange={(event) => form.setData('name', event.currentTarget.value)}
-                                    placeholder="Es. Ufficio Relazioni con il Pubblico"
-                                    required
-                                />
-                                <InputError message={form.errors.name} />
-                            </div>
+                    </DialogDescription>
+                </DialogHeader>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="group-description">Descrizione</Label>
-                                <Textarea
-                                    id="group-description"
-                                    value={form.data.description}
-                                    onChange={(event) => form.setData('description', event.currentTarget.value)}
-                                    placeholder="Descrivi in breve il perimetro operativo del gruppo."
-                                />
-                                <InputError message={form.errors.description} />
-                            </div>
+                <form onSubmit={handleSubmit} className="space-y-5">
+                    <div className="grid gap-5">
+                        <div className="grid gap-2">
+                            <Label htmlFor="group-name">Nome gruppo</Label>
+                            <Input
+                                id="group-name"
+                                value={form.data.name}
+                                onChange={(event) => form.setData('name', event.currentTarget.value)}
+                                placeholder="Es. Ufficio Relazioni con il Pubblico"
+                                required
+                            />
+                            <InputError message={form.errors.name} />
                         </div>
 
-                        <div className="space-y-3">
+                        <div className="grid gap-2">
+                            <Label htmlFor="group-description">Descrizione</Label>
+                            <Textarea
+                                id="group-description"
+                                value={form.data.description}
+                                onChange={(event) => form.setData('description', event.currentTarget.value)}
+                                placeholder="Descrivi in breve il perimetro operativo del gruppo."
+                            />
+                            <InputError message={form.errors.description} />
+                        </div>
+                    </div>
+
+                    <div className="space-y-3">
+                        <div className="space-y-1">
                             <Label>Manager iniziali</Label>
-                            <div className="grid gap-3">
-                                {availableManagers.map((manager) => (
-                                    <label
-                                        key={manager.id}
-                                        className="flex items-start gap-3 rounded-xl border p-3"
-                                    >
-                                        <Checkbox
-                                            checked={form.data.manager_ids.includes(manager.id)}
-                                            onCheckedChange={(checked) =>
-                                                toggleManager(manager.id, checked === true)
-                                            }
-                                        />
-                                        <div className="space-y-1">
-                                            <div className="text-sm font-medium">{manager.name}</div>
-                                            <div className="text-sm text-muted-foreground">
-                                                {manager.email}
-                                            </div>
-                                            {manager.departmentName ? (
-                                                <div className="text-sm text-muted-foreground">
-                                                    {manager.departmentName}
-                                                </div>
-                                            ) : null}
-                                        </div>
-                                    </label>
-                                ))}
-                            </div>
-                            <InputError message={form.errors.manager_ids} />
+                            <p className="text-sm text-muted-foreground">
+                                Cerca per nome, email, matricola o ufficio. La ricerca mostra fino a 25 risultati per volta.
+                            </p>
                         </div>
 
-                        <div className="flex justify-end">
-                            <Button type="submit" disabled={form.processing}>
-                                Crea gruppo
-                                {form.processing ? <Spinner /> : null}
+                        <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
+                            <PopoverTrigger asChild>
+                                <Button type="button" variant="outline" className="justify-between gap-3">
+                                    <span className="min-w-0 flex-1 truncate text-left">
+                                        {selectedManagers.length > 0
+                                            ? `${selectedManagers.length} manager selezionati`
+                                            : 'Cerca e seleziona i manager iniziali'}
+                                    </span>
+                                    <ChevronDown className="size-4 shrink-0 opacity-50" />
+                                </Button>
+                            </PopoverTrigger>
+
+                            <PopoverContent className="w-[min(32rem,calc(100vw-3rem))] p-0" align="start">
+                                <Command shouldFilter={false}>
+                                    <CommandInput
+                                        value={query}
+                                        onValueChange={setQuery}
+                                        placeholder="Cerca dipendente..."
+                                    />
+                                    <CommandList>
+                                        <CommandEmpty>
+                                            {query.trim().length < 2
+                                                ? 'Digita almeno 2 caratteri per cercare un dipendente.'
+                                                : searchStatus === 'loading'
+                                                  ? 'Ricerca in corso...'
+                                                  : searchStatus === 'error'
+                                                    ? 'Non è stato possibile caricare i dipendenti.'
+                                                    : 'Nessun dipendente trovato.'}
+                                        </CommandEmpty>
+                                        <CommandGroup>
+                                            {searchResults.map((manager) => (
+                                                <CommandItem
+                                                    key={manager.id}
+                                                    value={`${manager.name} ${manager.email} ${manager.employeeId ?? ''} ${manager.departmentName ?? ''}`}
+                                                    onSelect={() => addManager(manager)}
+                                                    className="p-0"
+                                                >
+                                                    <div className="flex w-full items-start gap-3 px-3 py-2">
+                                                        <Check className="mt-0.5 size-4 shrink-0 opacity-0" />
+                                                        <div className="min-w-0 flex-1 space-y-1">
+                                                            <div className="truncate text-sm font-medium">
+                                                                {manager.name}
+                                                            </div>
+                                                            <div className="truncate text-sm text-muted-foreground">
+                                                                {manager.email}
+                                                            </div>
+                                                            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                                                                {manager.employeeId ? (
+                                                                    <span>Matricola {manager.employeeId}</span>
+                                                                ) : null}
+                                                                {manager.departmentName ? (
+                                                                    <span>{manager.departmentName}</span>
+                                                                ) : null}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                    </CommandList>
+                                </Command>
+                            </PopoverContent>
+                        </Popover>
+
+                        {selectedManagers.length > 0 ? (
+                            <ScrollArea className="max-h-40 rounded-xl border p-3">
+                                <div className="flex flex-wrap gap-2">
+                                    {selectedManagers.map((manager) => (
+                                        <Badge
+                                            key={manager.id}
+                                            variant="secondary"
+                                            className="gap-1.5 pr-1"
+                                        >
+                                            <span className="max-w-52 truncate">{manager.name}</span>
+                                            <button
+                                                type="button"
+                                                className="rounded-full p-0.5 transition hover:bg-black/10"
+                                                onClick={() => removeManager(manager.id)}
+                                                aria-label={`Rimuovi ${manager.name}`}
+                                            >
+                                                <X className="size-3" />
+                                            </button>
+                                        </Badge>
+                                    ))}
+                                </div>
+                            </ScrollArea>
+                        ) : (
+                            <div className="rounded-xl border border-dashed px-4 py-3 text-sm text-muted-foreground">
+                                Nessun manager selezionato.
+                            </div>
+                        )}
+
+                        <InputError message={form.errors.manager_ids} />
+                    </div>
+
+                    <DialogFooter>
+                        <DialogClose asChild>
+                            <Button type="button" variant="outline" disabled={form.processing}>
+                                Annulla
                             </Button>
-                        </div>
-                    </form>
-                )}
-            </CardContent>
-        </Card>
+                        </DialogClose>
+                        <Button type="submit" disabled={form.processing}>
+                            Crea gruppo
+                            {form.processing ? <Spinner /> : null}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
     );
 }
 
@@ -455,8 +638,8 @@ function CreateRoleForm({
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
-                <Button type="button" size="sm">
-                    <Plus className="size-4" />
+                <Button type="button">
+                    <Plus />
                     Nuovo ruolo
                 </Button>
             </DialogTrigger>

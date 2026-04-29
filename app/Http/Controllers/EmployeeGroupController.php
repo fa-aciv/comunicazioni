@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Services\EmployeeAuthorizationService;
 use App\Services\GroupPermissionService;
 use App\Services\GroupRoleService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -111,12 +112,6 @@ class EmployeeGroupController extends Controller
 
         abort_unless($canCreateGroups || $canAssignGroupManagers || $canManageGroupRoles, 403);
 
-        $availableManagers = ($canCreateGroups || $canAssignGroupManagers)
-            ? User::query()
-                ->orderBy('name')
-                ->get(['id', 'name', 'email', 'department_name'])
-            : collect();
-
         $permissionCatalog = $canManageGroupRoles ? $permissions->catalog() : collect();
         $availableRoles = ($canAssignGroupManagers || $canManageGroupRoles) ? $roles->catalog() : collect();
         $roleCatalog = $canManageGroupRoles ? $availableRoles : collect();
@@ -145,13 +140,8 @@ class EmployeeGroupController extends Controller
             ])->values(),
             'canCreateGroups' => $canCreateGroups,
             'canManageGroupRoles' => $canManageGroupRoles,
-            'availableManagers' => $availableManagers->map(fn (User $user) => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'departmentName' => $user->department_name,
-            ])->values(),
             'storeUrl' => route('employee.groups.store'),
+            'managerSearchUrl' => route('employee.groups.admin.manager-options'),
             'permissionCatalog' => $permissionCatalog->map(fn (GroupPermission $permission) => [
                 'key' => $permission->key,
                 'name' => $permission->name,
@@ -168,6 +158,52 @@ class EmployeeGroupController extends Controller
             'groupsOverviewUrl' => route('employee.groups.index'),
             'canOpenManagerPanel' => $canOpenManagerPanel,
             'managerPanelUrl' => $canOpenManagerPanel ? route('employee.groups.manage') : null,
+        ]);
+    }
+
+    public function searchManagerOptions(
+        Request $request,
+        EmployeeAuthorizationService $employeeAuthorization
+    ): JsonResponse {
+        /** @var User|null $employee */
+        $employee = Auth::guard('employee')->user();
+
+        abort_unless($employee instanceof User, 403);
+
+        $employeeAuthorization->syncCatalog();
+
+        abort_unless($employee->can('groups.create') || $employee->can('groups.managers.assign'), 403);
+
+        $query = trim((string) $request->string('query'));
+
+        if (mb_strlen($query) < 2) {
+            return response()->json([
+                'employees' => [],
+            ]);
+        }
+
+        $employees = User::query()
+            ->where(function ($builder) use ($query): void {
+                $like = "%{$query}%";
+
+                $builder
+                    ->where('name', 'like', $like)
+                    ->orWhere('email', 'like', $like)
+                    ->orWhere('employee_id', 'like', $like)
+                    ->orWhere('department_name', 'like', $like);
+            })
+            ->orderBy('name')
+            ->limit(25)
+            ->get(['id', 'name', 'email', 'employee_id', 'department_name']);
+
+        return response()->json([
+            'employees' => $employees->map(fn (User $user) => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'employeeId' => $user->employee_id,
+                'departmentName' => $user->department_name,
+            ])->values(),
         ]);
     }
 
@@ -225,7 +261,9 @@ class EmployeeGroupController extends Controller
                 true,
                 true,
                 true,
-                $defaultMemberRole
+                $defaultMemberRole,
+                null,
+                true
             ),
             'availableRoles' => $availableRoles->map(fn (GroupRole $role) => $this->mapRole($role, $permissions))->values(),
             'adminIndexUrl' => route('employee.groups.admin'),
@@ -347,7 +385,7 @@ class EmployeeGroupController extends Controller
         );
 
         return redirect()
-            ->route('employee.groups.index')
+            ->route('employee.groups.admin')
             ->with('status', 'Gruppo creato correttamente e manager assegnati.');
     }
 
@@ -517,12 +555,18 @@ class EmployeeGroupController extends Controller
         bool $canRemoveMembers,
         bool $canManageMemberRoles,
         ?GroupRole $fallbackDefaultRole,
-        ?GroupMembership $currentMembership = null
+        ?GroupMembership $currentMembership = null,
+        bool $useRemoteEmployeeSearch = false
     ): array {
-        $availableEmployees = User::query()
-            ->whereDoesntHave('groupMemberships', fn ($query) => $query->where('group_id', $group->getKey()))
-            ->orderBy('name')
-            ->get(['id', 'name', 'email', 'employee_id', 'department_name']);
+        $availableEmployeesQuery = User::query()
+            ->whereDoesntHave('groupMemberships', fn ($query) => $query->where('group_id', $group->getKey()));
+
+        $availableEmployeesCount = (clone $availableEmployeesQuery)->count();
+        $availableEmployees = $useRemoteEmployeeSearch
+            ? collect()
+            : $availableEmployeesQuery
+                ->orderBy('name')
+                ->get(['id', 'name', 'email', 'employee_id', 'department_name']);
 
         $role = $currentMembership?->groupRole;
         $defaultRole = $group->defaultRole ?? $fallbackDefaultRole;
@@ -571,6 +615,8 @@ class EmployeeGroupController extends Controller
                 'employeeId' => $user->employee_id,
                 'departmentName' => $user->department_name,
             ])->values(),
+            'availableEmployeeCount' => $availableEmployeesCount,
+            'employeeSearchUrl' => $useRemoteEmployeeSearch ? route('employee.groups.memberships.options', $group) : null,
             'membershipStoreUrl' => route('employee.groups.memberships.store', $group),
         ];
     }

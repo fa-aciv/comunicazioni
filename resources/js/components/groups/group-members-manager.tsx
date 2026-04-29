@@ -6,6 +6,7 @@ import {
     Command,
     CommandEmpty,
     CommandGroup,
+    CommandInput,
     CommandItem,
     CommandList,
 } from '@/components/ui/command';
@@ -30,7 +31,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Spinner } from '@/components/ui/spinner';
 import { useForm } from '@inertiajs/react';
 import { Check, ChevronDown, IdCard, MoreHorizontal, Save, UserMinus, UserPlus } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export interface GroupRoleSummary {
     id: number;
@@ -70,6 +71,8 @@ interface GroupMembersManagerProps {
     abilities: GroupManagementAbilities;
     memberships: GroupMembershipSummary[];
     availableEmployees: GroupEmployeeOption[];
+    availableEmployeeCount?: number | null;
+    employeeSearchUrl?: string | null;
     availableRoles: GroupRoleSummary[];
     membershipStoreUrl: string;
     defaultRole: GroupRoleSummary | null;
@@ -80,11 +83,16 @@ export function GroupMembersManager({
     abilities,
     memberships,
     availableEmployees,
+    availableEmployeeCount,
+    employeeSearchUrl,
     availableRoles,
     membershipStoreUrl,
     defaultRole,
 }: GroupMembersManagerProps) {
     const canSelectRoleOnAdd = abilities.canManageMemberRoles;
+    const hasAvailableEmployees = availableEmployeeCount !== undefined && availableEmployeeCount !== null
+        ? availableEmployeeCount > 0
+        : availableEmployees.length > 0;
 
     return (
         <div className="space-y-4">
@@ -102,6 +110,8 @@ export function GroupMembersManager({
                 {abilities.canAddMembers ? (
                     <AddMemberDialog
                         availableEmployees={availableEmployees}
+                        availableEmployeeCount={availableEmployeeCount}
+                        employeeSearchUrl={employeeSearchUrl}
                         availableRoles={availableRoles}
                         storeUrl={membershipStoreUrl}
                         defaultRole={defaultRole}
@@ -129,7 +139,7 @@ export function GroupMembersManager({
                 </div>
             )}
 
-            {abilities.canAddMembers && availableEmployees.length === 0 ? (
+            {abilities.canAddMembers && !hasAvailableEmployees ? (
                 <p className="text-sm text-muted-foreground">
                     Tutti i dipendenti risultano già assegnati a questo gruppo.
                 </p>
@@ -140,20 +150,33 @@ export function GroupMembersManager({
 
 function AddMemberDialog({
     availableEmployees,
+    availableEmployeeCount,
+    employeeSearchUrl,
     availableRoles,
     storeUrl,
     defaultRole,
     canSelectRole,
 }: {
     availableEmployees: GroupEmployeeOption[];
+    availableEmployeeCount?: number | null;
+    employeeSearchUrl?: string | null;
     availableRoles: GroupRoleSummary[];
     storeUrl: string;
     defaultRole: GroupRoleSummary | null;
     canSelectRole: boolean;
 }) {
     const [open, setOpen] = useState(false);
+    const [pickerOpen, setPickerOpen] = useState(false);
+    const [query, setQuery] = useState('');
+    const [searchStatus, setSearchStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
+    const [searchResults, setSearchResults] = useState<GroupEmployeeOption[]>([]);
+    const [selectedEmployee, setSelectedEmployee] = useState<GroupEmployeeOption | null>(null);
     const fallbackRole = defaultRole ?? availableRoles.find((role) => role.key === 'user') ?? availableRoles[0] ?? null;
     const defaultRoleValue = fallbackRole ? String(fallbackRole.id) : '';
+    const hasAvailableEmployees = availableEmployeeCount !== undefined && availableEmployeeCount !== null
+        ? availableEmployeeCount > 0
+        : availableEmployees.length > 0;
+    const usesRemoteSearch = typeof employeeSearchUrl === 'string' && employeeSearchUrl !== '';
 
     const form = useForm({
         user_id: '',
@@ -162,10 +185,64 @@ function AddMemberDialog({
 
     const selectedRole = availableRoles.find((role) => String(role.id) === form.data.group_role_id) ?? fallbackRole;
 
+    useEffect(() => {
+        if (!open || !usesRemoteSearch) {
+            return;
+        }
+
+        const trimmedQuery = query.trim();
+        const controller = new AbortController();
+        const timeoutId = window.setTimeout(() => {
+            if (trimmedQuery.length < 2) {
+                setSearchResults([]);
+                setSearchStatus('idle');
+                return;
+            }
+
+            setSearchResults([]);
+            setSearchStatus('loading');
+
+            void fetch(`${employeeSearchUrl}?${new URLSearchParams({ query: trimmedQuery }).toString()}`, {
+                signal: controller.signal,
+                headers: {
+                    Accept: 'application/json',
+                },
+            })
+                .then(async (response) => {
+                    if (!response.ok) {
+                        throw new Error('Unable to load employees');
+                    }
+
+                    const payload = (await response.json()) as { employees: GroupEmployeeOption[] };
+
+                    setSearchResults(payload.employees);
+                    setSearchStatus('ready');
+                })
+                .catch(() => {
+                    if (controller.signal.aborted) {
+                        return;
+                    }
+
+                    setSearchResults([]);
+                    setSearchStatus('error');
+                });
+        }, trimmedQuery.length >= 2 ? 250 : 0);
+
+        return () => {
+            controller.abort();
+            window.clearTimeout(timeoutId);
+        };
+    }, [employeeSearchUrl, open, query, usesRemoteSearch]);
+
     function resetForm() {
         form.reset();
         form.clearErrors();
         form.setData('group_role_id', defaultRoleValue);
+        setPickerOpen(false);
+        setQuery('');
+        setSearchStatus('idle');
+        setSearchResults([]);
+        setSelectedEmployee(null);
     }
 
     function handleOpenChange(nextOpen: boolean) {
@@ -174,6 +251,15 @@ function AddMemberDialog({
         if (!nextOpen) {
             resetForm();
         }
+    }
+
+    function selectEmployee(employee: GroupEmployeeOption) {
+        setSelectedEmployee(employee);
+        form.setData('user_id', String(employee.id));
+        setPickerOpen(false);
+        setQuery('');
+        setSearchResults([]);
+        setSearchStatus('idle');
     }
 
     function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -196,7 +282,7 @@ function AddMemberDialog({
                 variant="outline"
                 size="sm"
                 onClick={() => setOpen(true)}
-                disabled={availableEmployees.length === 0 || selectedRole === null}
+                disabled={!hasAvailableEmployees || selectedRole === null}
             >
                 <UserPlus className="size-4" />
                 Aggiungi utente
@@ -212,7 +298,7 @@ function AddMemberDialog({
                     </DialogDescription>
                 </DialogHeader>
 
-                {availableEmployees.length === 0 ? (
+                {!hasAvailableEmployees ? (
                     <div className="space-y-4">
                         <p className="text-sm text-muted-foreground">
                             Tutti i dipendenti risultano già assegnati a questo gruppo.
@@ -240,27 +326,118 @@ function AddMemberDialog({
                     </div>
                 ) : (
                     <form onSubmit={handleSubmit} className="space-y-5">
-                        <div className="grid gap-5 sm:grid-cols-2">
+                        <div className="grid gap-5 md:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
                             <div className="grid gap-2">
                                 <Label htmlFor="member-user">Dipendente</Label>
-                                <Select
-                                    value={form.data.user_id}
-                                    onValueChange={(value) => form.setData('user_id', value)}
-                                >
-                                    <SelectTrigger id="member-user">
-                                        <SelectValue placeholder="Seleziona un dipendente" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {availableEmployees.map((employeeOption) => (
-                                            <SelectItem
-                                                key={employeeOption.id}
-                                                value={employeeOption.id.toString()}
+                                {usesRemoteSearch ? (
+                                    <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                role="combobox"
+                                                aria-expanded={pickerOpen}
+                                                className="w-full justify-between gap-3"
                                             >
-                                                {employeeOption.name} · {employeeOption.email}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                                <span className="min-w-0 flex-1 truncate text-left">
+                                                    {selectedEmployee ? (
+                                                        <span
+                                                            className="truncate font-medium"
+                                                            title={`${selectedEmployee.name} · ${selectedEmployee.email}`}
+                                                        >
+                                                            {selectedEmployee.name}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-muted-foreground">
+                                                            Cerca e seleziona un dipendente
+                                                        </span>
+                                                    )}
+                                                </span>
+                                                <ChevronDown className="size-4 shrink-0 opacity-50" />
+                                            </Button>
+                                        </PopoverTrigger>
+
+                                        <PopoverContent className="p-0 sm:w-105" align="start">
+                                            <Command shouldFilter={false}>
+                                                <CommandInput
+                                                    value={query}
+                                                    onValueChange={setQuery}
+                                                    placeholder="Cerca dipendente..."
+                                                />
+                                                <CommandList>
+                                                    <CommandEmpty>
+                                                        {query.trim().length < 2
+                                                            ? 'Digita almeno 2 caratteri per cercare un dipendente.'
+                                                            : searchStatus === 'loading'
+                                                              ? 'Ricerca in corso...'
+                                                              : searchStatus === 'error'
+                                                                ? 'Non è stato possibile caricare i dipendenti.'
+                                                                : 'Nessun dipendente trovato.'}
+                                                    </CommandEmpty>
+                                                    <CommandGroup>
+                                                        {searchResults.map((employeeOption) => {
+                                                            const selected = form.data.user_id === String(employeeOption.id);
+
+                                                            return (
+                                                                <CommandItem
+                                                                    key={employeeOption.id}
+                                                                    value={`${employeeOption.name} ${employeeOption.email} ${employeeOption.employeeId ?? ''} ${employeeOption.departmentName ?? ''}`}
+                                                                    onSelect={() => selectEmployee(employeeOption)}
+                                                                    className="p-0"
+                                                                >
+                                                                    <div className="flex w-full items-start gap-3 px-3 py-2">
+                                                                        <Check
+                                                                            className={`mt-0.5 size-4 shrink-0 ${
+                                                                                selected ? 'opacity-100' : 'opacity-0'
+                                                                            }`}
+                                                                        />
+                                                                        <div className="min-w-0 flex-1 space-y-1">
+                                                                            <div className="truncate text-sm font-medium">
+                                                                                {employeeOption.name}
+                                                                            </div>
+                                                                            <div className="truncate text-sm text-muted-foreground">
+                                                                                {employeeOption.email}
+                                                                            </div>
+                                                                            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                                                                                {employeeOption.employeeId ? (
+                                                                                    <span>
+                                                                                        Matricola {employeeOption.employeeId}
+                                                                                    </span>
+                                                                                ) : null}
+                                                                                {employeeOption.departmentName ? (
+                                                                                    <span>{employeeOption.departmentName}</span>
+                                                                                ) : null}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </CommandItem>
+                                                            );
+                                                        })}
+                                                    </CommandGroup>
+                                                </CommandList>
+                                            </Command>
+                                        </PopoverContent>
+                                    </Popover>
+                                ) : (
+                                    <Select
+                                        value={form.data.user_id}
+                                        onValueChange={(value) => form.setData('user_id', value)}
+                                    >
+                                        <SelectTrigger id="member-user">
+                                            <SelectValue placeholder="Seleziona un dipendente" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {availableEmployees.map((employeeOption) => (
+                                                <SelectItem
+                                                    key={employeeOption.id}
+                                                    value={employeeOption.id.toString()}
+                                                >
+                                                    {employeeOption.name} · {employeeOption.email}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
                                 <InputError message={form.errors.user_id} />
                             </div>
 

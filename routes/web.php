@@ -107,6 +107,7 @@ Route::prefix('employee')->name('employee.')->group(function () {
         Route::patch('settings', [EmployeeSettingsController::class, 'update'])->name('settings.update');
         Route::get('groups', [EmployeeGroupController::class, 'index'])->name('groups.index');
         Route::get('groups/admin', [EmployeeGroupController::class, 'admin'])->name('groups.admin');
+        Route::get('groups/admin/manager-options', [EmployeeGroupController::class, 'searchManagerOptions'])->name('groups.admin.manager-options');
         Route::get('groups/admin/{group}', [EmployeeGroupController::class, 'adminShow'])->name('groups.admin.show');
         Route::get('groups/manage', [EmployeeGroupController::class, 'manage'])->name('groups.manage');
         Route::get('groups/manage/{group}', [EmployeeGroupController::class, 'show'])->name('groups.manage.show');
@@ -116,6 +117,7 @@ Route::prefix('employee')->name('employee.')->group(function () {
         Route::post('group-roles', [EmployeeGroupRoleController::class, 'store'])->name('group-roles.store');
         Route::patch('group-roles/{groupRole}', [EmployeeGroupRoleController::class, 'update'])->name('group-roles.update');
         Route::delete('group-roles/{groupRole}', [EmployeeGroupRoleController::class, 'destroy'])->name('group-roles.destroy');
+        Route::get('groups/{group}/memberships/options', [EmployeeGroupMembershipController::class, 'options'])->name('groups.memberships.options');
         Route::post('groups/{group}/memberships', [EmployeeGroupMembershipController::class, 'store'])->name('groups.memberships.store');
         Route::patch('groups/{group}/memberships/{membership}', [EmployeeGroupMembershipController::class, 'update'])->name('groups.memberships.update');
         Route::delete('groups/{group}/memberships/{membership}', [EmployeeGroupMembershipController::class, 'destroy'])->name('groups.memberships.destroy');

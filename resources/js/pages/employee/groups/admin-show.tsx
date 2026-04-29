@@ -1,7 +1,6 @@
 import InputError from '@/components/input-error';
 import {
     GroupMembersManager,
-    type GroupEmployeeOption,
     type GroupManagementAbilities,
     type GroupMembershipSummary,
     type GroupRoleSummary,
@@ -36,7 +35,8 @@ interface EmployeeGroupAdminShowPageProps {
     defaultRole: GroupRoleSummary | null;
     abilities: GroupManagementAbilities;
     memberships: GroupMembershipSummary[];
-    availableEmployees: GroupEmployeeOption[];
+    availableEmployeeCount: number;
+    employeeSearchUrl: string;
     availableRoles: GroupRoleSummary[];
     membershipStoreUrl: string;
     adminIndexUrl: string;
@@ -50,7 +50,8 @@ export default function EmployeeGroupAdminShowPage({
     defaultRole,
     abilities,
     memberships,
-    availableEmployees,
+    availableEmployeeCount,
+    employeeSearchUrl,
     availableRoles,
     membershipStoreUrl,
     adminIndexUrl,
@@ -131,7 +132,9 @@ export default function EmployeeGroupAdminShowPage({
                                 currentEmployeeId={currentEmployeeId}
                                 abilities={abilities}
                                 memberships={memberships}
-                                availableEmployees={availableEmployees}
+                                availableEmployees={[]}
+                                availableEmployeeCount={availableEmployeeCount}
+                                employeeSearchUrl={employeeSearchUrl}
                                 availableRoles={availableRoles}
                                 membershipStoreUrl={membershipStoreUrl}
                                 defaultRole={defaultRole}

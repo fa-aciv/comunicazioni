@@ -25,7 +25,7 @@ test('admins can create groups and assign initial managers', function () {
             'description' => 'Gestione richieste e smistamento iniziale.',
             'manager_ids' => [$firstManager->getKey(), $secondManager->getKey()],
         ])
-        ->assertRedirect(route('employee.groups.index'))
+        ->assertRedirect(route('employee.groups.admin'))
         ->assertSessionHas('status', 'Gruppo creato correttamente e manager assegnati.');
 
     $group = Group::query()->where('name', 'Ufficio Relazioni')->with('defaultRole')->first();
@@ -82,12 +82,42 @@ test('admins can manage group roles through the groups ui', function () {
             ->has('permissionCatalog')
             ->has('groupRoles')
             ->has('availableRoles')
+            ->where('managerSearchUrl', route('employee.groups.admin.manager-options'))
             ->has('groups', 1, fn (Assert $groupPage) => $groupPage
                 ->where('name', 'Protocollo')
                 ->where('detailUrl', route('employee.groups.admin.show', $group))
                 ->etc()
             )
         );
+});
+
+test('admins can search available employees when selecting initial group managers', function () {
+    $admin = makeEmployeeAdmin(User::factory()->withoutTwoFactor()->create());
+    $matchingEmployee = User::factory()->withoutTwoFactor()->create([
+        'name' => 'Mario Rossi',
+        'email' => 'mario.rossi@example.com',
+        'employee_id' => 'EMP-001',
+        'department_name' => 'Protocollo',
+    ]);
+    User::factory()->withoutTwoFactor()->create([
+        'name' => 'Giulia Bianchi',
+        'email' => 'giulia@example.com',
+        'employee_id' => 'EMP-002',
+        'department_name' => 'Anagrafe',
+    ]);
+
+    $this->actingAs($admin, 'employee')
+        ->getJson(route('employee.groups.admin.manager-options', ['query' => 'mario']))
+        ->assertOk()
+        ->assertJson([
+            'employees' => [[
+                'id' => $matchingEmployee->getKey(),
+                'name' => 'Mario Rossi',
+                'email' => 'mario.rossi@example.com',
+                'employeeId' => 'EMP-001',
+                'departmentName' => 'Protocollo',
+            ]],
+        ]);
 });
 
 test('admins can open the detail administration page for a group', function () {
@@ -104,9 +134,45 @@ test('admins can open the detail administration page for a group', function () {
             ->where('group.name', 'Sportello edilizia')
             ->where('adminIndexUrl', route('employee.groups.admin'))
             ->has('memberships')
-            ->has('availableEmployees')
+            ->where('availableEmployeeCount', 1)
+            ->where('employeeSearchUrl', route('employee.groups.memberships.options', $group))
             ->has('availableRoles')
         );
+});
+
+test('admins can search available employees from the group administration detail page', function () {
+    $admin = makeEmployeeAdmin(User::factory()->withoutTwoFactor()->create());
+    $group = Group::factory()->create();
+    $availableEmployee = User::factory()->withoutTwoFactor()->create([
+        'name' => 'Lucia Verdi',
+        'email' => 'lucia.verdi@example.com',
+        'employee_id' => 'EMP-101',
+        'department_name' => 'Edilizia privata',
+    ]);
+    $alreadyAssignedEmployee = User::factory()->withoutTwoFactor()->create([
+        'name' => 'Marco Neri',
+        'email' => 'marco.neri@example.com',
+    ]);
+
+    $group->memberships()->create([
+        'user_id' => $alreadyAssignedEmployee->getKey(),
+        'group_role_id' => GroupRole::query()->where('key', 'user')->firstOrFail()->getKey(),
+        'role' => 'user',
+    ]);
+
+    $this->actingAs($admin, 'employee')
+        ->getJson(route('employee.groups.memberships.options', ['group' => $group, 'query' => 'lucia']))
+        ->assertOk()
+        ->assertJsonFragment([
+            'id' => $availableEmployee->getKey(),
+            'name' => 'Lucia Verdi',
+            'email' => 'lucia.verdi@example.com',
+            'employeeId' => 'EMP-101',
+            'departmentName' => 'Edilizia privata',
+        ])
+        ->assertJsonMissing([
+            'name' => 'Marco Neri',
+        ]);
 });
 
 test('admins can manage members and configure the default role from the admin groups panel', function () {
