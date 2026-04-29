@@ -1,7 +1,17 @@
 import { ChatSummaryList } from '@/components/chat/chat-summary-list';
 import type { ChatSummary } from '@/components/chat/chat-types';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Item,
+    ItemActions,
+    ItemContent,
+    ItemFooter,
+    ItemGroup,
+    ItemHeader,
+    ItemTitle,
+} from '@/components/ui/item';
 import { cn } from '@/lib/utils';
 import {
     InputGroup,
@@ -14,7 +24,7 @@ import employee from '@/routes/employee';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
-import { Inbox, MessageSquareMore, Search, Settings, UserPen, X } from 'lucide-react';
+import { Building2, ChevronRight, Inbox, MessageSquareMore, Search, Settings, UserPen, UserRound, X } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -31,6 +41,25 @@ interface DashboardProps {
     hasMoreConversationResults: boolean;
     activeChats: ChatSummary[];
     openGroupRequestCount: number;
+    recentGroupContactRequests: Array<{
+        id: number;
+        groupName: string;
+        citizenName: string;
+        subject: string | null;
+        messagePreview: string;
+        createdAt: string | null;
+    }>;
+}
+
+function formatDateTime(value: string | null): string {
+    if (!value) {
+        return 'Data non disponibile';
+    }
+
+    return new Intl.DateTimeFormat('it-IT', {
+        dateStyle: 'short',
+        timeStyle: 'short',
+    }).format(new Date(value));
 }
 
 export default function Dashboard({
@@ -39,6 +68,7 @@ export default function Dashboard({
     hasMoreConversationResults,
     activeChats,
     openGroupRequestCount,
+    recentGroupContactRequests,
 }: DashboardProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -84,7 +114,59 @@ export default function Dashboard({
                                 Richieste aperte: {openGroupRequestCount}
                             </p>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="space-y-4">
+                            {recentGroupContactRequests.length > 0 ? (
+                                <div className="space-y-2">
+                                    <ItemGroup className="gap-2">
+                                        {recentGroupContactRequests.map((contactRequest) => (
+                                            <Item
+                                                key={contactRequest.id}
+                                                asChild
+                                                variant="outline"
+                                                className="shadow-xs"
+                                            >
+                                                <Link href="/employee/group-contact-requests">
+                                                    <ItemContent className="min-w-0">
+                                                        <ItemHeader className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
+                                                            <ItemTitle
+                                                                className="w-full truncate pr-2"
+                                                                title={contactRequest.messagePreview || 'Messaggio non disponibile'}
+                                                            >
+                                                                {contactRequest.messagePreview || 'Messaggio non disponibile'}
+                                                            </ItemTitle>
+                                                            <Badge variant="outline" className="shrink-0">
+                                                                <Inbox />
+                                                                {formatDateTime(contactRequest.createdAt)}
+                                                            </Badge>
+                                                        </ItemHeader>
+                                                        <ItemFooter className="mt-1 justify-start flex-wrap">
+                                                            <Badge
+                                                                variant="outline"
+                                                                className="max-w-40 truncate"
+                                                                title={contactRequest.citizenName}
+                                                            >
+                                                                <UserRound />
+                                                                {contactRequest.citizenName}
+                                                            </Badge>
+                                                            <Badge
+                                                                variant="outline"
+                                                                className="max-w-44 truncate"
+                                                                title={contactRequest.groupName}
+                                                            >
+                                                                <Building2 />
+                                                                {contactRequest.groupName}
+                                                            </Badge>
+                                                        </ItemFooter>
+                                                    </ItemContent>
+                                                    <ItemActions className="ml-auto self-center">
+                                                        <ChevronRight className="size-4 text-muted-foreground" />
+                                                    </ItemActions>
+                                                </Link>
+                                            </Item>
+                                        ))}
+                                    </ItemGroup>
+                                </div>
+                            ) : null}
                             <Button asChild variant="outline" size="lg" className="w-full">
                                 <Link href="/employee/group-contact-requests">
                                     Apri inbox richieste

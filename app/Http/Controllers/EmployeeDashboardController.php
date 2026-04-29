@@ -46,15 +46,32 @@ class EmployeeDashboardController extends Controller
             ->map(fn (ChatThread $thread) => $this->mapChatSummary($thread))
             ->values();
 
-        $openGroupRequestCount = GroupContactRequest::query()
+        $openGroupRequestsQuery = GroupContactRequest::query()
             ->where('status', 'open')
             ->whereIn(
                 'group_id',
                 $employee->groupMemberships()
                     ->whereHas('groupRole.permissions', fn ($query) => $query->where('key', 'group.contact_requests.accept'))
                     ->select('group_id')
-            )
-            ->count();
+            );
+
+        $openGroupRequestCount = (clone $openGroupRequestsQuery)->count();
+        $recentGroupContactRequests = $openGroupRequestCount > 0
+            ? (clone $openGroupRequestsQuery)
+                ->with(['group:id,name', 'citizen:id,name'])
+                ->latest()
+                ->limit(5)
+                ->get()
+                ->map(fn (GroupContactRequest $contactRequest) => [
+                    'id' => $contactRequest->id,
+                    'groupName' => $contactRequest->group->name,
+                    'citizenName' => $contactRequest->citizen->name,
+                    'subject' => $contactRequest->subject,
+                    'messagePreview' => str($contactRequest->message)->squish()->limit(140)->toString(),
+                    'createdAt' => optional($contactRequest->created_at)->toIso8601String(),
+                ])
+                ->values()
+            : collect();
 
         return Inertia::render('employee/dashboard', [
             'status' => $request->session()->get('status'),
@@ -62,6 +79,7 @@ class EmployeeDashboardController extends Controller
             'hasMoreConversationResults' => $hasMoreConversationResults,
             'activeChats' => $activeChats,
             'openGroupRequestCount' => $openGroupRequestCount,
+            'recentGroupContactRequests' => $recentGroupContactRequests,
         ]);
     }
 }
