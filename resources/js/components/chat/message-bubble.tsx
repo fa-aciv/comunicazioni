@@ -6,7 +6,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { File, MoreHorizontal, MoreVertical, Trash2 } from 'lucide-react';
+import { File, MoreVertical, Trash2 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Item } from '../ui/item';

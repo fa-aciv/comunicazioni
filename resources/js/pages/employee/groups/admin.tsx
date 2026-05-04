@@ -34,7 +34,18 @@ import AppLayout from '@/layouts/app-layout';
 import employee from '@/routes/employee';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Building2, Check, ChevronDown, ChevronRight, Clock3, FileClock, IdCard, Plus, ShieldCheck, ShieldPlus, X } from 'lucide-react';
+import {
+    Building2,
+    Check,
+    ChevronDown,
+    ChevronRight,
+    Clock3,
+    FileClock,
+    IdCard,
+    Plus,
+    ShieldCheck,
+    X,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [

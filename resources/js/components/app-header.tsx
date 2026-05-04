@@ -27,7 +27,7 @@ import citizen from '@/routes/citizen';
 import employee from '@/routes/employee';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { Building2, Inbox, LayoutGrid, LifeBuoy, Menu, MessageSquareDot, Settings } from 'lucide-react';
+import { Inbox, LayoutGrid, LifeBuoy, Menu, MessageSquareDot, Settings } from 'lucide-react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 

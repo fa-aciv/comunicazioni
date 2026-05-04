@@ -16,7 +16,7 @@ import { Spinner } from '@/components/ui/spinner';
 import AppLayout from '@/layouts/app-layout';
 import employee from '@/routes/employee';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { Inbox, MessageSquarePlus } from 'lucide-react';
 import { useState } from 'react';
 
@@ -48,7 +48,6 @@ interface EmployeeGroupContactRequestsPageProps {
         };
         acceptUrl: string;
     }>;
-    groupsUrl: string;
 }
 
 function formatDateTime(value: string | null): string {
@@ -65,7 +64,6 @@ function formatDateTime(value: string | null): string {
 export default function EmployeeGroupContactRequestsPage({
     status,
     contactRequests,
-    groupsUrl,
 }: EmployeeGroupContactRequestsPageProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>

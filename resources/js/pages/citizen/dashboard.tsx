@@ -8,10 +8,9 @@ import AppLayout from '@/layouts/app-layout';
 import citizen from '@/routes/citizen';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { Clock, LetterText, Mail, MessageSquareText, Plus, Settings } from 'lucide-react';
+import { Mail, MessageSquareText, Plus, Settings } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import citizens from '@/routes/employee/citizens';
 
 interface CitizenDashboardProps {
     status?: string;

@@ -1,5 +1,11 @@
 import { Link } from '@inertiajs/react';
-import { ChevronRight, Clock, Mail, MessageCircle, MessageSquareDot, MessageSquareText, MessagesSquare, UserRound } from 'lucide-react';
+import {
+    ChevronRight,
+    MessageSquareDot,
+    MessageSquareText,
+    MessagesSquare,
+    UserRound,
+} from 'lucide-react';
 
 import type { ChatSummary } from '@/components/chat/chat-types';
 import { Badge } from '@/components/ui/badge';
@@ -20,12 +26,10 @@ import {
     ItemActions,
     ItemContent,
     ItemDescription,
-    ItemFooter,
     ItemGroup,
     ItemHeader,
     ItemTitle,
 } from '@/components/ui/item';
-import { Card } from '../ui/card';
 
 interface ChatSummaryListProps {
     chats: ChatSummary[];
@@ -101,11 +105,9 @@ function ChatSummaryItem({
         >
             <Link href={buildChatHref(chat.id)}>
                 <ItemContent className="min-w-0">
-                    <ItemHeader className="items-start justify-between flex-wrap-reverse gap-2">
+                    <ItemHeader className="items-start justify-between gap-2 max-sm:flex-wrap-reverse">
                         <div className="flex flex-row gap-2">
-                            <ItemTitle className="">
-                                {chat.title}
-                            </ItemTitle>
+                            <ItemTitle>{chat.title}</ItemTitle>
                             {showCitizenBadge && chat.citizen?.name ? (
                                 <Badge
                                     variant="outline"
@@ -118,7 +120,10 @@ function ChatSummaryItem({
                             {unreadMessageCount > 0 ? (
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <Badge variant="secondary" className="hidden sm:inline-flex">
+                                        <Badge
+                                            variant="secondary"
+                                            className="hidden sm:inline-flex"
+                                        >
                                             <MessageSquareDot /> {unreadMessageCount}
                                         </Badge>
                                     </TooltipTrigger>
@@ -132,17 +137,16 @@ function ChatSummaryItem({
                             <TooltipTrigger asChild>
                                 <Badge variant="outline">
                                     <MessagesSquare />
-                                    {formatDate(chat.last_activity_at ?? chat.latest_message_date)}
+                                    {formatDate(
+                                        chat.last_activity_at ??
+                                            chat.latest_message_date,
+                                    )}
                                 </Badge>
                             </TooltipTrigger>
-                            <TooltipContent>
-                                Ultima attività
-                            </TooltipContent>
+                            <TooltipContent>Ultima attività</TooltipContent>
                         </Tooltip>
                     </ItemHeader>
-                    <ItemDescription>
-                        {chat.latest_message_preview}
-                    </ItemDescription>
+                    <ItemDescription>{chat.latest_message_preview}</ItemDescription>
                 </ItemContent>
                 <ItemActions className="ml-auto self-center">
                     <ChevronRight className="size-4 text-muted-foreground" />

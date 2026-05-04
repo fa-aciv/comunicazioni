@@ -1,11 +1,10 @@
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import employee from '@/routes/employee';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/react';
-import { Building2, Inbox, ShieldCheck, Users } from 'lucide-react';
+import { Head } from '@inertiajs/react';
+import { Building2 } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -31,21 +30,11 @@ interface EmployeeGroupIndexPageProps {
         currentRoleDescription: string | null;
         currentPermissionNames: string[];
     }>;
-    requestsInboxUrl: string;
-    canOpenAdminPanel: boolean;
-    adminPanelUrl: string | null;
-    canOpenManagerPanel: boolean;
-    managerPanelUrl: string | null;
 }
 
 export default function EmployeeGroupIndexPage({
     status,
     groups,
-    requestsInboxUrl,
-    canOpenAdminPanel,
-    adminPanelUrl,
-    canOpenManagerPanel,
-    managerPanelUrl,
 }: EmployeeGroupIndexPageProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>

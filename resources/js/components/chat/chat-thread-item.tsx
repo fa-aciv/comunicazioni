@@ -28,14 +28,21 @@ export default function ChatThreadItem({
         }
 
         previousUnreadCountRef.current = unreadMessagesAmount;
-        setIsUnreadCountAnimating(true);
+        let timeoutId: number | null = null;
+        const animationFrameId = window.requestAnimationFrame(() => {
+            setIsUnreadCountAnimating(true);
 
-        const timeoutId = window.setTimeout(() => {
-            setIsUnreadCountAnimating(false);
-        }, 320);
+            timeoutId = window.setTimeout(() => {
+                setIsUnreadCountAnimating(false);
+            }, 320);
+        });
 
         return () => {
-            window.clearTimeout(timeoutId);
+            window.cancelAnimationFrame(animationFrameId);
+
+            if (timeoutId !== null) {
+                window.clearTimeout(timeoutId);
+            }
         };
     }, [unreadMessagesAmount]);
 
